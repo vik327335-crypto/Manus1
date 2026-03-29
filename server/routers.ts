@@ -1,13 +1,23 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import {
+  getAssetsWithScores,
+  getLatestMarketTrend,
+  getUserWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+  getAssetSentiment,
+  getAssetById,
+  getAssetByTicker,
+  searchAssets,
+} from "./db";
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -17,12 +27,77 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  // CAN SLIM Scanner routes
+  assets: router({
+    list: publicProcedure.query(async () => {
+      return await getAssetsWithScores();
+    }),
+    detail: publicProcedure
+      .input((val: any) => ({
+        id: val.id as number | undefined,
+        ticker: val.ticker as string | undefined,
+      }))
+      .query(async ({ input }) => {
+        if (input.id) {
+          return await getAssetById(input.id);
+        }
+        if (input.ticker) {
+          return await getAssetByTicker(input.ticker);
+        }
+        return null;
+      }),
+    search: publicProcedure
+      .input((val: any) => ({
+        query: val.query as string,
+      }))
+      .query(async ({ input }) => {
+        if (!input.query || input.query.length < 1) {
+          return [];
+        }
+        return await searchAssets(input.query);
+      }),
+  }),
+
+  market: router({
+    trend: publicProcedure.query(async () => {
+      return await getLatestMarketTrend();
+    }),
+  }),
+
+  watchlist: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getUserWatchlist(ctx.user.id);
+    }),
+    add: protectedProcedure
+      .input((val: any) => ({
+        assetId: val.assetId as number,
+        alertThreshold: val.alertThreshold as number | undefined,
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await addToWatchlist(
+          ctx.user.id,
+          input.assetId,
+          input.alertThreshold
+        );
+      }),
+    remove: protectedProcedure
+      .input((val: any) => ({
+        assetId: val.assetId as number,
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await removeFromWatchlist(ctx.user.id, input.assetId);
+      }),
+  }),
+
+  sentiment: router({
+    getForAsset: publicProcedure
+      .input((val: any) => ({
+        assetId: val.assetId as number,
+      }))
+      .query(async ({ input }) => {
+        return await getAssetSentiment(input.assetId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

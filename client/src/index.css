@@ -174,4 +174,44 @@
       max-width: 1280px; /* Standard content width */
     }
   }
+
+  .score-badge {
+    @apply inline-flex items-center justify-center rounded-lg px-3 py-1 text-sm font-semibold;
+  }
+
+  .score-excellent {
+    @apply bg-green-100 text-green-900 dark:bg-green-900 dark:text-green-100;
+  }
+
+  .score-good {
+    @apply bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100;
+  }
+
+  .score-fair {
+    @apply bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100;
+  }
+
+  .score-poor {
+    @apply bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-100;
+  }
+
+  .market-status-bullish {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .market-status-neutral {
+    @apply text-amber-600 dark:text-amber-400;
+  }
+
+  .market-status-bearish {
+    @apply text-red-600 dark:text-red-400;
+  }
+
+  .card-elevated {
+    @apply rounded-xl border border-border bg-card shadow-sm transition-shadow duration-200 hover:shadow-md;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+  }
 }

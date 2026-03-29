@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,151 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+/**
+ * Get all crypto assets with their latest CAN SLIM scores
+ */
+export async function getAssetsWithScores() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(cryptoAssets);
+
+  return result;
+}
+
+/**
+ * Get latest market trend
+ */
+export async function getLatestMarketTrend() {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(marketTrend)
+    .orderBy((t) => desc(t.createdAt))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}
+
+/**
+ * Get user's watchlist with asset details
+ */
+export async function getUserWatchlist(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(watchlist)
+    .where(eq(watchlist.userId, userId));
+
+  return result;
+}
+
+/**
+ * Add asset to user's watchlist
+ */
+export async function addToWatchlist(
+  userId: number,
+  assetId: number,
+  alertThreshold?: number
+) {
+  const db = await getDb();
+  if (!db) return null;
+
+  await db.insert(watchlist).values({
+    userId,
+    assetId,
+    alertThreshold,
+  });
+
+  return { success: true };
+}
+
+/**
+ * Remove asset from watchlist
+ */
+export async function removeFromWatchlist(
+  userId: number,
+  assetId: number
+) {
+  const db = await getDb();
+  if (!db) return null;
+
+  await db
+    .delete(watchlist)
+    .where(and(eq(watchlist.userId, userId), eq(watchlist.assetId, assetId)));
+
+  return { success: true };
+}
+
+/**
+ * Get a single asset by ID
+ */
+export async function getAssetById(assetId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(cryptoAssets)
+    .where(eq(cryptoAssets.id, assetId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}
+
+/**
+ * Get a single asset by ticker
+ */
+export async function getAssetByTicker(ticker: string) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(cryptoAssets)
+    .where(eq(cryptoAssets.ticker, ticker))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}
+
+/**
+ * Search assets by name or ticker
+ */
+export async function searchAssets(query: string) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(cryptoAssets);
+
+  return result.filter(
+    (asset) =>
+      asset.ticker.toLowerCase().includes(query.toLowerCase()) ||
+      asset.name.toLowerCase().includes(query.toLowerCase())
+  );
+}
+
+/**
+ * Get sentiment analysis for an asset
+ */
+export async function getAssetSentiment(assetId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(sentimentAnalysis)
+    .where(eq(sentimentAnalysis.assetId, assetId))
+    .orderBy((s) => desc(s.analyzedAt))
+    .limit(10);
+
+  return result;
+}
