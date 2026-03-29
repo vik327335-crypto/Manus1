@@ -19,17 +19,17 @@
 - [x] Basic filtering UI
 
 ## Phase 4: Asset Details & Charts
-- [ ] Detailed asset view page
-- [ ] CAN SLIM score breakdown visualization
-- [ ] Supply dynamics chart
+- [x] Detailed asset view page with CAN SLIM breakdown
+- [x] CAN SLIM score breakdown visualization
+- [x] Supply dynamics display
 - [ ] Relative strength comparison charts (30/90 day)
 - [ ] Institutional support display
 
 ## Phase 5: Watchlist & User Features
-- [ ] Watchlist page
-- [ ] Add/remove from watchlist functionality
-- [ ] User preferences storage
-- [ ] Alert notifications setup
+- [x] Watchlist page with full CRUD
+- [x] Add/remove from watchlist functionality
+- [x] Alert threshold management
+- [ ] Email/push notifications setup
 
 ## Phase 6: Testing & Delivery
 - [x] Unit tests for database functions (12 tests passing)

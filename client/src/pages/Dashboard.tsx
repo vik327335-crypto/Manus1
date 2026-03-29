@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Loader2, Search, Star } from "lucide-react";
+import { Loader2, Search, Star, Bookmark } from "lucide-react";
+import { useLocation } from "wouter";
 import { MarketTrendIndicator } from "@/components/MarketTrendIndicator";
 import { ScoreIndicator } from "@/components/ScoreIndicator";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ type SortBy = "total" | "c" | "a" | "n" | "s" | "l" | "i" | "m";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("total");
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -216,6 +218,17 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+          {user && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/watchlist")}
+              className="gap-2 mt-4"
+            >
+              <Bookmark className="h-4 w-4" />
+              My Watchlist
+            </Button>
+          )}
         </div>
       </div>
 
@@ -295,7 +308,11 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {filteredAssets.map((asset) => (
-                <Card key={asset.id} className="card-elevated p-4">
+                <Card
+                key={asset.id}
+                className="card-elevated p-4 cursor-pointer transition-all hover:shadow-lg"
+                onClick={() => navigate(`/asset/${asset.ticker}`)}
+              >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     {/* Asset Info */}
                     <div className="flex items-center gap-4 flex-1">
