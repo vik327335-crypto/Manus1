@@ -15,6 +15,7 @@ import { Loader2, Search, Star, Bookmark } from "lucide-react";
 import { useLocation } from "wouter";
 import { MarketTrendIndicator } from "@/components/MarketTrendIndicator";
 import { ScoreIndicator } from "@/components/ScoreIndicator";
+import { DashboardExportButton } from "@/components/DashboardExportButton";
 import { cn } from "@/lib/utils";
 
 type SortBy = "total" | "c" | "a" | "n" | "s" | "l" | "i" | "m";
@@ -294,6 +295,18 @@ export default function Dashboard() {
                 <SelectItem value="m">Market Trend (M)</SelectItem>
               </SelectContent>
             </Select>
+
+            <DashboardExportButton
+              assets={filteredAssets.map((asset) => ({
+                ticker: asset.ticker,
+                name: asset.name,
+                price: asset.currentPrice,
+                change24h: asset.priceChange24h,
+                score: asset.totalScore,
+                allocation: 100 / filteredAssets.length,
+              }))}
+              totalValue={filteredAssets.reduce((sum: number, a: any) => sum + a.marketCap, 0)}
+            />
           </div>
         </div>
 

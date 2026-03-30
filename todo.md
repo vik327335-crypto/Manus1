@@ -22,8 +22,8 @@
 - [x] Detailed asset view page with CAN SLIM breakdown
 - [x] CAN SLIM score breakdown visualization
 - [x] Supply dynamics display
-- [ ] Relative strength comparison charts (30/90 day)
-- [ ] Institutional support display
+- [x] Relative strength comparison charts (30/90 day)
+- [x] Institutional support display
 
 ## Phase 5: Watchlist & User Features
 - [x] Watchlist page with full CRUD
@@ -51,8 +51,9 @@
 - [x] Create sentiment analysis service with structured responses
 - [x] Extract key catalysts from news items
 - [x] Implement sentiment scoring (-1 to 1)
+- [x] Create news feed component on asset detail page
+- [x] Integrate sentiment feed into AssetDetail
 - [ ] Fetch news from multiple sources (CoinTelegraph, The Block, etc.)
-- [ ] Create news feed component on asset detail page
 - [ ] Store analyzed sentiment in database
 
 ## Phase 9: Comparative Performance Charts
@@ -75,6 +76,8 @@
 - [x] Create CSV export functionality
 - [x] Build export button component
 - [x] Integrate export endpoints into tRPC router
+- [x] Add export button to AssetDetail page
+- [x] Add export button to Dashboard page
 
 ## Phase 12: Final Polish & Delivery
 - [ ] Performance optimization and caching
