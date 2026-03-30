@@ -2,6 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { exportRouter } from "./routers/exportRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -98,6 +99,8 @@ export const appRouter = router({
         return await getAssetSentiment(input.assetId);
       }),
   }),
+
+  export: exportRouter,
 });
 
 export type AppRouter = typeof appRouter;

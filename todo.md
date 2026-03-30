@@ -38,3 +38,47 @@
 - [ ] Performance optimization
 - [ ] Error handling and edge cases
 - [ ] Final testing and deployment
+
+## Phase 7: Real-Time Data Integration
+- [x] Integrate CoinGecko API for live prices and market data
+- [x] Implement data caching mechanism (5-minute cache)
+- [x] Add error handling and fallback to cached data
+- [x] Create price history and EMA calculation functions
+- [x] Implement relative strength calculations
+
+## Phase 8: AI News Sentiment Analysis
+- [x] Implement LLM-based sentiment analysis for catalysts
+- [x] Create sentiment analysis service with structured responses
+- [x] Extract key catalysts from news items
+- [x] Implement sentiment scoring (-1 to 1)
+- [ ] Fetch news from multiple sources (CoinTelegraph, The Block, etc.)
+- [ ] Create news feed component on asset detail page
+- [ ] Store analyzed sentiment in database
+
+## Phase 9: Comparative Performance Charts
+- [x] Create 30-day relative strength chart (vs BTC)
+- [x] Create 90-day relative strength chart (vs ETH)
+- [x] Implement interactive chart with Recharts
+- [x] Add performance statistics display
+- [ ] Display correlation metrics
+
+## Phase 10: Institutional Support Tracking
+- [x] Create institutional support component
+- [x] Implement whale wallet activity display
+- [x] Create smart money score visualization
+- [x] Display tier-1 fund holdings
+- [x] Show whale accumulation/distribution status
+
+## Phase 11: Data Export Functionality
+- [x] Implement PDF export for asset reports
+- [x] Implement Excel export for portfolio data
+- [x] Create CSV export functionality
+- [x] Build export button component
+- [x] Integrate export endpoints into tRPC router
+
+## Phase 12: Final Polish & Delivery
+- [ ] Performance optimization and caching
+- [ ] Responsive design verification
+- [ ] Cross-browser testing
+- [ ] Final security review
+- [ ] Documentation and deployment

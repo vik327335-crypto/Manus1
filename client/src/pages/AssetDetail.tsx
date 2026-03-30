@@ -2,8 +2,11 @@ import { useParams, useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScoreIndicator } from "@/components/ScoreIndicator";
-import { ArrowLeft, Star, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowLeft, Star, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ExportButton } from "@/components/ExportButton";
+import { InstitutionalSupport } from "@/components/InstitutionalSupport";
+import { RelativeStrengthChart } from "@/components/RelativeStrengthChart";
 
 interface CriterionDetail {
   score: number;
@@ -249,8 +252,81 @@ export default function AssetDetail() {
           </Card>
         </div>
 
+        {/* Relative Strength Charts */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Performance Analysis</h2>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <RelativeStrengthChart
+              data={[
+                { date: "1 week ago", assetPerformance: -5, btcPerformance: -2, ethPerformance: -3 },
+                { date: "5 days ago", assetPerformance: 0, btcPerformance: 2, ethPerformance: 1 },
+                { date: "3 days ago", assetPerformance: 8, btcPerformance: 5, ethPerformance: 6 },
+                { date: "1 day ago", assetPerformance: 12, btcPerformance: 8, ethPerformance: 10 },
+                { date: "Today", assetPerformance: 15, btcPerformance: 10, ethPerformance: 12 },
+              ]}
+              assetName={asset.ticker}
+              period="30d"
+            />
+            <RelativeStrengthChart
+              data={[
+                { date: "3 months ago", assetPerformance: -20, btcPerformance: -15, ethPerformance: -18 },
+                { date: "2 months ago", assetPerformance: -10, btcPerformance: -5, ethPerformance: -8 },
+                { date: "1 month ago", assetPerformance: 0, btcPerformance: 5, ethPerformance: 3 },
+                { date: "2 weeks ago", assetPerformance: 10, btcPerformance: 12, ethPerformance: 11 },
+                { date: "Today", assetPerformance: 35, btcPerformance: 25, ethPerformance: 28 },
+              ]}
+              assetName={asset.ticker}
+              period="90d"
+            />
+          </div>
+        </div>
+
+        {/* Institutional Support */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Institutional Support</h2>
+          <InstitutionalSupport
+            funds={[
+              {
+                name: "Grayscale Bitcoin Trust",
+                tier: "tier1",
+                allocation: 2.5,
+                entryDate: "2024-01-15",
+              },
+              {
+                name: "Pantera Capital",
+                tier: "tier1",
+                allocation: 1.8,
+                entryDate: "2024-02-20",
+              },
+              {
+                name: "Polychain Capital",
+                tier: "tier2",
+                allocation: 0.9,
+                entryDate: "2024-03-10",
+              },
+            ]}
+            whales={[
+              {
+                address: "0x1234...5678",
+                label: "Whale #1",
+                balance: 50000000,
+                change24h: 2.5,
+                type: "accumulating",
+              },
+              {
+                address: "0x9abc...def0",
+                label: "Whale #2",
+                balance: 35000000,
+                change24h: -1.2,
+                type: "holding",
+              },
+            ]}
+            smartMoneyScore={78}
+          />
+        </div>
+
         {/* Action Buttons */}
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <Button size="lg" className="gap-2">
             <Star className="h-4 w-4" />
             Add to Watchlist
@@ -258,6 +334,25 @@ export default function AssetDetail() {
           <Button variant="outline" size="lg">
             View on Chain
           </Button>
+          <ExportButton
+            assetData={{
+              ticker: asset.ticker,
+              name: asset.name,
+              currentPrice: asset.currentPrice,
+              marketCap: asset.marketCap,
+              totalScore: asset.totalScore,
+              criteria: {
+                c: asset.criteria.c.score,
+                a: asset.criteria.a.score,
+                n: asset.criteria.n.score,
+                s: asset.criteria.s.score,
+                l: asset.criteria.l.score,
+                i: asset.criteria.i.score,
+                m: asset.criteria.m.score,
+              },
+              description: asset.description,
+            }}
+          />
         </div>
       </div>
     </div>
