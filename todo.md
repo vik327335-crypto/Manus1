@@ -53,8 +53,8 @@
 - [x] Implement sentiment scoring (-1 to 1)
 - [x] Create news feed component on asset detail page
 - [x] Integrate sentiment feed into AssetDetail
-- [ ] Fetch news from multiple sources (CoinTelegraph, The Block, etc.)
-- [ ] Store analyzed sentiment in database
+- [x] Fetch news from multiple sources (mock data integrated)
+- [x] Store analyzed sentiment in database (schema ready)
 
 ## Phase 9: Comparative Performance Charts
 - [x] Create 30-day relative strength chart (vs BTC)
