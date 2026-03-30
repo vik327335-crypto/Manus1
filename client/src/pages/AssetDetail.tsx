@@ -8,6 +8,7 @@ import { ExportButton } from "@/components/ExportButton";
 import { InstitutionalSupport } from "@/components/InstitutionalSupport";
 import { RelativeStrengthChart } from "@/components/RelativeStrengthChart";
 import { SentimentNewsFeed } from "@/components/SentimentNewsFeed";
+import RealTimeNewsFeed from "@/components/RealTimeNewsFeed";
 
 interface CriterionDetail {
   score: number;
@@ -282,47 +283,10 @@ export default function AssetDetail() {
           </div>
         </div>
 
-        {/* News Sentiment Analysis */}
+        {/* Real-Time News Sentiment Analysis */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">News & Sentiment Analysis</h2>
-          <SentimentNewsFeed
-            assetName={asset.ticker}
-            newsItems={[
-              {
-                id: "1",
-                title: "Bitcoin Reaches New All-Time High Amid Institutional Adoption",
-                source: "CoinTelegraph",
-                url: "https://cointelegraph.com",
-                publishedAt: "2024-03-28T10:30:00Z",
-                sentiment: "positive",
-                score: 0.85,
-                catalysts: ["ATH", "Institutional", "Adoption"],
-                summary: "Bitcoin surpasses previous records as major financial institutions increase their holdings and regulatory clarity improves globally.",
-              },
-              {
-                id: "2",
-                title: "SEC Approves New Bitcoin ETF, Boosting Market Confidence",
-                source: "The Block",
-                url: "https://theblock.co",
-                publishedAt: "2024-03-27T14:15:00Z",
-                sentiment: "positive",
-                score: 0.78,
-                catalysts: ["SEC Approval", "ETF", "Regulatory"],
-                summary: "The Securities and Exchange Commission approves a new spot Bitcoin ETF, making it easier for traditional investors to gain exposure.",
-              },
-              {
-                id: "3",
-                title: "Bitcoin Mining Difficulty Reaches Record Levels",
-                source: "CryptoSlate",
-                url: "https://cryptoslate.com",
-                publishedAt: "2024-03-26T09:45:00Z",
-                sentiment: "neutral",
-                score: 0.12,
-                catalysts: ["Mining", "Difficulty", "Network"],
-                summary: "Network difficulty increases as more miners join the Bitcoin network, indicating growing interest in mining operations.",
-              },
-            ]}
-          />
+          <h2 className="text-2xl font-bold mb-6">Real-Time News & Sentiment Analysis</h2>
+          <RealTimeNewsFeed ticker={asset.ticker} name={asset.name} />
         </div>
 
         {/* Institutional Support */}

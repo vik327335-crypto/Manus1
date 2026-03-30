@@ -85,3 +85,16 @@
 - [x] Cross-browser testing (Chrome, Firefox, Safari compatible)
 - [x] Final security review (OAuth, protected routes, input validation)
 - [x] Documentation and deployment (ready for production)
+
+
+## Phase 13: RSS Feed Integration for Real-Time News
+- [x] Create RSS parser service for CoinTelegraph and The Block
+- [x] Implement feed fetching with error handling and caching
+- [x] Parse RSS items and extract title, description, link, pubDate
+- [x] Create news fetching tRPC endpoint (all, byAsset, cointelegraph, theblock)
+- [x] Implement LLM sentiment analysis for fetched news items
+- [x] Create news analysis tRPC endpoint (analyzeWithSentiment)
+- [x] Integrate real news feed into AssetDetail page with RealTimeNewsFeed component
+- [x] Add loading/error states for news fetching (Loader2, error handling, retry)
+- [ ] Implement background job for periodic news updates
+- [ ] Store fetched news in database with sentiment scores

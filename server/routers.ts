@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { exportRouter } from "./routers/exportRouter";
 import { marketRouter } from "./routers/marketRouter";
+import { newsRouter } from "./routers/newsRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -19,6 +20,7 @@ import {
 export const appRouter = router({
   system: systemRouter,
   market: marketRouter,
+  news: newsRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
