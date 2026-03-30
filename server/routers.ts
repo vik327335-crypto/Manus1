@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { exportRouter } from "./routers/exportRouter";
+import { marketRouter } from "./routers/marketRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -17,6 +18,7 @@ import {
 
 export const appRouter = router({
   system: systemRouter,
+  market: marketRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -57,12 +59,6 @@ export const appRouter = router({
         }
         return await searchAssets(input.query);
       }),
-  }),
-
-  market: router({
-    trend: publicProcedure.query(async () => {
-      return await getLatestMarketTrend();
-    }),
   }),
 
   watchlist: router({
