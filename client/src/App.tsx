@@ -5,7 +5,8 @@ import Dashboard from "@/pages/Dashboard";
 import AssetDetail from "@/pages/AssetDetail";
 import Watchlist from "@/pages/Watchlist";
 import PortfolioComparison from "@/pages/PortfolioComparison";
-import NotificationSettings from "@/pages/NotificationSettings";
+import NotificationSettings from "./pages/NotificationSettings";
+import Backtesting from "./pages/Backtesting";
 import AdminDashboard from "@/pages/AdminDashboard";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -21,8 +22,8 @@ function Router() {
       <Route path="/asset/:ticker" component={AssetDetail} />
       <Route path="/watchlist" component={Watchlist} />
       <Route path="/portfolio" component={PortfolioComparison} />
-      <Route path="/settings/notifications" component={NotificationSettings} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path={"/notification-settings"} component={NotificationSettings} />
+      <Route path={"/backtesting"} component={Backtesting} />      <Route path="/admin" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

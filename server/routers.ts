@@ -7,6 +7,7 @@ import { marketRouter } from "./routers/marketRouter";
 import { newsRouter } from "./routers/newsRouter";
 import { adminRouter } from "./routers/adminRouter";
 import { notificationRouter } from "./routers/notificationRouter";
+import { backtestRouter } from "./routers/backtestRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -25,6 +26,7 @@ export const appRouter = router({
   news: newsRouter,
   admin: adminRouter,
   notifications: notificationRouter,
+  backtest: backtestRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
