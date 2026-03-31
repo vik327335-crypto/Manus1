@@ -4,6 +4,8 @@ import NotFound from "@/pages/NotFound";
 import Dashboard from "@/pages/Dashboard";
 import AssetDetail from "@/pages/AssetDetail";
 import Watchlist from "@/pages/Watchlist";
+import PortfolioComparison from "@/pages/PortfolioComparison";
+import NotificationSettings from "@/pages/NotificationSettings";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -17,6 +19,8 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/asset/:ticker" component={AssetDetail} />
       <Route path="/watchlist" component={Watchlist} />
+      <Route path="/portfolio" component={PortfolioComparison} />
+      <Route path="/settings/notifications" component={NotificationSettings} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -5,6 +5,8 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { exportRouter } from "./routers/exportRouter";
 import { marketRouter } from "./routers/marketRouter";
 import { newsRouter } from "./routers/newsRouter";
+import { adminRouter } from "./routers/adminRouter";
+import { notificationRouter } from "./routers/notificationRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -21,6 +23,8 @@ export const appRouter = router({
   system: systemRouter,
   market: marketRouter,
   news: newsRouter,
+  admin: adminRouter,
+  notifications: notificationRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

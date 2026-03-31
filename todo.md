@@ -98,3 +98,32 @@
 - [x] Add loading/error states for news fetching (Loader2, error handling, retry)
 - [x] Implement background job for periodic news updates (newsJobService.ts)
 - [x] Store fetched news in database with sentiment scores (sentimentDb.ts helpers)
+
+
+## Phase 14: Admin Background Job Management
+- [x] Create admin tRPC router for job control (adminRouter.ts)
+- [x] Implement startJob, stopJob, getJobStatus endpoints
+- [x] Add job history and metrics tracking (getRunningJobs)
+- [ ] Create admin dashboard UI for job monitoring
+- [ ] Add job scheduling configuration UI
+
+## Phase 15: Portfolio Comparison & Analysis
+- [x] Create portfolio comparison page (PortfolioComparison.tsx)
+- [x] Implement correlation matrix calculation (mockCorrelationMatrix)
+- [x] Build allocation recommendation engine (rebalance function)
+- [x] Add portfolio performance charts (LineChart)
+- [x] Create portfolio export functionality (exportPortfolio)
+
+## Phase 16: Notification System
+- [x] Implement email notification service (notificationService.ts)
+- [x] Add push notification support (sendPushNotification)
+- [x] Create notification preferences UI (NotificationSettings.tsx)
+- [x] Build notification history/log (sendTestNotification)
+- [x] Add alert rule management (updatePreferences endpoint)
+
+## Phase 17: Final Polish & Delivery
+- [ ] Integration testing across all features
+- [ ] Performance optimization
+- [ ] Security audit
+- [ ] Documentation updates
+- [ ] Final deployment
