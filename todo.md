@@ -127,3 +127,35 @@
 - [x] Security audit (role-based access, input validation)
 - [x] Documentation updates (inline comments, type safety)
 - [x] Final deployment (production-ready)
+
+
+## Phase 18: WebSocket Real-Time Updates
+- [x] Install ws package and Socket.IO dependencies
+- [x] Create WebSocket server for price updates (priceServer.ts)
+- [x] Implement real-time news feed streaming
+- [x] Add client-side WebSocket connection with reconnection logic (ready for UI)
+- [ ] Build real-time price ticker component
+- [ ] Integrate live updates into Dashboard and AssetDetail pages
+
+## Phase 19: Telegram Bot Integration
+- [x] Create Telegram bot service with node-telegram-bot-api (telegramService.ts)
+- [x] Implement /start, /help, /watchlist, /alerts, /portfolio, /settings commands
+- [x] Add alert configuration via Telegram (text message handling)
+- [x] Build alert notification sender for Telegram (price, news, score alerts)
+- [x] Create Telegram user linking to crypto scanner accounts (subscription management)
+- [ ] Add Telegram preferences to NotificationSettings UI
+
+## Phase 20: CAN SLIM Backtesting Module
+- [x] Create backtesting engine for historical analysis (backtestService.ts)
+- [x] Implement CAN SLIM score calculation for historical periods
+- [x] Build performance metrics (win rate, ROI, Sharpe ratio, max drawdown)
+- [ ] Create backtesting results visualization page
+- [x] Add parameter optimization UI (grid search implementation)
+- [ ] Export backtest reports (PDF, CSV)
+
+## Phase 21: Final Integration & Delivery
+- [ ] End-to-end testing of all features
+- [ ] Performance profiling and optimization
+- [ ] Security review for WebSocket and Telegram
+- [ ] Documentation updates
+- [ ] Production deployment
