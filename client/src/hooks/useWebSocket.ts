@@ -20,14 +20,21 @@ export interface WebSocketState {
 }
 
 const DEFAULT_OPTIONS: UseWebSocketOptions = {
-  url: process.env.VITE_API_URL || "http://localhost:3000",
+  url: typeof window !== "undefined" && import.meta.env.VITE_API_URL 
+    ? import.meta.env.VITE_API_URL 
+    : "http://localhost:3000",
   autoConnect: true,
   reconnectionDelay: 1000,
   maxReconnectionAttempts: 5,
 };
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
-  const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
+  // Ensure URL is set correctly for browser environment
+  const wsUrl = typeof window !== "undefined" && import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL
+    : window?.location?.origin || "http://localhost:3000";
+  
+  const mergedOptions = { ...DEFAULT_OPTIONS, url: wsUrl, ...options };
   const socketRef = useRef<Socket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
