@@ -16,6 +16,7 @@ import { useLocation } from "wouter";
 import { MarketTrendIndicator } from "@/components/MarketTrendIndicator";
 import { ScoreIndicator } from "@/components/ScoreIndicator";
 import { DashboardExportButton } from "@/components/DashboardExportButton";
+import { PriceTicker } from "@/components/PriceTicker";
 import { cn } from "@/lib/utils";
 
 type SortBy = "total" | "c" | "a" | "n" | "s" | "l" | "i" | "m";
@@ -234,6 +235,12 @@ export default function Dashboard() {
       </div>
 
       <div className="container py-8">
+        {/* Live Price Ticker */}
+        <div className="mb-8">
+          <h2 className="mb-4 text-lg font-semibold">Live Price Ticker</h2>
+          <PriceTicker tickers={["BTC", "ETH", "ADA"]} />
+        </div>
+
         {/* Market Trend Section */}
         <div className="mb-8">
           <h2 className="mb-4 text-lg font-semibold">Market Overview</h2>

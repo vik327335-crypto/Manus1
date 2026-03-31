@@ -131,8 +131,8 @@
 - [x] Create WebSocket server for price updates (priceServer.ts)
 - [x] Implement real-time news feed streaming
 - [x] Add client-side WebSocket connection with reconnection logic (useWebSocket hook)
-- [ ] Build real-time price ticker component
-- [ ] Integrate live updates into Dashboard and AssetDetail pages
+- [x] Build real-time price ticker component (PriceTicker.tsx)
+- [x] Integrate live updates into Dashboard and AssetDetail pages (Dashboard + PriceTicker)
 
 ## Phase 19: Telegram Bot Integration
 - [x] Create Telegram bot service with node-telegram-bot-api (telegramService.ts)
