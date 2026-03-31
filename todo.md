@@ -96,5 +96,5 @@
 - [x] Create news analysis tRPC endpoint (analyzeWithSentiment)
 - [x] Integrate real news feed into AssetDetail page with RealTimeNewsFeed component
 - [x] Add loading/error states for news fetching (Loader2, error handling, retry)
-- [ ] Implement background job for periodic news updates
-- [ ] Store fetched news in database with sentiment scores
+- [x] Implement background job for periodic news updates (newsJobService.ts)
+- [x] Store fetched news in database with sentiment scores (sentimentDb.ts helpers)
