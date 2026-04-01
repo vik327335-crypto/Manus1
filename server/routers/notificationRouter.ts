@@ -13,6 +13,17 @@ import {
 // In-memory storage for notification preferences (in production, use database)
 const userPreferences = new Map<number, NotificationPreferences>();
 
+// In-memory storage for push subscriptions
+interface PushSubscription {
+  userId: number;
+  endpoint: string;
+  auth: string;
+  p256dh: string;
+  createdAt: Date;
+  isActive: boolean;
+}
+const pushSubscriptions = new Map<string, PushSubscription>();
+
 export const notificationRouter = router({
   // Get user notification preferences
   getPreferences: protectedProcedure.query(({ ctx }) => {
@@ -255,4 +266,75 @@ export const notificationRouter = router({
         throw new Error("Failed to send portfolio alert");
       }
     }),
+
+  // Subscribe to push notifications
+  subscribeToPush: protectedProcedure
+    .input(
+      z.object({
+        endpoint: z.string().url(),
+        auth: z.string(),
+        p256dh: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user!.id;
+      const subscription: PushSubscription = {
+        userId,
+        endpoint: input.endpoint,
+        auth: input.auth,
+        p256dh: input.p256dh,
+        createdAt: new Date(),
+        isActive: true,
+      };
+
+      pushSubscriptions.set(`${userId}-${input.endpoint}`, subscription);
+      console.log(`[Notifications] User ${userId} subscribed to push notifications`);
+
+      return {
+        success: true,
+        message: "Successfully subscribed to push notifications",
+      };
+    }),
+
+  // Unsubscribe from push notifications
+  unsubscribeFromPush: protectedProcedure
+    .input(
+      z.object({
+        endpoint: z.string().url(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user!.id;
+      const key = `${userId}-${input.endpoint}`;
+
+      if (pushSubscriptions.has(key)) {
+        pushSubscriptions.delete(key);
+        console.log(`[Notifications] User ${userId} unsubscribed from push notifications`);
+      }
+
+      return {
+        success: true,
+        message: "Successfully unsubscribed from push notifications",
+      };
+    }),
+
+  // Get push subscriptions for a user
+  getPushSubscriptions: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user!.id;
+    const subscriptions: PushSubscription[] = [];
+
+    pushSubscriptions.forEach((sub) => {
+      if (sub.userId === userId && sub.isActive) {
+        subscriptions.push(sub);
+      }
+    });
+
+    return {
+      count: subscriptions.length,
+      subscriptions: subscriptions.map((sub) => ({
+        endpoint: sub.endpoint.substring(0, 50) + "...",
+        createdAt: sub.createdAt,
+      })),
+    };
+  }),
 });
