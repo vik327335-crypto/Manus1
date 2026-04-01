@@ -2,7 +2,7 @@
  * Custom React hook for WebSocket connection with auto-reconnect
  */
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import io, { Socket } from "socket.io-client";
 
 export interface UseWebSocketOptions {
@@ -34,7 +34,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     ? import.meta.env.VITE_API_URL
     : window?.location?.origin || "http://localhost:3000";
   
-  const mergedOptions = { ...DEFAULT_OPTIONS, url: wsUrl, ...options };
+  const mergedOptions = useMemo(() => ({ ...DEFAULT_OPTIONS, url: wsUrl, ...options }), [wsUrl, options.autoConnect, options.reconnectionDelay, options.maxReconnectionAttempts]);
   const socketRef = useRef<Socket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -112,7 +112,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         socket: null,
       });
     }
-  }, [mergedOptions]);
+  }, [mergedOptions.url, mergedOptions.reconnectionDelay, mergedOptions.maxReconnectionAttempts]);
 
   /**
    * Disconnect from WebSocket server
@@ -239,7 +239,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       }
       disconnect();
     };
-  }, [mergedOptions.autoConnect, connect, disconnect]);
+  }, [connect, disconnect]);
 
   return {
     ...state,
