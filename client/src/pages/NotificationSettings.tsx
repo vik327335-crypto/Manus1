@@ -7,10 +7,13 @@ import { ArrowLeft, Send, RotateCcw } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { TelegramLinking } from "@/components/TelegramLinking";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function NotificationSettings() {
   const [, setLocation] = useLocation();
   const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
 
   // Fetch current preferences
   const { data: preferences, isLoading } = trpc.notifications.getPreferences.useQuery();
@@ -241,6 +244,15 @@ export default function NotificationSettings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Telegram Bot Integration */}
+        {user && (
+          <TelegramLinking
+            userId={user.id}
+            isLinked={(preferences as any)?.telegramLinked || false}
+            telegramUsername={(preferences as any)?.telegramUsername}
+          />
+        )}
 
         {/* Reset to Defaults */}
         <Card>

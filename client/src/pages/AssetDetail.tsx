@@ -9,6 +9,8 @@ import { InstitutionalSupport } from "@/components/InstitutionalSupport";
 import { RelativeStrengthChart } from "@/components/RelativeStrengthChart";
 import { SentimentNewsFeed } from "@/components/SentimentNewsFeed";
 import RealTimeNewsFeed from "@/components/RealTimeNewsFeed";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { useEffect, useState } from "react";
 
 interface CriterionDetail {
   score: number;
@@ -74,6 +76,29 @@ const mockAssetDetails = {
 export default function AssetDetail() {
   const { ticker } = useParams<{ ticker: string }>();
   const [, navigate] = useLocation();
+  const [livePrice, setLivePrice] = useState<number | null>(null);
+  const [livePriceChange, setLivePriceChange] = useState<number | null>(null);
+  const { isConnected, subscribeToPrices, onPriceUpdate } = useWebSocket({
+    autoConnect: true,
+  });
+
+  // Subscribe to live price updates
+  useEffect(() => {
+    if (isConnected && ticker) {
+      subscribeToPrices([ticker]);
+    }
+  }, [isConnected, ticker, subscribeToPrices]);
+
+  // Listen for price updates
+  useEffect(() => {
+    const unsubscribe = onPriceUpdate((data) => {
+      if (data.ticker === ticker) {
+        setLivePrice(data.price);
+        setLivePriceChange(data.change24h);
+      }
+    });
+    return unsubscribe;
+  }, [ticker, onPriceUpdate]);
 
   const asset = mockAssetDetails[ticker as keyof typeof mockAssetDetails];
 
@@ -143,8 +168,8 @@ export default function AssetDetail() {
             </div>
 
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Current Price</p>
-              <p className="text-3xl font-bold">${(asset.currentPrice / 100).toFixed(2)}</p>
+              <p className="text-sm text-muted-foreground">Current Price {isConnected && "(Live)"}</p>
+              <p className="text-3xl font-bold">${(livePrice !== null ? livePrice / 100 : asset.currentPrice / 100).toFixed(2)}</p>
               <p
                 className={cn(
                   "text-sm font-semibold mt-1",

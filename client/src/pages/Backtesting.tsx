@@ -16,15 +16,97 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Loader2, TrendingUp, TrendingDown } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Download } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export default function Backtesting() {
   const [isRunning, setIsRunning] = useState(false);
   const [minScore, setMinScore] = useState(6);
   const [stopLoss, setStopLoss] = useState(5);
   const [takeProfit, setTakeProfit] = useState(15);
+  const [isExporting, setIsExporting] = useState(false);
 
-  // Mock backtest results
+  // Export mutations
+  const exportPdfMutation = trpc.export.assetPDF.useMutation();
+  const exportExcelMutation = trpc.export.portfolioExcel.useMutation();
+  const exportCsvMutation = trpc.export.csv.useMutation();
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const result = await exportPdfMutation.mutateAsync({
+        ticker: "BACKTEST",
+        name: "CAN SLIM Backtesting Report",
+        currentPrice: 0,
+        marketCap: 0,
+        volume24h: 0,
+        circulatingSupply: "N/A",
+        totalSupply: "N/A",
+        description: `Backtesting Results - Min Score: ${minScore}, Stop Loss: ${stopLoss}%, Take Profit: ${takeProfit}%`,
+        totalScore: Math.round(backtestResults.winRate),
+        criteria: {
+          c: backtestResults.winRate,
+          a: backtestResults.sharpeRatio * 10,
+          n: backtestResults.profitFactor * 10,
+          s: 50,
+          l: backtestResults.totalPnLPercent,
+          i: 60,
+          m: 70,
+        },
+      } as any);
+      if (result.success && result.data) {
+        const link = document.createElement("a");
+        link.href = `data:application/pdf;base64,${result.data}`;
+        link.download = result.filename || "backtesting-report.pdf";
+        link.click();
+        toast.success("PDF exported successfully");
+      }
+    } catch (error) {
+      toast.error("Failed to export PDF");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    setIsExporting(true);
+    try {
+      const result = await exportExcelMutation.mutateAsync({
+        assets: [
+          {
+            ticker: "BACKTEST",
+            name: "CAN SLIM Backtesting Report",
+            score: Math.round(backtestResults.winRate),
+            price: 0,
+            change24h: backtestResults.totalPnLPercent,
+            allocation: 100,
+          },
+        ],
+        totalValue: backtestResults.totalPnL,
+        totalReturn: backtestResults.totalPnLPercent,
+        metrics: {
+          winRate: backtestResults.winRate,
+          sharpeRatio: backtestResults.sharpeRatio,
+          maxDrawdown: backtestResults.maxDrawdown,
+          profitFactor: backtestResults.profitFactor,
+        },
+      } as any);
+      if (result.success && result.data) {
+        const link = document.createElement("a");
+        link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${result.data}`;
+        link.download = result.filename || "backtesting-report.xlsx";
+        link.click();
+        toast.success("Excel exported successfully");
+      }
+    } catch (error) {
+      toast.error("Failed to export Excel");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Mock backtest results (moved after export functions)
   const backtestResults = {
     totalTrades: 24,
     winningTrades: 16,
@@ -163,11 +245,11 @@ export default function Backtesting() {
                     className="mt-2"
                   />
                 </div>
-                <div className="flex items-end">
+                <div className="flex items-end gap-2">
                   <Button
                     onClick={handleRunBacktest}
                     disabled={isRunning}
-                    className="w-full"
+                    className="flex-1"
                   >
                     {isRunning ? (
                       <>
@@ -177,6 +259,24 @@ export default function Backtesting() {
                     ) : (
                       "Run Backtest"
                     )}
+                  </Button>
+                  <Button
+                    onClick={handleExportPDF}
+                    disabled={isExporting}
+                    variant="outline"
+                    size="icon"
+                    title="Export as PDF"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={handleExportExcel}
+                    disabled={isExporting}
+                    variant="outline"
+                    size="icon"
+                    title="Export as Excel"
+                  >
+                    <Download className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
