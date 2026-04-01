@@ -163,3 +163,12 @@
 - [x] Add Telegram linking UI with QR code to NotificationSettings (TelegramLinking.tsx)
 - [x] Implement backtesting export to PDF and Excel (export buttons + mutations)
 - [x] Final testing and bug fixes (12/12 tests passing, TypeScript clean)
+
+
+## Phase 23: Real-Time API Integration
+- [x] Enhance CoinGecko service with market cap, volume, price history
+- [x] Create DefiLlama service for TVL, protocol metrics, yields (defiLlamaService.ts)
+- [x] Create Glassnode service for on-chain analytics, whale tracking (glassnodeService.ts)
+- [x] Integrate APIs into tRPC endpoints (realTimeRouter.ts with 13 endpoints)
+- [x] Add API error handling, caching, rate limiting (implemented in all services)
+- [ ] Final testing and deployment
