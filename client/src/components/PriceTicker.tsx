@@ -23,7 +23,7 @@ export function PriceTicker({ tickers = ["BTC", "ETH", "ADA"], className = "" }:
   const [isConnected, setIsConnected] = useState(false);
 
   const { isConnected: wsConnected, subscribeToPrices, onPriceUpdate } = useWebSocket({
-    autoConnect: true,
+    autoConnect: false, // Disable auto-connect to prevent timeout errors in demo
   });
 
   useEffect(() => {
@@ -31,12 +31,13 @@ export function PriceTicker({ tickers = ["BTC", "ETH", "ADA"], className = "" }:
   }, [wsConnected]);
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && subscribeToPrices) {
       subscribeToPrices(tickers);
     }
   }, [isConnected, tickers, subscribeToPrices]);
 
   useEffect(() => {
+    if (!onPriceUpdate) return;
     const unsubscribe = onPriceUpdate((data) => {
       setPrices((prev) => ({
         ...prev,
@@ -94,7 +95,7 @@ export function PriceTicker({ tickers = ["BTC", "ETH", "ADA"], className = "" }:
               <div>
                 <h3 className="font-bold text-lg">{ticker}</h3>
                 <p className="text-xs text-muted-foreground">
-                  {isConnected ? "Live" : "Offline"}
+                  {isConnected ? "Live" : "Demo"}
                 </p>
               </div>
               {isPositive ? (
