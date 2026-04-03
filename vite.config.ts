@@ -167,6 +167,28 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('recharts')) return 'vendor-charts';
+            if (id.includes('@radix-ui')) return 'vendor-ui';
+            if (id.includes('react')) return 'vendor-react';
+            if (id.includes('lucide-react')) return 'vendor-icons';
+            if (id.includes('sonner')) return 'vendor-toast';
+            if (id.includes('trpc') || id.includes('drizzle')) return 'vendor-backend';
+            return 'vendor-common';
+          }
+          if (id.includes('pages/Dashboard') || id.includes('DashboardLayout')) return 'feature-dashboard';
+          if (id.includes('pages/Backtesting')) return 'feature-backtesting';
+          if (id.includes('pages/Watchlist')) return 'feature-watchlist';
+          if (id.includes('HistoricalDataAnalysis') || id.includes('HistoricalDataChart')) return 'feature-historical';
+          if (id.includes('pages/AutomatedExportReports')) return 'feature-export';
+          if (id.includes('pages/Settings')) return 'feature-settings';
+        },
+      },
+    },
   },
   server: {
     host: true,
