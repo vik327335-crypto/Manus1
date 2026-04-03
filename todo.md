@@ -194,3 +194,14 @@
 - [x] Add parameter export with optimization results (backtestResults)
 - [x] Create strategy import functionality (parseFromJSON, validateStrategy)
 - [x] Build strategy sharing/versioning system (StrategyExportButton component)
+
+
+## Phase 27: Integration & Visualization
+- [x] Integrate StrategyExportButton into Backtesting page
+- [x] Connect real optimization results to export functionality
+- [x] Create HistoricalDataChart component with technical indicators
+- [x] Build historical data analysis page (HistoricalDataAnalysis.tsx)
+- [x] Add OHLCV data visualization with Recharts
+- [x] Implement indicator selection UI (SMA, EMA, MACD, RSI, BB)
+- [x] Add date range picker for historical data analysis
+- [x] Create price action analysis component (with statistics)

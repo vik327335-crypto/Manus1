@@ -19,6 +19,7 @@ import {
 import { Loader2, TrendingUp, TrendingDown, Download } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { StrategyExportButton } from "@/components/StrategyExportButton";
 
 export default function Backtesting() {
   const [isRunning, setIsRunning] = useState(false);
@@ -26,6 +27,7 @@ export default function Backtesting() {
   const [stopLoss, setStopLoss] = useState(5);
   const [takeProfit, setTakeProfit] = useState(15);
   const [isExporting, setIsExporting] = useState(false);
+  const [showStrategyExport, setShowStrategyExport] = useState(false);
 
   // Export mutations
   const exportPdfMutation = trpc.export.assetPDF.useMutation();
@@ -278,8 +280,35 @@ export default function Backtesting() {
                   >
                     <Download className="h-4 w-4" />
                   </Button>
+                  <Button
+                    onClick={() => setShowStrategyExport(!showStrategyExport)}
+                    variant="outline"
+                    size="icon"
+                    title="Export Strategy"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
+              {showStrategyExport && (
+                <div className="mt-6 pt-6 border-t">
+                  <StrategyExportButton
+                    strategyId="backtest-strategy-001"
+                    strategyName={`CAN SLIM Strategy (Score: ${minScore}, SL: ${stopLoss}%, TP: ${takeProfit}%)`}
+                    backtestResults={{
+                      winRate: backtestResults.winRate / 100,
+                      profitFactor: backtestResults.profitFactor,
+                      sharpeRatio: backtestResults.sharpeRatio,
+                      maxDrawdown: -backtestResults.maxDrawdown,
+                      totalReturn: backtestResults.totalPnLPercent,
+                      backtestPeriod: {
+                        startDate: '2026-01-01',
+                        endDate: '2026-05-01',
+                      },
+                    }}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
