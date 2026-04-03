@@ -205,3 +205,14 @@
 - [x] Implement indicator selection UI (SMA, EMA, MACD, RSI, BB)
 - [x] Add date range picker for historical data analysis
 - [x] Create price action analysis component (with statistics)
+
+
+## Phase 28: Real OHLCV Integration & Price Action Analysis
+- [x] Integrate real OHLCV data from Polygon.io into HistoricalDataAnalysis
+- [x] Replace mock data generation with actual API responses (generateOHLCVData function)
+- [x] Create PriceActionAnalysis component for support/resistance analysis
+- [x] Implement trend detection (uptrend, downtrend, sideways)
+- [x] Calculate support and resistance levels (swing analysis)
+- [x] Add volatility analysis metrics (ATR, volatility %, high-low range)
+- [x] Integrate PriceActionAnalysis into HistoricalDataAnalysis page
+- [x] Add error handling for API failures (try-catch, toast notifications)

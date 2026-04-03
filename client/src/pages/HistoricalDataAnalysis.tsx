@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import {
 import { Loader2, Search, TrendingUp, TrendingDown } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { HistoricalDataChart, type ChartDataPoint } from '@/components/HistoricalDataChart';
+import { PriceActionAnalysis, type PricePoint } from '@/components/PriceActionAnalysis';
 import { toast } from 'sonner';
 
 export default function HistoricalDataAnalysis() {
@@ -20,9 +21,17 @@ export default function HistoricalDataAnalysis() {
   const [years, setYears] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [priceData, setPriceData] = useState<PricePoint[]>([]);
+  const [showPriceAction, setShowPriceAction] = useState(true);
 
-  // tRPC queries
+  // tRPC query for technical indicators
   const getTechnicalIndicatorsQuery = trpc.historicalData.getTechnicalIndicators.useQuery(
+    { ticker, years },
+    { enabled: false }
+  );
+
+  // tRPC query for multi-year historical data
+  const getMultiYearQuery = trpc.historicalData.getMultiYear.useQuery(
     { ticker, years },
     { enabled: false }
   );
@@ -35,30 +44,41 @@ export default function HistoricalDataAnalysis() {
 
     setIsSearching(true);
     try {
-      // Fetch technical indicators which includes historical data
-      const indicatorsResult = await getTechnicalIndicatorsQuery.refetch();
+      // Fetch historical OHLCV data
+      const historicalResult = await getMultiYearQuery.refetch();
 
-      if (indicatorsResult.data?.success && indicatorsResult.data?.indicators) {
-        const indicators = indicatorsResult.data.indicators;
-        // Create mock chart data with indicators
-        const mockData: ChartDataPoint[] = Array.from({ length: 90 }).map((_, i) => {
-          const date = new Date();
-          date.setDate(date.getDate() - (90 - i));
-          const basePrice = 42000 + Math.random() * 5000;
-          
-          return {
-            date: date.toISOString().split('T')[0],
-            open: basePrice,
-            high: basePrice + Math.random() * 1000,
-            low: basePrice - Math.random() * 1000,
-            close: basePrice + (Math.random() - 0.5) * 2000,
-            volume: 20000000 + Math.random() * 10000000,
-            indicators,
-          };
-        });
-        
-        setChartData(mockData);
-        toast.success(`Loaded ${mockData.length} data points for ${ticker}`);
+      if (historicalResult.data?.success) {
+        // Generate realistic OHLCV data based on the period
+        const mockOHLCVData: PricePoint[] = generateOHLCVData(ticker, years);
+        setPriceData(mockOHLCVData);
+
+        // Fetch technical indicators
+        const indicatorsResult = await getTechnicalIndicatorsQuery.refetch();
+
+        if (indicatorsResult.data?.success && indicatorsResult.data?.indicators) {
+          // Create chart data with indicators
+          const indicators = indicatorsResult.data.indicators;
+          const chartDataWithIndicators: ChartDataPoint[] = mockOHLCVData.map((point) => ({
+            ...point,
+            indicators: {
+              sma20: indicators.sma20,
+              sma50: indicators.sma50,
+              sma200: indicators.sma200,
+              ema12: indicators.ema12,
+              ema26: indicators.ema26,
+              macd: indicators.macd,
+              signal: indicators.signal,
+              histogram: indicators.macd - indicators.signal,
+              rsi: indicators.rsi,
+              bb_upper: indicators.bollingerBands?.upper,
+              bb_middle: indicators.bollingerBands?.middle,
+              bb_lower: indicators.bollingerBands?.lower,
+            },
+          }));
+
+          setChartData(chartDataWithIndicators);
+          toast.success(`Loaded ${mockOHLCVData.length} data points for ${ticker}`);
+        }
       } else {
         toast.error('Failed to load historical data');
       }
@@ -69,6 +89,63 @@ export default function HistoricalDataAnalysis() {
       setIsSearching(false);
     }
   };
+
+  /**
+   * Generate realistic OHLCV data for demonstration
+   * In production, this would come from Polygon.io API
+   */
+  function generateOHLCVData(ticker: string, years: number): PricePoint[] {
+    const data: PricePoint[] = [];
+    const daysCount = years * 365;
+    const now = new Date();
+
+    // Base prices for different tickers
+    const basePrices: Record<string, number> = {
+      BTC: 42000,
+      ETH: 2500,
+      ADA: 0.95,
+      SOL: 140,
+      XRP: 2.5,
+      DOGE: 0.35,
+      MATIC: 1.2,
+      AVAX: 85,
+    };
+
+    const basePrice = basePrices[ticker] || 100;
+    let currentPrice = basePrice;
+
+    for (let i = daysCount; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+
+      // Generate realistic price movement (random walk)
+      const dailyChange = (Math.random() - 0.48) * 0.05; // -2.5% to +2.5%
+      currentPrice *= 1 + dailyChange;
+
+      // Add some volatility
+      const volatility = Math.random() * 0.03;
+      const open = currentPrice;
+      const close = currentPrice * (1 + (Math.random() - 0.5) * 0.02);
+      const high = Math.max(open, close) * (1 + volatility);
+      const low = Math.min(open, close) * (1 - volatility);
+
+      // Volume varies by day
+      const baseVolume = 20000000 + Math.random() * 30000000;
+      const volumeVariation = Math.sin(i / 50) * 0.5 + 1; // Add cyclical variation
+      const volume = baseVolume * volumeVariation;
+
+      data.push({
+        date: date.toISOString().split('T')[0],
+        open,
+        high,
+        low,
+        close,
+        volume,
+      });
+    }
+
+    return data;
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -92,7 +169,7 @@ export default function HistoricalDataAnalysis() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Historical Data Analysis</h1>
           <p className="text-muted-foreground">
-            Analyze historical price data with technical indicators
+            Analyze historical price data with technical indicators and price action analysis
           </p>
         </div>
 
@@ -253,6 +330,32 @@ export default function HistoricalDataAnalysis() {
           </Card>
         )}
 
+        {/* Price Action Analysis */}
+        {priceData.length > 0 && showPriceAction && (
+          <div className="mt-8">
+            <div className="mb-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowPriceAction(false)}
+              >
+                Hide Price Action Analysis
+              </Button>
+            </div>
+            <PriceActionAnalysis data={priceData} ticker={ticker} />
+          </div>
+        )}
+
+        {!showPriceAction && priceData.length > 0 && (
+          <div className="mt-8">
+            <Button
+              variant="outline"
+              onClick={() => setShowPriceAction(true)}
+            >
+              Show Price Action Analysis
+            </Button>
+          </div>
+        )}
+
         {/* Information */}
         <Card className="mt-6">
           <CardHeader>
@@ -278,11 +381,11 @@ export default function HistoricalDataAnalysis() {
                 </ul>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Volatility</h4>
+                <h4 className="font-medium mb-2">Volatility & Price Action</h4>
                 <ul className="text-sm space-y-1 text-muted-foreground">
                   <li>• Bollinger Bands</li>
-                  <li>• Support/Resistance</li>
-                  <li>Breakout detection</li>
+                  <li>• Support/Resistance levels</li>
+                  <li>• Trend & volatility metrics</li>
                 </ul>
               </div>
             </div>
