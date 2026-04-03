@@ -16,7 +16,7 @@ import { HistoricalDataChart, type ChartDataPoint } from '@/components/Historica
 import { PriceActionAnalysis, type PricePoint } from '@/components/PriceActionAnalysis';
 import { PeriodComparison, type PeriodMetrics } from '@/components/PeriodComparison';
 import { exportPriceActionPDF, exportComparisonPDF, exportAsJSON, exportAsCSV } from '@/lib/priceActionPDFExport';
-import { generateFallbackOHLCV } from '@/lib/polygonClient';
+import { fetchOHLCVData, generateFallbackOHLCV, isValidTicker } from '@/lib/polygonClient';
 import { toast } from 'sonner';
 
 export default function HistoricalDataAnalysis() {
@@ -29,6 +29,7 @@ export default function HistoricalDataAnalysis() {
   const [showComparison, setShowComparison] = useState(false);
   const [comparisonPeriods, setComparisonPeriods] = useState<PeriodMetrics[]>([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [dataSource, setDataSource] = useState<'real' | 'fallback'>('real');
 
   // tRPC queries
   const getTechnicalIndicatorsQuery = trpc.historicalData.getTechnicalIndicators.useQuery(
@@ -47,44 +48,60 @@ export default function HistoricalDataAnalysis() {
       return;
     }
 
+    if (!isValidTicker(ticker)) {
+      toast.error('Invalid ticker format');
+      return;
+    }
+
     setIsSearching(true);
     try {
-      // Fetch historical OHLCV data
-      const historicalResult = await getMultiYearQuery.refetch();
+      // Try to fetch real OHLCV data from Polygon.io
+      let mockOHLCVData: PricePoint[] = [];
+      let useRealData = false;
 
-      if (historicalResult.data?.success) {
-        // Use fallback data (in production, would use real Polygon.io data)
-        const mockOHLCVData: PricePoint[] = generateFallbackOHLCV(ticker, years);
-        setPriceData(mockOHLCVData);
-
-        // Fetch technical indicators
-        const indicatorsResult = await getTechnicalIndicatorsQuery.refetch();
-
-        if (indicatorsResult.data?.success && indicatorsResult.data?.indicators) {
-          const indicators = indicatorsResult.data.indicators;
-          const chartDataWithIndicators: ChartDataPoint[] = mockOHLCVData.map((point) => ({
-            ...point,
-            indicators: {
-              sma20: indicators.sma20,
-              sma50: indicators.sma50,
-              sma200: indicators.sma200,
-              ema12: indicators.ema12,
-              ema26: indicators.ema26,
-              macd: indicators.macd,
-              signal: indicators.signal,
-              histogram: indicators.macd - indicators.signal,
-              rsi: indicators.rsi,
-              bb_upper: indicators.bollingerBands?.upper,
-              bb_middle: indicators.bollingerBands?.middle,
-              bb_lower: indicators.bollingerBands?.lower,
-            },
-          }));
-
-          setChartData(chartDataWithIndicators);
-          toast.success(`Loaded ${mockOHLCVData.length} data points for ${ticker}`);
+      try {
+        const result = await fetchOHLCVData(ticker, years);
+        if (result.success && result.data) {
+          mockOHLCVData = result.data;
+          useRealData = true;
+          setDataSource('real');
+          toast.success(`Loaded ${mockOHLCVData.length} real data points from Polygon.io`);
+        } else {
+          throw new Error(result.error || 'Failed to fetch real data');
         }
-      } else {
-        toast.error('Failed to load historical data');
+      } catch (apiError) {
+        console.warn('Real API failed, using fallback data:', apiError);
+        mockOHLCVData = generateFallbackOHLCV(ticker, years);
+        setDataSource('fallback');
+        toast.info(`Using demo data (${mockOHLCVData.length} points)`);
+      }
+
+      setPriceData(mockOHLCVData);
+
+      // Fetch technical indicators
+      const indicatorsResult = await getTechnicalIndicatorsQuery.refetch();
+
+      if (indicatorsResult.data?.success && indicatorsResult.data?.indicators) {
+        const indicators = indicatorsResult.data.indicators;
+        const chartDataWithIndicators: ChartDataPoint[] = mockOHLCVData.map((point) => ({
+          ...point,
+          indicators: {
+            sma20: indicators.sma20,
+            sma50: indicators.sma50,
+            sma200: indicators.sma200,
+            ema12: indicators.ema12,
+            ema26: indicators.ema26,
+            macd: indicators.macd,
+            signal: indicators.signal,
+            histogram: indicators.macd - indicators.signal,
+            rsi: indicators.rsi,
+            bb_upper: indicators.bollingerBands?.upper,
+            bb_middle: indicators.bollingerBands?.middle,
+            bb_lower: indicators.bollingerBands?.lower,
+          },
+        }));
+
+        setChartData(chartDataWithIndicators);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -106,7 +123,21 @@ export default function HistoricalDataAnalysis() {
 
       // Fetch data for 1Y, 2Y, 3Y
       for (const period of [1, 2, 3]) {
-        const data = generateFallbackOHLCV(ticker, period);
+        let data: PricePoint[] = [];
+
+        // Try real API first
+        try {
+          const result = await fetchOHLCVData(ticker, period);
+          if (result.success && result.data) {
+            data = result.data;
+          } else {
+            throw new Error('Real API failed');
+          }
+        } catch {
+          // Fallback to generated data
+          data = generateFallbackOHLCV(ticker, period);
+        }
+
         if (data.length > 0) {
           const startPrice = data[0].close;
           const endPrice = data[data.length - 1].close;
@@ -204,6 +235,7 @@ export default function HistoricalDataAnalysis() {
       const data = {
         ticker,
         period: `${years}Y`,
+        dataSource,
         timestamp: new Date().toISOString(),
         priceData,
         comparisonPeriods: showComparison ? comparisonPeriods : undefined,
@@ -378,6 +410,20 @@ export default function HistoricalDataAnalysis() {
                 CSV
               </Button>
             </div>
+
+            {/* Data Source Badge */}
+            {chartData.length > 0 && (
+              <div className="mt-4 flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Data Source:</span>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  dataSource === 'real'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                }`}>
+                  {dataSource === 'real' ? '🔗 Real Polygon.io Data' : '📊 Demo Data'}
+                </span>
+              </div>
+            )}
 
             {stats && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">

@@ -8,6 +8,9 @@ import PortfolioComparison from "@/pages/PortfolioComparison";
 import NotificationSettings from "./pages/NotificationSettings";
 import Backtesting from "./pages/Backtesting";
 import AdminDashboard from "@/pages/AdminDashboard";
+import Settings from "@/pages/Settings";
+import HistoricalDataAnalysis from "@/pages/HistoricalDataAnalysis";
+import AutomatedExportReports from "@/pages/AutomatedExportReports";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -22,8 +25,11 @@ function Router() {
       <Route path="/asset/:ticker" component={AssetDetail} />
       <Route path="/watchlist" component={Watchlist} />
       <Route path="/portfolio" component={PortfolioComparison} />
-      <Route path={"/notification-settings"} component={NotificationSettings} />
-      <Route path={"/backtesting"} component={Backtesting} />      <Route path="/admin" component={AdminDashboard} />
+      <Route path={"/notification-settings"} component={NotificationSettings} />      <Route path={"/ backtesting"} component={Backtesting} />
+      <Route path="/settings" component={Settings} />
+      <Route path="/historical-analysis" component={HistoricalDataAnalysis} />
+      <Route path="/export-reports" component={AutomatedExportReports} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
