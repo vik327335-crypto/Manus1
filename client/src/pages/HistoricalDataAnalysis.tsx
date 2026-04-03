@@ -10,12 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Search, TrendingUp, TrendingDown, Download, BarChart3 } from 'lucide-react';
+import { Loader2, Search, TrendingUp, TrendingDown, Download, BarChart3, FileText } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { HistoricalDataChart, type ChartDataPoint } from '@/components/HistoricalDataChart';
 import { PriceActionAnalysis, type PricePoint } from '@/components/PriceActionAnalysis';
 import { PeriodComparison, type PeriodMetrics } from '@/components/PeriodComparison';
-import { exportPriceActionPDF, exportComparisonPDF, exportAsJSON } from '@/lib/priceActionPDFExport';
+import { exportPriceActionPDF, exportComparisonPDF, exportAsJSON, exportAsCSV } from '@/lib/priceActionPDFExport';
 import { generateFallbackOHLCV } from '@/lib/polygonClient';
 import { toast } from 'sonner';
 
@@ -217,6 +217,48 @@ export default function HistoricalDataAnalysis() {
     }
   };
 
+  const handleExportCSV = () => {
+    try {
+      if (showComparison && comparisonPeriods.length > 0) {
+        // Export comparison data
+        const csvData = comparisonPeriods.map((p) => ({
+          Period: p.period,
+          'Start Price': p.startPrice.toFixed(2),
+          'End Price': p.endPrice.toFixed(2),
+          'Change': p.change.toFixed(2),
+          'Change %': p.changePercent.toFixed(2),
+          'High': p.high.toFixed(2),
+          'Low': p.low.toFixed(2),
+          'Volatility %': p.volatility.toFixed(2),
+          'Avg Volume': p.avgVolume.toFixed(0),
+          'Trend': p.trend,
+          'Trend Strength': p.trendStrength.toFixed(0),
+        }));
+
+        exportAsCSV(csvData, `${ticker}-comparison-${new Date().getTime()}.csv`);
+      } else if (priceData.length > 0) {
+        // Export single-period OHLCV data
+        const csvData = priceData.map((p) => ({
+          Date: p.date,
+          Open: p.open.toFixed(2),
+          High: p.high.toFixed(2),
+          Low: p.low.toFixed(2),
+          Close: p.close.toFixed(2),
+          Volume: p.volume.toFixed(0),
+        }));
+
+        exportAsCSV(csvData, `${ticker}-ohlcv-${new Date().getTime()}.csv`);
+      } else {
+        toast.error('No data to export');
+      }
+
+      toast.success('CSV exported successfully');
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      toast.error('Error exporting CSV');
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -250,7 +292,7 @@ export default function HistoricalDataAnalysis() {
             <CardDescription>Choose ticker and time period for analysis</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
                 <Label htmlFor="ticker">Ticker Symbol</Label>
                 <div className="flex gap-2 mt-2">
@@ -297,6 +339,7 @@ export default function HistoricalDataAnalysis() {
                 disabled={isSearching}
                 variant="outline"
                 className="mt-6"
+                title="Compare 1Y, 2Y, 3Y periods"
               >
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Compare
@@ -307,6 +350,7 @@ export default function HistoricalDataAnalysis() {
                 disabled={isExporting || (chartData.length === 0 && comparisonPeriods.length === 0)}
                 variant="outline"
                 className="mt-6"
+                title="Export as PDF"
               >
                 <Download className="mr-2 h-4 w-4" />
                 PDF
@@ -317,9 +361,21 @@ export default function HistoricalDataAnalysis() {
                 disabled={chartData.length === 0 && comparisonPeriods.length === 0}
                 variant="outline"
                 className="mt-6"
+                title="Export as JSON"
               >
                 <Download className="mr-2 h-4 w-4" />
                 JSON
+              </Button>
+
+              <Button
+                onClick={handleExportCSV}
+                disabled={chartData.length === 0 && comparisonPeriods.length === 0}
+                variant="outline"
+                className="mt-6"
+                title="Export as CSV"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                CSV
               </Button>
             </div>
 
@@ -445,11 +501,11 @@ export default function HistoricalDataAnalysis() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">📋 Comparison & Export</h4>
+                  <h4 className="font-medium mb-2">📋 Export Options</h4>
                   <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• Period comparison (1Y-3Y)</li>
-                    <li>• PDF export reports</li>
+                    <li>• PDF reports with charts</li>
                     <li>• JSON data export</li>
+                    <li>• CSV for spreadsheets</li>
                   </ul>
                 </div>
               </div>
