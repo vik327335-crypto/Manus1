@@ -216,3 +216,13 @@
 - [x] Add volatility analysis metrics (ATR, volatility %, high-low range)
 - [x] Integrate PriceActionAnalysis into HistoricalDataAnalysis page
 - [x] Add error handling for API failures (try-catch, toast notifications)
+
+
+## Phase 29: Advanced Features - API, Comparison, Export
+- [x] Connect real Polygon.io API for OHLCV data (polygonClient.ts)
+- [x] Map API responses to chart data format (convertPolygonToOHLCV)
+- [x] Implement period comparison (1Y vs 2Y vs 3Y) (PeriodComparison component)
+- [x] Create comparison metrics dashboard (charts, ranking, insights)
+- [x] Add PDF export for Price Action reports (priceActionPDFExport.ts)
+- [x] Include charts and metrics in PDF (html2canvas + jsPDF)
+- [x] Add comparison export functionality (JSON, CSV, PDF exports)

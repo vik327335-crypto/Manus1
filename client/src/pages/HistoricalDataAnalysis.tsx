@@ -10,10 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Search, TrendingUp, TrendingDown } from 'lucide-react';
+import { Loader2, Search, TrendingUp, TrendingDown, Download, BarChart3 } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { HistoricalDataChart, type ChartDataPoint } from '@/components/HistoricalDataChart';
 import { PriceActionAnalysis, type PricePoint } from '@/components/PriceActionAnalysis';
+import { PeriodComparison, type PeriodMetrics } from '@/components/PeriodComparison';
+import { exportPriceActionPDF, exportComparisonPDF, exportAsJSON } from '@/lib/priceActionPDFExport';
+import { generateFallbackOHLCV } from '@/lib/polygonClient';
 import { toast } from 'sonner';
 
 export default function HistoricalDataAnalysis() {
@@ -23,14 +26,16 @@ export default function HistoricalDataAnalysis() {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [priceData, setPriceData] = useState<PricePoint[]>([]);
   const [showPriceAction, setShowPriceAction] = useState(true);
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonPeriods, setComparisonPeriods] = useState<PeriodMetrics[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
 
-  // tRPC query for technical indicators
+  // tRPC queries
   const getTechnicalIndicatorsQuery = trpc.historicalData.getTechnicalIndicators.useQuery(
     { ticker, years },
     { enabled: false }
   );
 
-  // tRPC query for multi-year historical data
   const getMultiYearQuery = trpc.historicalData.getMultiYear.useQuery(
     { ticker, years },
     { enabled: false }
@@ -48,15 +53,14 @@ export default function HistoricalDataAnalysis() {
       const historicalResult = await getMultiYearQuery.refetch();
 
       if (historicalResult.data?.success) {
-        // Generate realistic OHLCV data based on the period
-        const mockOHLCVData: PricePoint[] = generateOHLCVData(ticker, years);
+        // Use fallback data (in production, would use real Polygon.io data)
+        const mockOHLCVData: PricePoint[] = generateFallbackOHLCV(ticker, years);
         setPriceData(mockOHLCVData);
 
         // Fetch technical indicators
         const indicatorsResult = await getTechnicalIndicatorsQuery.refetch();
 
         if (indicatorsResult.data?.success && indicatorsResult.data?.indicators) {
-          // Create chart data with indicators
           const indicators = indicatorsResult.data.indicators;
           const chartDataWithIndicators: ChartDataPoint[] = mockOHLCVData.map((point) => ({
             ...point,
@@ -90,62 +94,128 @@ export default function HistoricalDataAnalysis() {
     }
   };
 
-  /**
-   * Generate realistic OHLCV data for demonstration
-   * In production, this would come from Polygon.io API
-   */
-  function generateOHLCVData(ticker: string, years: number): PricePoint[] {
-    const data: PricePoint[] = [];
-    const daysCount = years * 365;
-    const now = new Date();
-
-    // Base prices for different tickers
-    const basePrices: Record<string, number> = {
-      BTC: 42000,
-      ETH: 2500,
-      ADA: 0.95,
-      SOL: 140,
-      XRP: 2.5,
-      DOGE: 0.35,
-      MATIC: 1.2,
-      AVAX: 85,
-    };
-
-    const basePrice = basePrices[ticker] || 100;
-    let currentPrice = basePrice;
-
-    for (let i = daysCount; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-
-      // Generate realistic price movement (random walk)
-      const dailyChange = (Math.random() - 0.48) * 0.05; // -2.5% to +2.5%
-      currentPrice *= 1 + dailyChange;
-
-      // Add some volatility
-      const volatility = Math.random() * 0.03;
-      const open = currentPrice;
-      const close = currentPrice * (1 + (Math.random() - 0.5) * 0.02);
-      const high = Math.max(open, close) * (1 + volatility);
-      const low = Math.min(open, close) * (1 - volatility);
-
-      // Volume varies by day
-      const baseVolume = 20000000 + Math.random() * 30000000;
-      const volumeVariation = Math.sin(i / 50) * 0.5 + 1; // Add cyclical variation
-      const volume = baseVolume * volumeVariation;
-
-      data.push({
-        date: date.toISOString().split('T')[0],
-        open,
-        high,
-        low,
-        close,
-        volume,
-      });
+  const handleComparison = async () => {
+    if (!ticker.trim()) {
+      toast.error('Please enter a ticker');
+      return;
     }
 
-    return data;
-  }
+    setIsSearching(true);
+    try {
+      const periods: PeriodMetrics[] = [];
+
+      // Fetch data for 1Y, 2Y, 3Y
+      for (const period of [1, 2, 3]) {
+        const data = generateFallbackOHLCV(ticker, period);
+        if (data.length > 0) {
+          const startPrice = data[0].close;
+          const endPrice = data[data.length - 1].close;
+          const change = endPrice - startPrice;
+          const changePercent = (change / startPrice) * 100;
+          const high = Math.max(...data.map(d => d.high));
+          const low = Math.min(...data.map(d => d.low));
+          const volatility = ((high - low) / low) * 100;
+          const avgVolume = data.reduce((sum, d) => sum + d.volume, 0) / data.length;
+
+          // Determine trend
+          const ma20 = data.length >= 20
+            ? data.slice(-20).reduce((sum, p) => sum + p.close, 0) / 20
+            : data.reduce((sum, p) => sum + p.close, 0) / data.length;
+
+          const ma50 = data.length >= 50
+            ? data.slice(-50).reduce((sum, p) => sum + p.close, 0) / 50
+            : ma20;
+
+          let trend: 'uptrend' | 'downtrend' | 'sideways' = 'sideways';
+          let trendStrength = 0;
+
+          if (endPrice > ma20 && ma20 > ma50) {
+            trend = 'uptrend';
+            trendStrength = Math.min(100, Math.abs(changePercent) * 2);
+          } else if (endPrice < ma20 && ma20 < ma50) {
+            trend = 'downtrend';
+            trendStrength = Math.min(100, Math.abs(changePercent) * 2);
+          } else {
+            trend = 'sideways';
+            trendStrength = Math.max(0, 50 - Math.abs(changePercent) * 2);
+          }
+
+          periods.push({
+            period: `${period}Y`,
+            startPrice,
+            endPrice,
+            change,
+            changePercent,
+            high,
+            low,
+            volatility,
+            avgVolume,
+            trend,
+            trendStrength,
+          });
+        }
+      }
+
+      setComparisonPeriods(periods);
+      setShowComparison(true);
+      toast.success('Comparison data loaded');
+    } catch (error) {
+      console.error('Error loading comparison:', error);
+      toast.error('Error loading comparison data');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const elementId = showComparison ? 'comparison-container' : 'price-action-container';
+      const element = document.getElementById(elementId);
+
+      if (!element) {
+        toast.error('No content to export');
+        return;
+      }
+
+      if (showComparison) {
+        await exportComparisonPDF(elementId, ticker, comparisonPeriods.map(p => p.period));
+      } else {
+        await exportPriceActionPDF(elementId, {
+          title: 'Price Action Analysis',
+          ticker,
+          period: `${years}Y`,
+          includeCharts: true,
+          includeMetrics: true,
+        });
+      }
+
+      toast.success('PDF exported successfully');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error('Error exporting PDF');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportJSON = () => {
+    try {
+      const data = {
+        ticker,
+        period: `${years}Y`,
+        timestamp: new Date().toISOString(),
+        priceData,
+        comparisonPeriods: showComparison ? comparisonPeriods : undefined,
+      };
+
+      exportAsJSON(data, `${ticker}-analysis-${new Date().getTime()}.json`);
+      toast.success('JSON exported successfully');
+    } catch (error) {
+      console.error('Error exporting JSON:', error);
+      toast.error('Error exporting JSON');
+    }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -153,7 +223,7 @@ export default function HistoricalDataAnalysis() {
     }
   };
 
-  // Calculate statistics from chart data
+  // Calculate statistics
   const stats = chartData.length > 0 ? {
     dataPoints: chartData.length,
     startPrice: chartData[0].close,
@@ -169,7 +239,7 @@ export default function HistoricalDataAnalysis() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Historical Data Analysis</h1>
           <p className="text-muted-foreground">
-            Analyze historical price data with technical indicators and price action analysis
+            Analyze historical price data with technical indicators, price action, and period comparison
           </p>
         </div>
 
@@ -180,7 +250,7 @@ export default function HistoricalDataAnalysis() {
             <CardDescription>Choose ticker and time period for analysis</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div>
                 <Label htmlFor="ticker">Ticker Symbol</Label>
                 <div className="flex gap-2 mt-2">
@@ -222,90 +292,109 @@ export default function HistoricalDataAnalysis() {
                 </Select>
               </div>
 
-              {stats && (
-                <>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Data Points</p>
-                    <p className="text-lg font-bold">{stats.dataPoints}</p>
-                  </div>
+              <Button
+                onClick={handleComparison}
+                disabled={isSearching}
+                variant="outline"
+                className="mt-6"
+              >
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Compare
+              </Button>
 
-                  <div className="bg-muted p-4 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-1">Change</p>
-                    <p className={`text-lg font-bold flex items-center gap-1 ${
-                      stats.endPrice >= stats.startPrice ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {stats.endPrice >= stats.startPrice ? (
-                        <TrendingUp className="h-4 w-4" />
-                      ) : (
-                        <TrendingDown className="h-4 w-4" />
-                      )}
-                      {((stats.endPrice - stats.startPrice) / stats.startPrice * 100).toFixed(2)}%
-                    </p>
-                  </div>
-                </>
-              )}
+              <Button
+                onClick={handleExportPDF}
+                disabled={isExporting || (chartData.length === 0 && comparisonPeriods.length === 0)}
+                variant="outline"
+                className="mt-6"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                PDF
+              </Button>
+
+              <Button
+                onClick={handleExportJSON}
+                disabled={chartData.length === 0 && comparisonPeriods.length === 0}
+                variant="outline"
+                className="mt-6"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                JSON
+              </Button>
             </div>
+
+            {stats && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div className="bg-muted p-3 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1">Data Points</p>
+                  <p className="text-lg font-bold">{stats.dataPoints}</p>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1">Change</p>
+                  <p className={`text-lg font-bold ${stats.endPrice >= stats.startPrice ? 'text-green-600' : 'text-red-600'}`}>
+                    {((stats.endPrice - stats.startPrice) / stats.startPrice * 100).toFixed(2)}%
+                  </p>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1">High</p>
+                  <p className="text-lg font-bold">${stats.highPrice.toFixed(2)}</p>
+                </div>
+
+                <div className="bg-muted p-3 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1">Low</p>
+                  <p className="text-lg font-bold">${stats.lowPrice.toFixed(2)}</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Statistics Cards */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Start Price</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">${stats.startPrice.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">End Price</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">${stats.endPrice.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">High</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-green-600">${stats.highPrice.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Low</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-red-600">${stats.lowPrice.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Avg Volume</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{(stats.avgVolume / 1000000).toFixed(2)}M</p>
-              </CardContent>
-            </Card>
+        {/* Comparison View */}
+        {showComparison && comparisonPeriods.length > 0 && (
+          <div id="comparison-container" className="mb-6">
+            <PeriodComparison periods={comparisonPeriods} ticker={ticker} />
           </div>
         )}
 
         {/* Chart */}
-        {chartData.length > 0 ? (
+        {!showComparison && chartData.length > 0 && (
           <HistoricalDataChart
             data={chartData}
             ticker={ticker}
             isLoading={isSearching}
           />
-        ) : (
+        )}
+
+        {/* Price Action Analysis */}
+        {!showComparison && priceData.length > 0 && showPriceAction && (
+          <div id="price-action-container" className="mt-8">
+            <div className="mb-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowPriceAction(false)}
+              >
+                Hide Price Action Analysis
+              </Button>
+            </div>
+            <PriceActionAnalysis data={priceData} ticker={ticker} />
+          </div>
+        )}
+
+        {!showComparison && !showPriceAction && priceData.length > 0 && (
+          <div className="mt-8">
+            <Button
+              variant="outline"
+              onClick={() => setShowPriceAction(true)}
+            >
+              Show Price Action Analysis
+            </Button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {chartData.length === 0 && comparisonPeriods.length === 0 && (
           <Card>
             <CardContent className="h-96 flex items-center justify-center">
               <div className="text-center">
@@ -330,67 +419,43 @@ export default function HistoricalDataAnalysis() {
           </Card>
         )}
 
-        {/* Price Action Analysis */}
-        {priceData.length > 0 && showPriceAction && (
-          <div className="mt-8">
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowPriceAction(false)}
-              >
-                Hide Price Action Analysis
-              </Button>
-            </div>
-            <PriceActionAnalysis data={priceData} ticker={ticker} />
-          </div>
-        )}
-
-        {!showPriceAction && priceData.length > 0 && (
-          <div className="mt-8">
-            <Button
-              variant="outline"
-              onClick={() => setShowPriceAction(true)}
-            >
-              Show Price Action Analysis
-            </Button>
-          </div>
-        )}
-
         {/* Information */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Technical Indicators</CardTitle>
-            <CardDescription>Available indicators for analysis</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <h4 className="font-medium mb-2">Moving Averages</h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• SMA 20, 50, 200</li>
-                  <li>• EMA 12, 26</li>
-                  <li>Trend identification</li>
-                </ul>
+        {chartData.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Features</CardTitle>
+              <CardDescription>Available analysis tools</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <h4 className="font-medium mb-2">📊 Technical Indicators</h4>
+                  <ul className="text-sm space-y-1 text-muted-foreground">
+                    <li>• SMA 20, 50, 200</li>
+                    <li>• EMA 12, 26</li>
+                    <li>• MACD, RSI, Bollinger Bands</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">📈 Price Action</h4>
+                  <ul className="text-sm space-y-1 text-muted-foreground">
+                    <li>• Trend analysis</li>
+                    <li>• Support/Resistance levels</li>
+                    <li>• Volatility metrics (ATR)</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">📋 Comparison & Export</h4>
+                  <ul className="text-sm space-y-1 text-muted-foreground">
+                    <li>• Period comparison (1Y-3Y)</li>
+                    <li>• PDF export reports</li>
+                    <li>• JSON data export</li>
+                  </ul>
+                </div>
               </div>
-              <div>
-                <h4 className="font-medium mb-2">Momentum</h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• MACD (12, 26, 9)</li>
-                  <li>• RSI (14)</li>
-                  <li>Signal crossovers</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2">Volatility & Price Action</h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Bollinger Bands</li>
-                  <li>• Support/Resistance levels</li>
-                  <li>• Trend & volatility metrics</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
