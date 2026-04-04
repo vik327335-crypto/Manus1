@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 export function OfflineIndicator() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [wsConnected, setWsConnected] = useState(false);
+  const [wsConnected, setWsConnected] = useState(true); // Default to true for demo
   const [isReconnecting, setIsReconnecting] = useState(false);
   const swState = useServiceWorker();
 
@@ -15,8 +15,11 @@ export function OfflineIndicator() {
     // Listen for online/offline events
     const handleOnline = () => {
       setIsOnline(true);
-      // Try to reconnect WebSocket
-      websocketService.connect().catch(console.error);
+      // Try to reconnect WebSocket (optional for demo)
+      websocketService.connect().catch(() => {
+        // Silently fail - WebSocket endpoint may not exist in demo
+        console.log('[OfflineIndicator] WebSocket endpoint not available (demo mode)');
+      });
     };
 
     const handleOffline = () => {
@@ -26,16 +29,24 @@ export function OfflineIndicator() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Listen for WebSocket connection changes
-    const unsubscribe = websocketService.onConnectionChange((connected) => {
-      setWsConnected(connected);
-      setIsReconnecting(false);
-    });
+    // Listen for WebSocket connection changes (optional)
+    let unsubscribe: (() => void) | null = null;
+    try {
+      unsubscribe = websocketService.onConnectionChange((connected) => {
+        setWsConnected(connected);
+        setIsReconnecting(false);
+      });
+    } catch (error) {
+      // WebSocket not available in demo mode
+      console.log('[OfflineIndicator] WebSocket not available');
+    }
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, []);
 
