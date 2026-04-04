@@ -1,0 +1,99 @@
+{
+  "name": "CAN SLIM Crypto Scanner",
+  "short_name": "Crypto Scanner",
+  "description": "Evaluate cryptocurrency projects using William O'Neil's proven investment methodology. Discover high-potential digital assets with AI-powered analysis.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1e40af",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e40af' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>CS</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%231e40af' width='512' height='512'/><text x='50%' y='50%' font-size='320' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>CS</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231e40af' width='192' height='192' rx='45'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>CS</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23f8fafc' width='540' height='720'/><text x='20' y='60' font-size='32' font-weight='bold' fill='%231e40af' font-family='system-ui'>CAN SLIM Scanner</text><text x='20' y='120' font-size='16' fill='%23475569' font-family='system-ui'>Real-time crypto analysis</text></svg>",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'><rect fill='%23f8fafc' width='1280' height='720'/><text x='40' y='80' font-size='48' font-weight='bold' fill='%231e40af' font-family='system-ui'>CAN SLIM Crypto Scanner</text><text x='40' y='160' font-size='24' fill='%23475569' font-family='system-ui'>AI-powered investment analysis</text></svg>",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["finance", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your CAN SLIM analysis dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%231e40af' width='96' height='96'/><text x='50%' y='50%' font-size='60' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>D</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Watchlist",
+      "short_name": "Watchlist",
+      "description": "View your watchlist of cryptocurrencies",
+      "url": "/watchlist",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%231e40af' width='96' height='96'/><text x='50%' y='50%' font-size='60' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>W</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Backtesting",
+      "short_name": "Backtest",
+      "description": "Test CAN SLIM strategies with historical data",
+      "url": "/backtesting",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%231e40af' width='96' height='96'/><text x='50%' y='50%' font-size='60' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='system-ui'>B</text></svg>",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "prefer_related_applications": false,
+  "related_applications": []
+}
