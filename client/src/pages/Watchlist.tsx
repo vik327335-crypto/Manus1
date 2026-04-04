@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { websocketService } from "@/services/websocketService";
 import { toast } from "sonner";
+import { WatchlistAlerts } from "@/components/WatchlistAlerts";
 
 interface WatchlistItem {
   id: number;
@@ -333,6 +334,11 @@ export default function Watchlist() {
                       </Button>
                     </div>
                   </div>
+                </div>
+
+                {/* Alerts Section */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <WatchlistAlerts assetId={item.id} assetName={item.name} />
                 </div>
               </Card>
             ))}

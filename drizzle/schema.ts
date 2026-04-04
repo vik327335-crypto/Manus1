@@ -139,3 +139,67 @@ export const marketTrend = mysqlTable("market_trend", {
 
 export type MarketTrend = typeof marketTrend.$inferSelect;
 export type InsertMarketTrend = typeof marketTrend.$inferInsert;
+
+/**
+ * Alert Conditions
+ * Define conditions for real-time alerts on watchlist items
+ */
+export const alertConditions = mysqlTable("alert_conditions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  assetId: int("assetId").notNull().references(() => cryptoAssets.id),
+  // Alert types
+  alertType: mysqlEnum("alertType", [
+    "price_above",
+    "price_below",
+    "price_change_percent",
+    "score_above",
+    "score_below",
+    "volume_surge",
+    "sentiment_change",
+  ]).notNull(),
+  // Threshold values
+  threshold: int("threshold"), // Price in cents, score 0-100, volume in millions, etc.
+  secondaryThreshold: int("secondaryThreshold"), // For range conditions
+  // Configuration
+  enabled: int("enabled").default(1), // 1 = enabled, 0 = disabled
+  notifyEmail: int("notifyEmail").default(1), // 1 = send email
+  notifyPush: int("notifyPush").default(1), // 1 = send push notification
+  notifyWebsocket: int("notifyWebsocket").default(1), // 1 = send websocket alert
+  // Cooldown to avoid spam (in minutes)
+  cooldownMinutes: int("cooldownMinutes").default(60),
+  lastTriggeredAt: timestamp("lastTriggeredAt"),
+  // Metadata
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AlertCondition = typeof alertConditions.$inferSelect;
+export type InsertAlertCondition = typeof alertConditions.$inferInsert;
+
+/**
+ * Alert History
+ * Track triggered alerts for history and debugging
+ */
+export const alertHistory = mysqlTable("alert_history", {
+  id: int("id").autoincrement().primaryKey(),
+  conditionId: int("conditionId").notNull().references(() => alertConditions.id),
+  userId: int("userId").notNull().references(() => users.id),
+  assetId: int("assetId").notNull().references(() => cryptoAssets.id),
+  // Alert details
+  alertType: varchar("alertType", { length: 64 }).notNull(),
+  message: text("message"),
+  // Trigger values
+  triggerValue: int("triggerValue"), // Actual value that triggered the alert
+  thresholdValue: int("thresholdValue"), // Threshold that was set
+  // Notification status
+  emailSent: int("emailSent").default(0),
+  pushSent: int("pushSent").default(0),
+  websocketSent: int("websocketSent").default(0),
+  // Metadata
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AlertHistory = typeof alertHistory.$inferSelect;
+export type InsertAlertHistory = typeof alertHistory.$inferInsert;

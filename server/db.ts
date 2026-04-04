@@ -1,6 +1,6 @@
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend } from "../drizzle/schema";
+import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend, alertConditions, alertHistory, AlertCondition, InsertAlertCondition, AlertHistory, InsertAlertHistory } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -235,5 +235,104 @@ export async function getAssetSentiment(assetId: number) {
     .orderBy((s) => desc(s.analyzedAt))
     .limit(10);
 
+  return result;
+}
+
+/**
+ * Get all alert conditions for a user
+ */
+export async function getUserAlertConditions(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(alertConditions)
+    .where(eq(alertConditions.userId, userId))
+    .orderBy((a) => desc(a.createdAt));
+
+  return result;
+}
+
+/**
+ * Get alert conditions for a specific asset
+ */
+export async function getAssetAlertConditions(userId: number, assetId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(alertConditions)
+    .where(and(eq(alertConditions.userId, userId), eq(alertConditions.assetId, assetId)));
+
+  return result;
+}
+
+/**
+ * Create a new alert condition
+ */
+export async function createAlertCondition(data: InsertAlertCondition) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(alertConditions).values(data);
+  return result;
+}
+
+/**
+ * Update an alert condition
+ */
+export async function updateAlertCondition(conditionId: number, data: Partial<AlertCondition>) {
+  const db = await getDb();
+  if (!db) return null;
+
+  await db
+    .update(alertConditions)
+    .set(data)
+    .where(eq(alertConditions.id, conditionId));
+
+  return { success: true };
+}
+
+/**
+ * Delete an alert condition
+ */
+export async function deleteAlertCondition(conditionId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  await db
+    .delete(alertConditions)
+    .where(eq(alertConditions.id, conditionId));
+
+  return { success: true };
+}
+
+/**
+ * Get alert history for a user
+ */
+export async function getUserAlertHistory(userId: number, limit: number = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db
+    .select()
+    .from(alertHistory)
+    .where(eq(alertHistory.userId, userId))
+    .orderBy((h) => desc(h.createdAt))
+    .limit(limit);
+
+  return result;
+}
+
+/**
+ * Record an alert trigger in history
+ */
+export async function recordAlertTrigger(data: InsertAlertHistory) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(alertHistory).values(data);
   return result;
 }

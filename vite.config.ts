@@ -191,6 +191,11 @@ export default defineConfig({
     },
   },
   server: {
+    hmr: {
+      protocol: 'wss',
+      host: 'localhost',
+      port: 5173,
+    },
     host: true,
     allowedHosts: [
       ".manuspre.computer",

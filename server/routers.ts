@@ -12,6 +12,7 @@ import { realTimeRouter } from "./routers/realTimeRouter";
 import { historicalDataRouter } from "./routers/historicalDataRouter";
 import { strategyExportRouter } from "./routers/strategyExportRouter";
 import { polygonRouter } from "./routers/polygonRouter";
+import { alertsRouter } from "./routers/alertsRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -35,6 +36,7 @@ export const appRouter = router({
   historicalData: historicalDataRouter,
   strategyExport: strategyExportRouter,
   polygon: polygonRouter,
+  alerts: alertsRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

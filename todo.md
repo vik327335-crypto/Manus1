@@ -249,3 +249,40 @@
 - [x] Create AutomatedExportReports page (AutomatedExportReports.tsx)
 - [x] Implement export scheduling UI (schedule form with all options)
 - [x] Add report history and download functionality (lastRun, nextRun tracking)
+
+
+## Phase 32: Real-time Alerts in Watchlist
+- [x] Backend: Extend watchlist schema with alert conditions (price, score, volume changes)
+- [x] Backend: Create alertsRouter with tRPC endpoints for alert management
+- [x] Backend: Implement WebSocket alert trigger system (check conditions, send alerts)
+- [x] Backend: Add alert history tracking and statistics
+- [x] Frontend: Create AlertCondition component for setting alert parameters
+- [x] Frontend: Integrate alerts into Watchlist page with status indicators
+- [x] Frontend: Add real-time alert notifications via WebSocket
+- [x] Frontend: Create alert history/log viewer component
+- [ ] Testing: Write vitest tests for alert conditions and triggers
+
+## Phase 33: Advanced Filtering in Scanner
+- [ ] Backend: Extend scanner schema with filter presets and saved filters
+- [ ] Backend: Create filterRouter with tRPC endpoints for filter management
+- [ ] Backend: Implement advanced filtering logic (multi-criteria, ranges, combinations)
+- [ ] Backend: Add filter validation and optimization
+- [ ] Frontend: Create AdvancedFilterPanel component with multiple filter types
+- [ ] Frontend: Implement filter builder UI (add/remove/combine filters)
+- [ ] Frontend: Add filter presets dropdown (Popular, Custom, Saved)
+- [ ] Frontend: Integrate filters into Scanner page with real-time results
+- [ ] Frontend: Add filter history and quick-access buttons
+- [ ] Testing: Write vitest tests for filter logic and combinations
+
+## Phase 34: UI/UX Improvements
+- [ ] Design: Review and improve color scheme and contrast
+- [ ] Design: Enhance typography and spacing consistency
+- [ ] Frontend: Add smooth transitions and animations for interactions
+- [ ] Frontend: Improve loading states and skeleton screens
+- [ ] Frontend: Add micro-interactions (hover effects, button feedback)
+- [ ] Frontend: Optimize mobile responsiveness (touch targets, layout)
+- [ ] Frontend: Create empty states for all pages
+- [ ] Frontend: Add tooltips and help text for complex features
+- [ ] Frontend: Improve error messages and user guidance
+- [ ] Frontend: Add dark/light theme toggle if not present
+- [ ] Testing: Manual testing across all screen sizes and browsers
