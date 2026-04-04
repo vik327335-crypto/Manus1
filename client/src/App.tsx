@@ -1,6 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
+import { useServiceWorker } from "@/hooks/useServiceWorker";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import NotFound from "@/pages/NotFound";
 import Home from "./pages/Home";
 import { Route, Switch } from "wouter";
@@ -61,6 +63,25 @@ function Router() {
 //   to keep consistent foreground/background color across components
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
+function AppContent() {
+  // Initialize Service Worker
+  const swState = useServiceWorker();
+
+  useEffect(() => {
+    if (swState.isSupported && swState.isRegistered) {
+      console.log('[App] Service Worker registered and ready');
+    }
+  }, [swState.isSupported, swState.isRegistered]);
+
+  return (
+    <TooltipProvider>
+      <Toaster />
+      <OfflineIndicator />
+      <Router />
+    </TooltipProvider>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -68,10 +89,7 @@ function App() {
         defaultTheme="light"
         // switchable
       >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <AppContent />
       </ThemeProvider>
     </ErrorBoundary>
   );

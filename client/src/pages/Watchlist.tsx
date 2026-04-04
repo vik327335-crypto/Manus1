@@ -3,9 +3,12 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Trash2, Bell, TrendingUp } from "lucide-react";
+import { ArrowLeft, Trash2, Bell, TrendingUp, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+import { websocketService } from "@/services/websocketService";
+import { toast } from "sonner";
 
 interface WatchlistItem {
   id: number;
@@ -61,6 +64,69 @@ export default function Watchlist() {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>(mockWatchlist);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newThreshold, setNewThreshold] = useState<string>("");
+  const [wsConnected, setWsConnected] = useState(false);
+  const [alerts, setAlerts] = useState<Map<string, any>>(new Map());
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    websocketService.connect().catch(console.error);
+
+    // Listen for connection changes
+    const unsubscribeConnection = websocketService.onConnectionChange((connected) => {
+      setWsConnected(connected);
+      if (connected) {
+        console.log('[Watchlist] WebSocket connected');
+        // Subscribe to alerts for all watchlist items
+        watchlist.forEach((item) => {
+          websocketService.subscribeToAlerts(`watchlist-${item.id}`);
+          websocketService.subscribeToPriceUpdates(item.ticker);
+        });
+      }
+    });
+
+    // Listen for price updates
+    const unsubscribePriceUpdate = websocketService.on('price_update', (message: any) => {
+      if (message.ticker) {
+        setWatchlist((prev) =>
+          prev.map((item) =>
+            item.ticker === message.ticker
+              ? {
+                  ...item,
+                  currentPrice: message.price || item.currentPrice,
+                  priceChange24h: message.change || item.priceChange24h,
+                }
+              : item
+          )
+        );
+      }
+    });
+
+    // Listen for alerts
+    const unsubscribeAlert = websocketService.on('alert', (message: any) => {
+      const watchlistItem = watchlist.find((item) => item.ticker === message.ticker);
+      if (watchlistItem) {
+        setAlerts((prev) => new Map(prev).set(message.ticker, message));
+        toast.error(`⚠️ Alert: ${watchlistItem.name} (${message.ticker})`, {
+          description: message.message || `Price: ${message.price}`,
+          duration: 5000,
+        });
+      }
+    });
+
+    // Listen for notifications
+    const unsubscribeNotification = websocketService.on('notification', (message: any) => {
+      toast.info(message.message || 'Notification', {
+        duration: 4000,
+      });
+    });
+
+    return () => {
+      unsubscribeConnection();
+      unsubscribePriceUpdate();
+      unsubscribeAlert();
+      unsubscribeNotification();
+    };
+  }, [watchlist]);
 
   if (!isAuthenticated) {
     return (
