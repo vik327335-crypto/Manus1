@@ -263,20 +263,20 @@
 - [ ] Testing: Write vitest tests for alert conditions and triggers
 
 ## Phase 33: Advanced Filtering in Scanner
-- [ ] Backend: Extend scanner schema with filter presets and saved filters
-- [ ] Backend: Create filterRouter with tRPC endpoints for filter management
-- [ ] Backend: Implement advanced filtering logic (multi-criteria, ranges, combinations)
-- [ ] Backend: Add filter validation and optimization
-- [ ] Frontend: Create AdvancedFilterPanel component with multiple filter types
-- [ ] Frontend: Implement filter builder UI (add/remove/combine filters)
-- [ ] Frontend: Add filter presets dropdown (Popular, Custom, Saved)
+- [x] Backend: Extend scanner schema with filter presets and saved filters
+- [x] Backend: Create filterRouter with tRPC endpoints for filter management
+- [x] Backend: Implement advanced filtering logic (multi-criteria, ranges, combinations)
+- [x] Backend: Add filter validation and optimization
+- [x] Frontend: Create AdvancedFilterPanel component with multiple filter types
+- [x] Frontend: Implement filter builder UI (add/remove/combine filters)
+- [x] Frontend: Add filter presets dropdown (Popular, Custom, Saved)
 - [ ] Frontend: Integrate filters into Scanner page with real-time results
 - [ ] Frontend: Add filter history and quick-access buttons
 - [ ] Testing: Write vitest tests for filter logic and combinations
 
 ## Phase 34: UI/UX Improvements
-- [ ] Design: Review and improve color scheme and contrast
-- [ ] Design: Enhance typography and spacing consistency
+- [x] Design: Review and improve color scheme and contrast
+- [x] Design: Enhance typography and spacing consistency
 - [ ] Frontend: Add smooth transitions and animations for interactions
 - [ ] Frontend: Improve loading states and skeleton screens
 - [ ] Frontend: Add micro-interactions (hover effects, button feedback)
