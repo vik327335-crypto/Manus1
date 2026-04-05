@@ -152,37 +152,10 @@ function vitePluginManusDebugCollector(): Plugin {
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
-// Inject HMR client override for proxy environments
-function vitePluginHmrOverride(): Plugin {
-  return {
-    name: 'vite-plugin-hmr-override',
-    transformIndexHtml(html) {
-      if (process.env.NODE_ENV === 'production') {
-        return html;
-      }
-      return {
-        html,
-        tags: [
-          {
-            tag: 'script',
-            injectTo: 'head-prepend',
-            children: `
-              window.__VITE_HMR_PROTOCOL__ = 'wss';
-              window.__VITE_HMR_HOSTNAME__ = window.location.hostname;
-              window.__VITE_HMR_PORT__ = window.location.port || (window.location.protocol === 'https:' ? 443 : 80);
-              window.__VITE_HMR_DIRECT__ = false;
-            `,
-          },
-        ],
-      };
-    },
-  };
-}
 
-const pluginsWithHmr = [...plugins, vitePluginHmrOverride()];
 
 export default defineConfig({
-  plugins: pluginsWithHmr,
+  plugins,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -221,7 +194,7 @@ export default defineConfig({
     },
   },
   server: {
-    hmr: false,  // Disable built-in HMR, use custom override
+    hmr: false,  // Disable HMR to avoid WebSocket proxy issues - manual refresh works fine
     host: '0.0.0.0',
     allowedHosts: ['**'],
     fs: {
