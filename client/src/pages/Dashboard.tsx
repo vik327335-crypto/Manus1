@@ -18,6 +18,13 @@ import { ScoreIndicator } from "@/components/ScoreIndicator";
 import { DashboardExportButton } from "@/components/DashboardExportButton";
 import { PriceTicker } from "@/components/PriceTicker";
 import { cn } from "@/lib/utils";
+import { FilterPresets } from "@/components/FilterPresets";
+import { FilterBuilder } from "@/components/FilterBuilder";
+import { SavedFilters } from "@/components/SavedFilters";
+import { EmptyState } from "@/components/EmptyState";
+import { Tooltip } from "@/components/Tooltip";
+import { ErrorMessage } from "@/components/ErrorMessage";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type SortBy = "total" | "c" | "a" | "n" | "s" | "l" | "i" | "m";
 
@@ -27,6 +34,8 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("total");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [showFilterBuilder, setShowFilterBuilder] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch assets and market trend
   const { data: assets, isLoading: assetsLoading } = trpc.assets.list.useQuery();

@@ -87,7 +87,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider
         defaultTheme="light"
-        // switchable
+        switchable
       >
         <AppContent />
       </ThemeProvider>
