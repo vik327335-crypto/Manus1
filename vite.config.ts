@@ -152,6 +152,10 @@ function vitePluginManusDebugCollector(): Plugin {
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
+// Auto-detect HMR configuration from environment or use defaults
+const hmrHost = process.env.VITE_HMR_HOST || process.env.HOSTNAME || 'localhost';
+const hmrPort = parseInt(process.env.VITE_HMR_PORT || '5173', 10);
+
 export default defineConfig({
   plugins,
   resolve: {
@@ -162,6 +166,7 @@ export default defineConfig({
     },
   },
   envDir: path.resolve(import.meta.dirname),
+
   root: path.resolve(import.meta.dirname, "client"),
   publicDir: path.resolve(import.meta.dirname, "client", "public"),
   build: {
@@ -193,8 +198,8 @@ export default defineConfig({
   server: {
     hmr: {
       protocol: 'wss',
-      host: 'localhost',
-      port: 5173,
+      host: hmrHost,
+      port: hmrPort,
     },
     host: true,
     allowedHosts: [
@@ -205,10 +210,12 @@ export default defineConfig({
       ".manusvm.computer",
       "localhost",
       "127.0.0.1",
+      "3000-i7niakhavupbx57umpqri-8719b8f8.us2.manus.computer",
     ],
     fs: {
       strict: true,
       deny: ["**/.*"],
     },
+    middlewareMode: false,
   },
 });
