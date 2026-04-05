@@ -152,12 +152,37 @@ function vitePluginManusDebugCollector(): Plugin {
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
-// Auto-detect HMR configuration from environment or use defaults
-const hmrHost = process.env.VITE_HMR_HOST || process.env.HOSTNAME || 'localhost';
-const hmrPort = parseInt(process.env.VITE_HMR_PORT || '5173', 10);
+// Inject HMR client override for proxy environments
+function vitePluginHmrOverride(): Plugin {
+  return {
+    name: 'vite-plugin-hmr-override',
+    transformIndexHtml(html) {
+      if (process.env.NODE_ENV === 'production') {
+        return html;
+      }
+      return {
+        html,
+        tags: [
+          {
+            tag: 'script',
+            injectTo: 'head-prepend',
+            children: `
+              window.__VITE_HMR_PROTOCOL__ = 'wss';
+              window.__VITE_HMR_HOSTNAME__ = window.location.hostname;
+              window.__VITE_HMR_PORT__ = window.location.port || (window.location.protocol === 'https:' ? 443 : 80);
+              window.__VITE_HMR_DIRECT__ = false;
+            `,
+          },
+        ],
+      };
+    },
+  };
+}
+
+const pluginsWithHmr = [...plugins, vitePluginHmrOverride()];
 
 export default defineConfig({
-  plugins,
+  plugins: pluginsWithHmr,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -196,26 +221,12 @@ export default defineConfig({
     },
   },
   server: {
-    hmr: {
-      protocol: 'wss',
-      host: hmrHost,
-      port: hmrPort,
-    },
-    host: true,
-    allowedHosts: [
-      ".manuspre.computer",
-      ".manus.computer",
-      ".manus-asia.computer",
-      ".manuscomputer.ai",
-      ".manusvm.computer",
-      "localhost",
-      "127.0.0.1",
-      "3000-i7niakhavupbx57umpqri-8719b8f8.us2.manus.computer",
-    ],
+    hmr: false,  // Disable built-in HMR, use custom override
+    host: '0.0.0.0',
+    allowedHosts: ['**'],
     fs: {
       strict: true,
       deny: ["**/.*"],
     },
-    middlewareMode: false,
   },
 });
