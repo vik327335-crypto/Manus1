@@ -152,10 +152,22 @@ function vitePluginManusDebugCollector(): Plugin {
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
+// Middleware to strip HMR client from HTML
+function vitePluginStripHmr(): Plugin {
+  return {
+    name: 'vite-plugin-strip-hmr',
+    transformIndexHtml(html) {
+      // Remove @vite/client script tag
+      return html.replace(/<script[^>]*@vite\/client[^>]*><\/script>/g, '')
+                 .replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '');
+    },
+  };
+}
 
+const pluginsWithoutHmr = [...plugins, vitePluginStripHmr()];
 
 export default defineConfig({
-  plugins,
+  plugins: pluginsWithoutHmr,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
