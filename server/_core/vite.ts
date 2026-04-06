@@ -20,6 +20,20 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
+  // Middleware for Service Worker files
+  app.use((req, res, next) => {
+    if (req.path.endsWith('.js') && req.path.includes('service-worker')) {
+      // Service Worker must have specific headers
+      res.set('Content-Type', 'application/javascript; charset=utf-8');
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      res.set('Service-Worker-Allowed', '/');
+      res.set('X-Content-Type-Options', 'nosniff');
+    }
+    next();
+  });
+
   // Middleware to disable caching and strip HMR client from HTML
   app.use((req, res, next) => {
     // Disable caching for HTML to prevent stale @vite/client from being served
