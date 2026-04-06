@@ -20,6 +20,21 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
+  // Middleware to strip HMR client from HTML
+  app.use((req, res, next) => {
+    const originalSend = res.send;
+    res.send = function(data: any) {
+      if (typeof data === 'string' && data.includes('@vite/client')) {
+        // Remove @vite/client script tags
+        data = data.replace(/<script[^>]*@vite\/client[^>]*><\/script>/g, '')
+                   .replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '')
+                   .replace(/<script[^>]*src="\/@vite\/client"[^>]*type="module"[^>]*><\/script>/g, '');
+      }
+      return originalSend.call(this, data);
+    };
+    next();
+  });
+
   app.use(vite.middlewares);
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
@@ -38,7 +53,11 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`
       );
-      const page = await vite.transformIndexHtml(url, template);
+      let page = await vite.transformIndexHtml(url, template);
+      // Strip HMR client from page
+      page = page.replace(/<script[^>]*@vite\/client[^>]*><\/script>/g, '')
+                 .replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '')
+                 .replace(/<script[^>]*src="\/@vite\/client"[^>]*type="module"[^>]*><\/script>/g, '');
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
