@@ -286,3 +286,39 @@
 - [x] Frontend: Improve error messages and user guidance
 - [x] Frontend: Add dark/light theme toggle if not present
 - [x] Testing: Manual testing across all screen sizes and browsers
+
+
+## Phase 35: Email отправка через SendGrid
+- [ ] Backend: Интегрировать SendGrid API
+- [ ] Backend: Создать emailRouter с tRPC endpoints
+- [ ] Backend: Реализовать шаблоны email для отчетов
+- [ ] Frontend: Создать EmailReportDialog компонент
+- [ ] Frontend: Добавить кнопку отправки отчета в Dashboard
+- [ ] Frontend: Реализовать выбор частоты отправки (ежедневно, еженедельно)
+- [ ] Testing: Написать тесты для email функциональности
+
+## Phase 36: Google Sheets экспорт
+- [ ] Backend: Интегрировать Google Sheets API
+- [ ] Backend: Создать sheetsRouter с tRPC endpoints
+- [ ] Backend: Реализовать экспорт данных в Google Sheets
+- [ ] Frontend: Создать SheetsExportDialog компонент
+- [ ] Frontend: Добавить кнопку экспорта в Scanner и Watchlist
+- [ ] Frontend: Реализовать выбор диапазона данных для экспорта
+- [ ] Testing: Написать тесты для Sheets функциональности
+
+## Phase 37: Advanced фильтрация - расширение
+- [ ] Backend: Добавить новые типы фильтров (date range, custom formulas)
+- [ ] Backend: Реализовать сохранение истории фильтров
+- [ ] Frontend: Добавить date range picker для фильтров
+- [ ] Frontend: Добавить фильтры по техническим индикаторам
+- [ ] Frontend: Улучшить UI фильтров с более интуитивным интерфейсом
+- [ ] Testing: Написать тесты для новых фильтров
+
+## Phase 38: UI/UX улучшения - финальные штрихи
+- [ ] Design: Добавить более детальные loading состояния
+- [ ] Design: Улучшить error handling с информативными сообщениями
+- [ ] Frontend: Добавить keyboard shortcuts для быстрого доступа
+- [ ] Frontend: Оптимизировать производительность (lazy loading, code splitting)
+- [ ] Frontend: Добавить onboarding для новых пользователей
+- [ ] Frontend: Улучшить accessibility (ARIA labels, keyboard navigation)
+- [ ] Testing: Manual QA тестирование всех новых функций
