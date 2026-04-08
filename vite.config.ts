@@ -74,6 +74,29 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
  * - Files: browserConsole.log, networkRequests.log, sessionReplay.log
  * - Auto-trimmed when exceeding 1MB (keeps newest entries)
  */
+/**
+ * Vite plugin to strip @vite/client from HTML
+ */
+function vitePluginStripHmr(): Plugin {
+  return {
+    name: 'vite-plugin-strip-hmr',
+    transformIndexHtml(html) {
+      // Remove @vite/client script tags - handle all possible patterns
+      return html.replace(/<script[^>]*@vite\/client[^>]*><\/script>/g, '')
+                 .replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '')
+                 .replace(/<script[^>]*src="\/@vite\/client"[^>]*type="module"[^>]*><\/script>/g, '')
+                 .replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '')
+                 .replace(/<script[^>]*@vite\/client[^>]*type="module"[^>]*><\/script>/g, '');
+    },
+  };
+}
+
+/**
+ * Vite plugin to collect browser debug logs
+ * - POST /__manus__/logs: Browser sends logs, written directly to files
+ * - Files: browserConsole.log, networkRequests.log, sessionReplay.log
+ * - Auto-trimmed when exceeding 1MB (keeps newest entries)
+ */
 function vitePluginManusDebugCollector(): Plugin {
   return {
     name: "manus-debug-collector",
@@ -150,10 +173,10 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+const pluginsWithoutHmr = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStripHmr()];
 
 export default defineConfig({
-  plugins,
+  plugins: pluginsWithoutHmr,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -191,24 +214,12 @@ export default defineConfig({
     },
   },
   server: {
-    hmr: {
-      protocol: 'wss',
-      host: 'localhost',
-      port: 5173,
-    },
-    host: true,
-    allowedHosts: [
-      ".manuspre.computer",
-      ".manus.computer",
-      ".manus-asia.computer",
-      ".manuscomputer.ai",
-      ".manusvm.computer",
-      "localhost",
-      "127.0.0.1",
-    ],
+    hmr: false,
+    host: '0.0.0.0',
+    allowedHosts: ['**'],
     fs: {
       strict: true,
-      deny: ["**/.*"],
+      deny: ["**/..*"],
     },
   },
 });
