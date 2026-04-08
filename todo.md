@@ -164,17 +164,6 @@
 - [x] Implement backtesting export to PDF and Excel (export buttons + mutations)
 - [x] Final testing and bug fixes (12/12 tests passing, TypeScript clean)
 
-## Phase 36: UI/UX Redesign - Remaining Pages (COMPLETE)
-- [x] Redesign Watchlist page with improved card layouts, spacing, visual hierarchy
-- [x] Create Scanner page with filter UI and results display (new page)
-- [x] Redesign Settings page with organized tabs and modern layout
-- [x] Ensure consistent design language across all pages
-- [x] Add hover effects, transitions, and responsive design
-- [x] Implement proper visual hierarchy with icons and spacing
-- [x] All 37 vitest tests passing (alerts, filters, db, auth)
-- [x] 0 TypeScript errors
-- [x] Dev server running without errors
-
 
 ## Phase 23: Real-Time API Integration
 - [x] Enhance CoinGecko service with market cap, volume, price history
@@ -271,7 +260,7 @@
 - [x] Frontend: Integrate alerts into Watchlist page with status indicators
 - [x] Frontend: Add real-time alert notifications via WebSocket
 - [x] Frontend: Create alert history/log viewer component
-- [x] Testing: Write vitest tests for alert conditions and triggers
+- [ ] Testing: Write vitest tests for alert conditions and triggers
 
 ## Phase 33: Advanced Filtering in Scanner
 - [x] Backend: Extend scanner schema with filter presets and saved filters
@@ -281,55 +270,19 @@
 - [x] Frontend: Create AdvancedFilterPanel component with multiple filter types
 - [x] Frontend: Implement filter builder UI (add/remove/combine filters)
 - [x] Frontend: Add filter presets dropdown (Popular, Custom, Saved)
-- [x] Frontend: Integrate filters into Scanner page with real-time results
-- [x] Frontend: Add filter history and quick-access buttons
-- [x] Testing: Write vitest tests for filter logic and combinations
+- [ ] Frontend: Integrate filters into Scanner page with real-time results
+- [ ] Frontend: Add filter history and quick-access buttons
+- [ ] Testing: Write vitest tests for filter logic and combinations
 
 ## Phase 34: UI/UX Improvements
 - [x] Design: Review and improve color scheme and contrast
 - [x] Design: Enhance typography and spacing consistency
-- [x] Frontend: Add smooth transitions and animations for interactions
-- [x] Frontend: Improve loading states and skeleton screens
-- [x] Frontend: Add micro-interactions (hover effects, button feedback)
-- [x] Frontend: Optimize mobile responsiveness (touch targets, layout)
-- [x] Frontend: Create empty states for all pages
-- [x] Frontend: Add tooltips and help text for complex features
-- [x] Frontend: Improve error messages and user guidance
-- [x] Frontend: Add dark/light theme toggle if not present
-- [x] Testing: Manual testing across all screen sizes and browsers
-
-
-## Phase 35: Email отправка через SendGrid
-- [ ] Backend: Интегрировать SendGrid API
-- [ ] Backend: Создать emailRouter с tRPC endpoints
-- [ ] Backend: Реализовать шаблоны email для отчетов
-- [ ] Frontend: Создать EmailReportDialog компонент
-- [ ] Frontend: Добавить кнопку отправки отчета в Dashboard
-- [ ] Frontend: Реализовать выбор частоты отправки (ежедневно, еженедельно)
-- [ ] Testing: Написать тесты для email функциональности
-
-## Phase 36: Google Sheets экспорт
-- [ ] Backend: Интегрировать Google Sheets API
-- [ ] Backend: Создать sheetsRouter с tRPC endpoints
-- [ ] Backend: Реализовать экспорт данных в Google Sheets
-- [ ] Frontend: Создать SheetsExportDialog компонент
-- [ ] Frontend: Добавить кнопку экспорта в Scanner и Watchlist
-- [ ] Frontend: Реализовать выбор диапазона данных для экспорта
-- [ ] Testing: Написать тесты для Sheets функциональности
-
-## Phase 37: Advanced фильтрация - расширение
-- [ ] Backend: Добавить новые типы фильтров (date range, custom formulas)
-- [ ] Backend: Реализовать сохранение истории фильтров
-- [ ] Frontend: Добавить date range picker для фильтров
-- [ ] Frontend: Добавить фильтры по техническим индикаторам
-- [ ] Frontend: Улучшить UI фильтров с более интуитивным интерфейсом
-- [ ] Testing: Написать тесты для новых фильтров
-
-## Phase 38: UI/UX улучшения - финальные штрихи
-- [ ] Design: Добавить более детальные loading состояния
-- [ ] Design: Улучшить error handling с информативными сообщениями
-- [ ] Frontend: Добавить keyboard shortcuts для быстрого доступа
-- [ ] Frontend: Оптимизировать производительность (lazy loading, code splitting)
-- [ ] Frontend: Добавить onboarding для новых пользователей
-- [ ] Frontend: Улучшить accessibility (ARIA labels, keyboard navigation)
-- [ ] Testing: Manual QA тестирование всех новых функций
+- [ ] Frontend: Add smooth transitions and animations for interactions
+- [ ] Frontend: Improve loading states and skeleton screens
+- [ ] Frontend: Add micro-interactions (hover effects, button feedback)
+- [ ] Frontend: Optimize mobile responsiveness (touch targets, layout)
+- [ ] Frontend: Create empty states for all pages
+- [ ] Frontend: Add tooltips and help text for complex features
+- [ ] Frontend: Improve error messages and user guidance
+- [ ] Frontend: Add dark/light theme toggle if not present
+- [ ] Testing: Manual testing across all screen sizes and browsers

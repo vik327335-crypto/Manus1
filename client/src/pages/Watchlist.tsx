@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Trash2, Bell, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
+import { ArrowLeft, Trash2, Bell, TrendingUp, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -173,144 +173,129 @@ export default function Watchlist() {
   const avgScore = (watchlist.reduce((sum, item) => sum + item.totalScore, 0) / watchlist.length).toFixed(1);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-background">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-border bg-white dark:bg-card">
-        <div className="container px-4 py-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/dashboard")} 
-            className="mb-6 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-          >
+      <div className="border-b border-border bg-card">
+        <div className="container py-6">
+          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-slate-900 dark:text-white">My Watchlist</h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-2">
+              <h1 className="text-3xl font-bold">My Watchlist</h1>
+              <p className="text-muted-foreground mt-1">
                 Track and monitor your favorite cryptocurrencies
               </p>
             </div>
             {user && (
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-900 dark:text-white">{user.name}</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">{user.email}</p>
+                <p className="text-sm font-medium">{user.name}</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="container px-4 py-10">
+      <div className="container py-8">
         {/* Stats */}
         {watchlist.length > 0 && (
-          <div className="grid gap-6 md:grid-cols-3 mb-10">
-            <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 rounded-xl">
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Total Items</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">{watchlist.length}</p>
+          <div className="grid gap-4 md:grid-cols-3 mb-8">
+            <Card className="card-elevated p-6">
+              <p className="text-sm text-muted-foreground mb-2">Total Items</p>
+              <p className="text-3xl font-bold">{watchlist.length}</p>
             </Card>
-            <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 rounded-xl">
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Average Score</p>
-              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{avgScore}</p>
+            <Card className="card-elevated p-6">
+              <p className="text-sm text-muted-foreground mb-2">Average Score</p>
+              <p className="text-3xl font-bold text-blue-600">{avgScore}</p>
             </Card>
-            <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 rounded-xl">
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Total Value</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">${(totalValue / 100).toFixed(2)}</p>
+            <Card className="card-elevated p-6">
+              <p className="text-sm text-muted-foreground mb-2">Total Value</p>
+              <p className="text-3xl font-bold">${(totalValue / 100).toFixed(2)}</p>
             </Card>
           </div>
         )}
 
         {/* Search */}
-        <div className="mb-8">
+        <div className="mb-6">
           <Input
-            placeholder="Search by ticker or name..."
+            placeholder="Search watchlist..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 text-base"
           />
         </div>
 
         {/* Watchlist Items */}
         {filteredWatchlist.length > 0 ? (
-          <div className="space-y-5">
+          <div className="space-y-4">
             {filteredWatchlist.map((item) => (
-              <Card 
-                key={item.id} 
-                className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 rounded-xl hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-col gap-6">
-                  {/* Top Row - Asset Info */}
+              <Card key={item.id} className="card-elevated p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  {/* Asset Info */}
                   <div className="flex items-center gap-4 flex-1">
                     <img
                       src={item.logo}
                       alt={item.name}
-                      className="h-14 w-14 rounded-full border border-slate-200 dark:border-slate-700"
+                      className="h-12 w-12 rounded-full"
                     />
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-bold text-lg text-slate-900 dark:text-white">{item.ticker}</h3>
-                        <span className="text-xs font-semibold text-white bg-blue-600 px-3 py-1 rounded-full">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-lg">{item.ticker}</h3>
+                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded">
                           Score: {item.totalScore}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">{item.name}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                      <p className="text-sm text-muted-foreground">{item.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
                         Added {item.addedAt.toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  {/* Middle Row - Price Info */}
-                  <div className="grid grid-cols-3 gap-4 py-4 border-y border-slate-200 dark:border-slate-800">
-                    <div>
-                      <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Current Price</p>
-                      <p className="text-xl font-bold text-slate-900 dark:text-white">${(item.currentPrice / 100).toFixed(2)}</p>
+                  {/* Price Info */}
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Price</p>
+                      <p className="font-semibold">${(item.currentPrice / 100).toFixed(2)}</p>
                     </div>
 
-                    <div>
-                      <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">24h Change</p>
-                      <div className="flex items-center gap-1">
-                        {item.priceChange24h > 0 ? (
-                          <TrendingUp className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 text-red-600" />
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">24h Change</p>
+                      <p
+                        className={cn(
+                          "font-semibold",
+                          item.priceChange24h > 0 ? "text-green-600" : "text-red-600"
                         )}
-                        <p
-                          className={cn(
-                            "text-lg font-bold",
-                            item.priceChange24h > 0 ? "text-green-600" : "text-red-600"
-                          )}
-                        >
-                          {item.priceChange24h > 0 ? "+" : ""}
-                          {(item.priceChange24h / 100).toFixed(2)}%
-                        </p>
-                      </div>
+                      >
+                        {item.priceChange24h > 0 ? "+" : ""}
+                        {(item.priceChange24h / 100).toFixed(2)}%
+                      </p>
                     </div>
 
-                    <div>
-                      <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Alert Price</p>
+                    {/* Alert Threshold */}
+                    <div className="text-right min-w-[140px]">
                       {editingId === item.id ? (
                         <div className="flex gap-2">
                           <Input
                             type="number"
                             value={newThreshold}
                             onChange={(e) => setNewThreshold(e.target.value)}
-                            placeholder="Price"
+                            placeholder="Alert price"
                             className="h-8 text-sm"
                           />
                           <Button
                             size="sm"
                             onClick={() => handleUpdateThreshold(item.id, newThreshold)}
-                            className="h-8 px-3 bg-blue-600 hover:bg-blue-700"
+                            className="h-8"
                           >
                             Set
                           </Button>
                         </div>
                       ) : (
-                        <div>
-                          <p className="text-lg font-bold text-slate-900 dark:text-white">
+                        <>
+                          <p className="text-sm text-muted-foreground">Alert at</p>
+                          <p className="font-semibold">
                             ${(item.alertThreshold || 0).toFixed(2)}
                           </p>
                           <Button
@@ -320,61 +305,56 @@ export default function Watchlist() {
                               setEditingId(item.id);
                               setNewThreshold(item.alertThreshold?.toString() || "");
                             }}
-                            className="mt-1 h-6 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                            className="mt-1 h-6 text-xs"
                           >
                             Edit
                           </Button>
-                        </div>
+                        </>
                       )}
                     </div>
-                  </div>
 
-                  {/* Bottom Row - Actions */}
-                  <div className="flex gap-2 justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      title="Set price alert"
-                    >
-                      <Bell className="h-4 w-4" />
-                      Alert
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                      onClick={() => handleRemove(item.id)}
-                      title="Remove from watchlist"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Remove
-                    </Button>
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        title="Set price alert"
+                      >
+                        <Bell className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                        onClick={() => handleRemove(item.id)}
+                        title="Remove from watchlist"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Alerts Section */}
-                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                <div className="mt-4 pt-4 border-t border-border">
                   <WatchlistAlerts assetId={item.id} assetName={item.name} />
                 </div>
               </Card>
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
+          <div className="text-center py-12">
             {watchlist.length === 0 ? (
               <>
-                <TrendingUp className="h-16 w-16 mx-auto text-slate-300 dark:text-slate-700 mb-4" />
-                <p className="text-lg text-slate-600 dark:text-slate-400 mb-6">Your watchlist is empty</p>
-                <Button 
-                  onClick={() => navigate("/dashboard")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
+                <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+                <p className="text-muted-foreground mb-4">Your watchlist is empty</p>
+                <Button onClick={() => navigate("/dashboard")}>
                   Browse Assets
                 </Button>
               </>
             ) : (
-              <p className="text-slate-600 dark:text-slate-400">No assets match your search</p>
+              <p className="text-muted-foreground">No assets match your search</p>
             )}
           </div>
         )}

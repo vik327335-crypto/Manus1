@@ -59,23 +59,3 @@ createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </trpc.Provider>
 );
-
-
-// Register Service Worker with error handling
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker-enhanced.js', { scope: '/' })
-      .then((registration) => {
-        console.log('[useServiceWorker] Registered successfully:', registration);
-        // Check for updates periodically
-        setInterval(() => {
-          registration.update().catch((err) => {
-            console.warn('[useServiceWorker] Update check failed:', err.message);
-          });
-        }, 60000); // Check every minute
-      })
-      .catch((err) => {
-        console.warn('[useServiceWorker] Registration failed:', err.message);
-      });
-  });
-}

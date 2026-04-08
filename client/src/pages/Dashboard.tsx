@@ -11,16 +11,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Loader2, Search, Star, Bookmark, TrendingUp, TrendingDown } from "lucide-react";
+import { Loader2, Search, Star, Bookmark } from "lucide-react";
 import { useLocation } from "wouter";
 import { MarketTrendIndicator } from "@/components/MarketTrendIndicator";
 import { ScoreIndicator } from "@/components/ScoreIndicator";
 import { DashboardExportButton } from "@/components/DashboardExportButton";
 import { PriceTicker } from "@/components/PriceTicker";
 import { cn } from "@/lib/utils";
-import { EmptyState } from "@/components/EmptyState";
-import { Tooltip } from "@/components/Tooltip";
-import { ErrorMessage } from "@/components/ErrorMessage";
 
 type SortBy = "total" | "c" | "a" | "n" | "s" | "l" | "i" | "m";
 
@@ -30,7 +27,6 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("total");
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [error, setError] = useState<string | null>(null);
 
   // Fetch assets and market trend
   const { data: assets, isLoading: assetsLoading } = trpc.assets.list.useQuery();
@@ -94,53 +90,75 @@ export default function Dashboard() {
     },
     {
       id: 4,
-      ticker: "ADA",
-      name: "Cardano",
-      logo: "https://cdn.coinbase.com/api/v2/assets/images/cardano.png",
-      category: "Layer1",
-      currentPrice: 8500,
-      priceChange24h: 180,
-      marketCap: 32000,
-      totalScore: 74,
-      cScore: 68,
-      aScore: 72,
-      nScore: 75,
-      sScore: 78,
-      lScore: 72,
-      iScore: 70,
-      mScore: 80,
+      ticker: "ARB",
+      name: "Arbitrum",
+      logo: "https://cdn.coinbase.com/api/v2/assets/images/arbitrum.png",
+      category: "Layer2",
+      currentPrice: 1200,
+      priceChange24h: 520,
+      marketCap: 12000,
+      totalScore: 82,
+      cScore: 82,
+      aScore: 75,
+      nScore: 88,
+      sScore: 72,
+      lScore: 85,
+      iScore: 82,
+      mScore: 88,
     },
     {
       id: 5,
-      ticker: "XRP",
-      name: "Ripple",
-      logo: "https://cdn.coinbase.com/api/v2/assets/images/ripple.png",
-      category: "Payment",
-      currentPrice: 5200,
-      priceChange24h: 320,
-      marketCap: 28000,
-      totalScore: 72,
-      cScore: 70,
-      aScore: 68,
+      ticker: "AAVE",
+      name: "Aave",
+      logo: "https://cdn.coinbase.com/api/v2/assets/images/aave.png",
+      category: "DeFi",
+      currentPrice: 45000,
+      priceChange24h: 380,
+      marketCap: 18000,
+      totalScore: 75,
+      cScore: 76,
+      aScore: 70,
       nScore: 72,
-      sScore: 75,
-      lScore: 70,
-      iScore: 68,
-      mScore: 78,
+      sScore: 68,
+      lScore: 78,
+      iScore: 75,
+      mScore: 85,
+    },
+    {
+      id: 6,
+      ticker: "AI",
+      name: "Artificial Intelligence",
+      logo: "https://cdn.coinbase.com/api/v2/assets/images/ai.png",
+      category: "AI",
+      currentPrice: 850,
+      priceChange24h: 680,
+      marketCap: 8500,
+      totalScore: 87,
+      cScore: 95,
+      aScore: 88,
+      nScore: 98,
+      sScore: 65,
+      lScore: 92,
+      iScore: 85,
+      mScore: 88,
     },
   ];
 
   const mockMarketTrend = {
-    status: "bullish",
     btcPrice: 6250000,
-    btc200EMA: 5950000,
-    dominance: 45.2,
-    fearGreedIndex: 68,
+    btc200EMA: 5800000,
+    btcAbove200EMA: 1,
+    dominance: 4500,
+    fearGreedIndex: 72,
+    status: "bullish" as const,
+    createdAt: new Date(),
   };
 
+  // Filter and sort assets
   const filteredAssets = useMemo(() => {
     let filtered = mockAssets;
 
+    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(
         (asset) =>
@@ -149,10 +167,12 @@ export default function Dashboard() {
       );
     }
 
+    // Filter by category
     if (filterCategory !== "all") {
       filtered = filtered.filter((asset) => asset.category === filterCategory);
     }
 
+    // Sort
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "total":
@@ -184,20 +204,18 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="container py-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                CAN SLIM Crypto Scanner
-              </h1>
-              <p className="mt-2 text-sm text-muted-foreground max-w-lg">
-                Evaluate cryptocurrencies using William O'Neil's proven methodology. Discover high-potential digital assets with AI-powered analysis.
+      <div className="border-b border-border bg-card">
+        <div className="container py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gradient">CAN SLIM Crypto Scanner</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Evaluate cryptocurrencies using William O'Neil's proven methodology
               </p>
             </div>
             {user && (
               <div className="text-right">
-                <p className="text-sm font-semibold text-foreground">{user.name}</p>
+                <p className="text-sm font-medium">{user.name}</p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
             )}
@@ -207,7 +225,7 @@ export default function Dashboard() {
               variant="outline"
               size="sm"
               onClick={() => navigate("/watchlist")}
-              className="gap-2 mt-4 w-full sm:w-auto"
+              className="gap-2 mt-4"
             >
               <Bookmark className="h-4 w-4" />
               My Watchlist
@@ -216,21 +234,19 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="container py-8 space-y-8">
+      <div className="container py-8">
         {/* Live Price Ticker */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Live Price Ticker</h2>
-          </div>
+        <div className="mb-8">
+          <h2 className="mb-4 text-lg font-semibold">Live Price Ticker</h2>
           <PriceTicker tickers={["BTC", "ETH", "ADA"]} />
-        </section>
+        </div>
 
         {/* Market Trend Section */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-bold">Market Overview</h2>
+        <div className="mb-8">
+          <h2 className="mb-4 text-lg font-semibold">Market Overview</h2>
           {trendLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : (
             <MarketTrendIndicator
@@ -241,192 +257,159 @@ export default function Dashboard() {
               fearGreedIndex={mockMarketTrend.fearGreedIndex}
             />
           )}
-        </section>
+        </div>
 
         {/* Filters and Search */}
-        <section className="space-y-4">
-          <div className="flex flex-col gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by ticker or name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10"
-              />
+        <div className="mb-8 space-y-4">
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search by ticker or name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="h-10">
-                  <SelectValue placeholder="Filter by category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat === "all" ? "All Categories" : cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat === "all" ? "All Categories" : cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-                <SelectTrigger className="h-10">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="total">Total Score</SelectItem>
-                  <SelectItem value="c">Current Growth (C)</SelectItem>
-                  <SelectItem value="a">Annual Growth (A)</SelectItem>
-                  <SelectItem value="n">New Catalysts (N)</SelectItem>
-                  <SelectItem value="s">Supply (S)</SelectItem>
-                  <SelectItem value="l">Relative Strength (L)</SelectItem>
-                  <SelectItem value="i">Institutional (I)</SelectItem>
-                  <SelectItem value="m">Market Trend (M)</SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="total">Total Score</SelectItem>
+                <SelectItem value="c">Current Growth (C)</SelectItem>
+                <SelectItem value="a">Annual Growth (A)</SelectItem>
+                <SelectItem value="n">New Catalysts (N)</SelectItem>
+                <SelectItem value="s">Supply (S)</SelectItem>
+                <SelectItem value="l">Relative Strength (L)</SelectItem>
+                <SelectItem value="i">Institutional (I)</SelectItem>
+                <SelectItem value="m">Market Trend (M)</SelectItem>
+              </SelectContent>
+            </Select>
 
-              <DashboardExportButton
-                assets={filteredAssets.map((asset) => ({
-                  ticker: asset.ticker,
-                  name: asset.name,
-                  price: asset.currentPrice,
-                  change24h: asset.priceChange24h,
-                  score: asset.totalScore,
-                  allocation: 100 / filteredAssets.length,
-                }))}
-                totalValue={filteredAssets.reduce((sum: number, a: any) => sum + a.marketCap, 0)}
-              />
-            </div>
+            <DashboardExportButton
+              assets={filteredAssets.map((asset) => ({
+                ticker: asset.ticker,
+                name: asset.name,
+                price: asset.currentPrice,
+                change24h: asset.priceChange24h,
+                score: asset.totalScore,
+                allocation: 100 / filteredAssets.length,
+              }))}
+              totalValue={filteredAssets.reduce((sum: number, a: any) => sum + a.marketCap, 0)}
+            />
           </div>
-        </section>
+        </div>
 
-        {/* Assets Grid */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Top Cryptocurrencies</h2>
-            <span className="text-sm text-muted-foreground">{filteredAssets.length} assets</span>
-          </div>
+        {/* Assets Table */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Top Cryptocurrencies</h2>
 
           {assetsLoading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : filteredAssets.length === 0 ? (
-            <EmptyState
-              icon="search"
-              title="No assets found"
-              description="Try adjusting your search or filter criteria"
-            />
           ) : (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-3">
               {filteredAssets.map((asset) => (
                 <Card
-                  key={asset.id}
-                  className="p-6 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 group"
-                  onClick={() => navigate(`/asset/${asset.ticker}`)}
-                >
-                  <div className="space-y-4">
-                    {/* Top Row - Asset Info */}
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-4 flex-1">
-                        <img
-                          src={asset.logo}
-                          alt={asset.name}
-                          className="h-12 w-12 rounded-full object-cover"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <h3 className="font-bold text-lg">{asset.ticker}</h3>
-                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                              {asset.category}
-                            </span>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{asset.name}</p>
+                key={asset.id}
+                className="card-elevated p-4 cursor-pointer transition-all hover:shadow-lg"
+                onClick={() => navigate(`/asset/${asset.ticker}`)}
+              >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    {/* Asset Info */}
+                    <div className="flex items-center gap-4 flex-1">
+                      <img
+                        src={asset.logo}
+                        alt={asset.name}
+                        className="h-10 w-10 rounded-full"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{asset.ticker}</h3>
+                          <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded">
+                            {asset.category}
+                          </span>
                         </div>
+                        <p className="text-sm text-muted-foreground">{asset.name}</p>
+                      </div>
+                    </div>
+
+                    {/* Price Info */}
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Price</p>
+                        <p className="font-semibold">${(asset.currentPrice / 100).toFixed(2)}</p>
                       </div>
 
-                      {/* Score Badge */}
                       <div className="text-right">
-                        <div className="flex items-center gap-2 justify-end">
-                          <div className="text-center">
-                            <p className="text-xs text-muted-foreground font-medium">Score</p>
-                            <p className="text-3xl font-bold text-primary">{asset.totalScore}</p>
-                          </div>
+                        <p className="text-sm text-muted-foreground">24h Change</p>
+                        <p
+                          className={cn(
+                            "font-semibold",
+                            asset.priceChange24h > 0 ? "text-green-600" : "text-red-600"
+                          )}
+                        >
+                          {asset.priceChange24h > 0 ? "+" : ""}
+                          {(asset.priceChange24h / 100).toFixed(2)}%
+                        </p>
+                      </div>
+
+                      {/* CAN SLIM Scores */}
+                      <div className="hidden lg:flex gap-2">
+                        <ScoreIndicator score={asset.cScore} label="C" size="sm" />
+                        <ScoreIndicator score={asset.aScore} label="A" size="sm" />
+                        <ScoreIndicator score={asset.nScore} label="N" size="sm" />
+                        <ScoreIndicator score={asset.sScore} label="S" size="sm" />
+                        <ScoreIndicator score={asset.lScore} label="L" size="sm" />
+                        <ScoreIndicator score={asset.iScore} label="I" size="sm" />
+                        <ScoreIndicator score={asset.mScore} label="M" size="sm" />
+                      </div>
+
+                      {/* Total Score */}
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Score</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold">{asset.totalScore}</span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-10 w-10 p-0 group-hover:bg-primary/10"
+                            className="h-8 w-8 p-0"
                           >
-                            <Star className="h-5 w-5 text-amber-500" />
+                            <Star className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     </div>
-
-                    {/* Middle Row - Price Info */}
-                    <div className="grid grid-cols-3 gap-4 py-4 border-y border-border/50">
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium mb-1">Price</p>
-                        <p className="text-lg font-semibold">${(asset.currentPrice / 100).toFixed(2)}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium mb-1">24h Change</p>
-                        <div className="flex items-center gap-1">
-                          {asset.priceChange24h > 0 ? (
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-600" />
-                          )}
-                          <p
-                            className={cn(
-                              "text-lg font-semibold",
-                              asset.priceChange24h > 0 ? "text-green-600" : "text-red-600"
-                            )}
-                          >
-                            {asset.priceChange24h > 0 ? "+" : ""}
-                            {(asset.priceChange24h / 100).toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium mb-1">Market Cap</p>
-                        <p className="text-lg font-semibold">${(asset.marketCap / 1000).toFixed(0)}B</p>
-                      </div>
-                    </div>
-
-                    {/* Bottom Row - CAN SLIM Scores */}
-                    <div className="grid grid-cols-7 gap-2">
-                      <Tooltip content="Current Growth">
-                        <ScoreIndicator score={asset.cScore} label="C" size="sm" />
-                      </Tooltip>
-                      <Tooltip content="Annual Growth">
-                        <ScoreIndicator score={asset.aScore} label="A" size="sm" />
-                      </Tooltip>
-                      <Tooltip content="New Catalysts">
-                        <ScoreIndicator score={asset.nScore} label="N" size="sm" />
-                      </Tooltip>
-                      <Tooltip content="Supply Dynamics">
-                        <ScoreIndicator score={asset.sScore} label="S" size="sm" />
-                      </Tooltip>
-                      <Tooltip content="Relative Strength">
-                        <ScoreIndicator score={asset.lScore} label="L" size="sm" />
-                      </Tooltip>
-                      <Tooltip content="Institutional Support">
-                        <ScoreIndicator score={asset.iScore} label="I" size="sm" />
-                      </Tooltip>
-                      <Tooltip content="Market Trend">
-                        <ScoreIndicator score={asset.mScore} label="M" size="sm" />
-                      </Tooltip>
-                    </div>
                   </div>
                 </Card>
               ))}
+
+              {filteredAssets.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No assets found matching your criteria.</p>
+                </div>
+              )}
             </div>
           )}
-        </section>
+        </div>
       </div>
     </div>
   );

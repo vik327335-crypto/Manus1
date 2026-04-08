@@ -10,40 +10,36 @@ export default function Home() {
   const [, navigate] = useLocation();
 
   return (
-    <div className="min-h-screen bg-white dark:bg-background">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="bg-gradient-to-b from-blue-50 to-white dark:from-slate-900 dark:to-background border-b border-slate-200 dark:border-border">
-        <div className="container px-4 py-24 md:py-32">
+      <div className="border-b border-border bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
+        <div className="container py-20">
           <div className="max-w-2xl">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-blue-600 dark:text-blue-400">
+            <h1 className="text-5xl font-bold text-gradient mb-4">
               CAN SLIM Crypto Scanner
             </h1>
-            <p className="text-lg text-slate-600 dark:text-muted-foreground mb-12 leading-relaxed max-w-lg">
+            <p className="text-lg text-muted-foreground mb-8">
               Evaluate cryptocurrency projects using William O'Neil's proven investment methodology. Discover high-potential digital assets with AI-powered analysis.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex gap-4">
               {isAuthenticated ? (
                 <Button
                   size="lg"
                   onClick={() => navigate("/dashboard")}
-                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-8 py-3 font-semibold"
+                  className="gap-2"
                 >
-                  Go to Dashboard <ArrowRight className="h-5 w-5" />
+                  Go to Dashboard <ArrowRight className="h-4 w-4" />
                 </Button>
               ) : (
                 <Button
                   size="lg"
                   onClick={() => (window.location.href = getLoginUrl())}
-                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-8 py-3 font-semibold"
+                  className="gap-2"
                 >
-                  Go to Dashboard <ArrowRight className="h-5 w-5" />
+                  Sign In to Get Started <ArrowRight className="h-4 w-4" />
                 </Button>
               )}
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg px-8 py-3 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
+              <Button variant="outline" size="lg">
                 Learn More
               </Button>
             </div>
@@ -52,38 +48,29 @@ export default function Home() {
       </div>
 
       {/* Features Section */}
-      <div className="container px-4 py-20 md:py-28">
-        <h2 className="text-4xl font-bold mb-16 text-slate-900 dark:text-white">Powerful Features</h2>
-        <div className="grid gap-8 md:grid-cols-3">
-          {/* Feature 1 */}
-          <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 rounded-xl hover:shadow-lg transition-shadow">
-            <div className="mb-6">
-              <TrendingUp className="h-10 w-10 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">CAN SLIM Scoring</h3>
-            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+      <div className="container py-20">
+        <h2 className="text-3xl font-bold mb-12">Powerful Features</h2>
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="card-elevated p-6">
+            <TrendingUp className="h-8 w-8 text-blue-600 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">CAN SLIM Scoring</h3>
+            <p className="text-sm text-muted-foreground">
               Analyze 7 key investment criteria: Current Growth, Annual Growth, New Catalysts, Supply Dynamics, Relative Strength, Institutional Support, and Market Trend.
             </p>
           </Card>
 
-          {/* Feature 2 */}
-          <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 rounded-xl hover:shadow-lg transition-shadow">
-            <div className="mb-6">
-              <BarChart3 className="h-10 w-10 text-purple-600" />
-            </div>
-            <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Real-Time Analytics</h3>
-            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+          <Card className="card-elevated p-6">
+            <BarChart3 className="h-8 w-8 text-purple-600 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Real-Time Analytics</h3>
+            <p className="text-sm text-muted-foreground">
               Track market trends, Bitcoin's 200-day EMA, dominance metrics, and Fear & Greed Index in real-time.
             </p>
           </Card>
 
-          {/* Feature 3 */}
-          <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 rounded-xl hover:shadow-lg transition-shadow">
-            <div className="mb-6">
-              <Zap className="h-10 w-10 text-amber-500" />
-            </div>
-            <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">AI Sentiment Analysis</h3>
-            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+          <Card className="card-elevated p-6">
+            <Zap className="h-8 w-8 text-amber-600 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">AI Sentiment Analysis</h3>
+            <p className="text-sm text-muted-foreground">
               Detect new catalysts and market sentiment through AI-powered analysis of news, partnerships, and protocol updates.
             </p>
           </Card>
@@ -91,27 +78,27 @@ export default function Home() {
       </div>
 
       {/* CTA Section */}
-      <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-        <div className="container px-4 py-20 md:py-28 text-center">
-          <h2 className="text-4xl font-bold mb-6 text-slate-900 dark:text-white">Ready to Find Your Next Opportunity?</h2>
-          <p className="text-lg text-slate-600 dark:text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+      <div className="border-t border-border bg-card">
+        <div className="container py-16 text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Find Your Next Opportunity?</h2>
+          <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
             Start analyzing cryptocurrencies with the CAN SLIM methodology today.
           </p>
           {isAuthenticated ? (
             <Button
               size="lg"
               onClick={() => navigate("/dashboard")}
-              className="gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-8 py-3 font-semibold"
+              className="gap-2"
             >
-              Open Dashboard <ArrowRight className="h-5 w-5" />
+              Open Dashboard <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
             <Button
               size="lg"
               onClick={() => (window.location.href = getLoginUrl())}
-              className="gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-8 py-3 font-semibold"
+              className="gap-2"
             >
-              Sign In Now <ArrowRight className="h-5 w-5" />
+              Sign In Now <ArrowRight className="h-4 w-4" />
             </Button>
           )}
         </div>

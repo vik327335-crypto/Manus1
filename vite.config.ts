@@ -152,22 +152,8 @@ function vitePluginManusDebugCollector(): Plugin {
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
-// Middleware to strip HMR client from HTML
-function vitePluginStripHmr(): Plugin {
-  return {
-    name: 'vite-plugin-strip-hmr',
-    transformIndexHtml(html) {
-      // Remove @vite/client script tag
-      return html.replace(/<script[^>]*@vite\/client[^>]*><\/script>/g, '')
-                 .replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '');
-    },
-  };
-}
-
-const pluginsWithoutHmr = [...plugins, vitePluginStripHmr()];
-
 export default defineConfig({
-  plugins: pluginsWithoutHmr,
+  plugins,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -176,7 +162,6 @@ export default defineConfig({
     },
   },
   envDir: path.resolve(import.meta.dirname),
-
   root: path.resolve(import.meta.dirname, "client"),
   publicDir: path.resolve(import.meta.dirname, "client", "public"),
   build: {
@@ -206,9 +191,21 @@ export default defineConfig({
     },
   },
   server: {
-    hmr: false,  // Disable HMR to avoid WebSocket proxy issues - manual refresh works fine
-    host: '0.0.0.0',
-    allowedHosts: ['**'],
+    hmr: {
+      protocol: 'wss',
+      host: 'localhost',
+      port: 5173,
+    },
+    host: true,
+    allowedHosts: [
+      ".manuspre.computer",
+      ".manus.computer",
+      ".manus-asia.computer",
+      ".manuscomputer.ai",
+      ".manusvm.computer",
+      "localhost",
+      "127.0.0.1",
+    ],
     fs: {
       strict: true,
       deny: ["**/.*"],
