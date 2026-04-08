@@ -4,6 +4,112 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, TrendingUp, BarChart3, Zap } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Mock live price data - в реальном приложении будет из API
+const mockPrices = [
+  {
+    symbol: "BTC",
+    name: "Bitcoin",
+    price: 45230,
+    change24h: 2.50,
+    high24h: 46100,
+    low24h: 44500,
+    volume24h: 28.50,
+    marketCap: 890.00,
+  },
+  {
+    symbol: "ETH",
+    name: "Ethereum",
+    price: 2850,
+    change24h: -1.20,
+    high24h: 2950,
+    low24h: 2800,
+    volume24h: 15.20,
+    marketCap: 342.00,
+  },
+  {
+    symbol: "SOL",
+    name: "Solana",
+    price: 145.50,
+    change24h: 5.75,
+    high24h: 150.00,
+    low24h: 138.00,
+    volume24h: 2.10,
+    marketCap: 68.50,
+  },
+  {
+    symbol: "ADA",
+    name: "Cardano",
+    price: 0.98,
+    change24h: 1.30,
+    high24h: 1.02,
+    low24h: 0.95,
+    volume24h: 0.85,
+    marketCap: 35.20,
+  },
+];
+
+function PriceCard({ crypto }: { crypto: typeof mockPrices[0] }) {
+  const isPositive = crypto.change24h >= 0;
+
+  return (
+    <Card className="card-elevated p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <p className="font-semibold text-sm">{crypto.symbol}</p>
+          <p className="text-xs text-muted-foreground">{crypto.name}</p>
+        </div>
+        <div
+          className={`text-xs font-semibold px-2 py-1 rounded ${
+            isPositive
+              ? "badge-success"
+              : "badge-error"
+          }`}
+        >
+          {isPositive ? "↑" : "↓"} {Math.abs(crypto.change24h).toFixed(2)}%
+        </div>
+      </div>
+
+      <p className="text-lg font-bold mb-3">
+        ${crypto.price.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
+      </p>
+
+      <div className="space-y-2 text-xs">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">High 24h</span>
+          <span className="font-medium">
+            ${crypto.high24h.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Low 24h</span>
+          <span className="font-medium">
+            ${crypto.low24h.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">24h Volume</span>
+          <span className="font-medium">${crypto.volume24h.toFixed(2)}B</span>
+        </div>
+        <div className="flex justify-between pt-2" style={{borderTop: "1px solid var(--border)"}}>
+          <span className="text-muted-foreground">Market Cap</span>
+          <span className="font-medium">${crypto.marketCap.toFixed(2)}B</span>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -11,37 +117,52 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
+      {/* Hero Section with Live Price Ticker */}
       <div className="border-b border-border bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
-        <div className="container py-20">
-          <div className="max-w-2xl">
-            <h1 className="text-5xl font-bold text-gradient mb-4">
-              CAN SLIM Crypto Scanner
-            </h1>
-            <p className="text-lg text-muted-foreground mb-8">
-              Evaluate cryptocurrency projects using William O'Neil's proven investment methodology. Discover high-potential digital assets with AI-powered analysis.
-            </p>
-            <div className="flex gap-4">
-              {isAuthenticated ? (
-                <Button
-                  size="lg"
-                  onClick={() => navigate("/dashboard")}
-                  className="gap-2"
-                >
-                  Go to Dashboard <ArrowRight className="h-4 w-4" />
+        <div className="container py-16">
+          <div className="grid gap-12 lg:grid-cols-3">
+            {/* Left Content */}
+            <div className="lg:col-span-2">
+              <h1 className="text-5xl font-bold text-gradient mb-4">
+                CAN SLIM Crypto Scanner
+              </h1>
+              <p className="text-lg text-muted-foreground mb-8">
+                Evaluate cryptocurrencies using William O'Neil's proven investment methodology. Discover high-potential digital assets with AI-powered analysis.
+              </p>
+              <div className="flex gap-4">
+                {isAuthenticated ? (
+                  <Button
+                    size="lg"
+                    onClick={() => navigate("/dashboard")}
+                    className="gap-2"
+                  >
+                    Go to Dashboard <ArrowRight className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    onClick={() => (window.location.href = getLoginUrl())}
+                    className="gap-2"
+                  >
+                    Sign In to Get Started <ArrowRight className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button variant="outline" size="lg">
+                  Learn More
                 </Button>
-              ) : (
-                <Button
-                  size="lg"
-                  onClick={() => (window.location.href = getLoginUrl())}
-                  className="gap-2"
-                >
-                  Sign In to Get Started <ArrowRight className="h-4 w-4" />
-                </Button>
-              )}
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
+              </div>
+            </div>
+
+            {/* Right - Live Price Ticker */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-4">
+                <h3 className="text-lg font-bold mb-4">Live Price Ticker</h3>
+                <div className="space-y-3">
+                  {mockPrices.map((crypto) => (
+                    <PriceCard key={crypto.symbol} crypto={crypto} />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
