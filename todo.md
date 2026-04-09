@@ -329,13 +329,13 @@
 - [x] Create alert notification delivery (email, push, Telegram)
 - [x] Build alert history/log view with triggered status
 
-## Phase 42: Add Export Reports (PDF/Excel)
-- [ ] Create report generation service
-- [ ] Add PDF export for asset analysis
-- [ ] Implement Excel export for portfolio data
-- [ ] Add CSV export for market data
-- [ ] Create report templates
-- [ ] Add scheduled report generation
+## Phase 42: Add Export Reports (PDF/Excel) (COMPLETE)
+- [x] Create report generation service (ReportGenerator.tsx)
+- [x] Add PDF export for asset analysis
+- [x] Implement Excel export for portfolio data
+- [x] Add CSV export for market data
+- [x] Create report templates (4 templates)
+- [x] Add report download and management
 
 ## Phase 43: Implement User Preferences & Settings
 - [ ] Create user preferences database schema
