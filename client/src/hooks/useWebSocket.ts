@@ -1,12 +1,11 @@
 /**
  * Custom React hook for WebSocket connection with auto-reconnect
+ * Uses native WebSocket API instead of socket.io for compatibility with ws server
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import io, { Socket } from "socket.io-client";
 
 export interface UseWebSocketOptions {
-  url?: string;
   autoConnect?: boolean;
   reconnectionDelay?: number;
   maxReconnectionAttempts?: number;
@@ -16,117 +15,165 @@ export interface WebSocketState {
   isConnected: boolean;
   isConnecting: boolean;
   error: Error | null;
-  socket: Socket | null;
+  ws: WebSocket | null;
+}
+
+interface PendingMessage {
+  type: string;
+  [key: string]: any;
 }
 
 const DEFAULT_OPTIONS: UseWebSocketOptions = {
-  url: typeof window !== "undefined" && import.meta.env.VITE_API_URL 
-    ? import.meta.env.VITE_API_URL 
-    : "http://localhost:3000",
   autoConnect: true,
   reconnectionDelay: 1000,
   maxReconnectionAttempts: 5,
 };
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
-  // Ensure URL is set correctly for browser environment
-  const wsUrl = typeof window !== "undefined" && import.meta.env.VITE_API_URL
-    ? import.meta.env.VITE_API_URL
-    : window?.location?.origin || "http://localhost:3000";
-  
-  const mergedOptions = useMemo(() => ({ ...DEFAULT_OPTIONS, url: wsUrl, ...options }), [wsUrl, options.autoConnect, options.reconnectionDelay, options.maxReconnectionAttempts]);
-  const socketRef = useRef<Socket | null>(null);
+  // Get WebSocket URL from current location
+  const getWsUrl = useCallback(() => {
+    if (typeof window === "undefined") return "ws://localhost:3000/ws";
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.host}/ws`;
+  }, []);
+
+  const mergedOptions = useMemo(
+    () => ({ ...DEFAULT_OPTIONS, ...options }),
+    [options.autoConnect, options.reconnectionDelay, options.maxReconnectionAttempts]
+  );
+
+  const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const messageHandlersRef = useRef<Map<string, Set<(data: any) => void>>>(new Map());
+  const pendingMessagesRef = useRef<PendingMessage[]>([]);
 
   const [state, setState] = useState<WebSocketState>({
     isConnected: false,
     isConnecting: false,
     error: null,
-    socket: null,
+    ws: null,
   });
 
   /**
    * Connect to WebSocket server
    */
   const connect = useCallback(() => {
-    if (socketRef.current?.connected) {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
       return;
     }
 
     setState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      const socket = io(mergedOptions.url!, {
-        reconnection: true,
-        reconnectionDelay: mergedOptions.reconnectionDelay,
-        reconnectionDelayMax: 10000,
-        reconnectionAttempts: mergedOptions.maxReconnectionAttempts,
-        transports: ["websocket", "polling"],
-      });
+      const ws = new WebSocket(getWsUrl());
 
-      socket.on("connect", () => {
+      ws.onopen = () => {
         console.log("[WebSocket] Connected");
         reconnectAttemptsRef.current = 0;
+        wsRef.current = ws;
         setState({
           isConnected: true,
           isConnecting: false,
           error: null,
-          socket,
+          ws,
         });
-      });
 
-      socket.on("disconnect", () => {
+        // Send pending messages
+        pendingMessagesRef.current.forEach((msg) => {
+          ws.send(JSON.stringify(msg));
+        });
+        pendingMessagesRef.current = [];
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          const { type, ...payload } = data;
+
+          // Call registered handlers for this message type
+          const handlers = messageHandlersRef.current.get(type);
+          if (handlers) {
+            handlers.forEach((handler) => {
+              try {
+                handler(payload);
+              } catch (err) {
+                console.error(`[WebSocket] Error in handler for ${type}:`, err);
+              }
+            });
+          }
+        } catch (err) {
+          console.error("[WebSocket] Error parsing message:", err);
+        }
+      };
+
+      ws.onerror = (event) => {
+        console.error("[WebSocket] Error:", event);
+        setState((prev) => ({
+          ...prev,
+          error: new Error("WebSocket error"),
+          isConnecting: false,
+        }));
+      };
+
+      ws.onclose = () => {
         console.log("[WebSocket] Disconnected");
+        wsRef.current = null;
         setState((prev) => ({
           ...prev,
           isConnected: false,
-        }));
-      });
-
-      socket.on("connect_error", (error) => {
-        console.error("[WebSocket] Connection error:", error);
-        reconnectAttemptsRef.current++;
-        setState((prev) => ({
-          ...prev,
-          error: error as Error,
           isConnecting: false,
         }));
-      });
 
-      socket.on("error", (error) => {
-        console.error("[WebSocket] Error:", error);
-        setState((prev) => ({
-          ...prev,
-          error: new Error(error),
-        }));
-      });
-
-      socketRef.current = socket;
+        // Attempt to reconnect
+        if (reconnectAttemptsRef.current < mergedOptions.maxReconnectionAttempts!) {
+          reconnectAttemptsRef.current++;
+          const delay = mergedOptions.reconnectionDelay! * Math.pow(2, reconnectAttemptsRef.current - 1);
+          console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connect();
+          }, delay);
+        }
+      };
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       setState({
         isConnected: false,
         isConnecting: false,
         error: err,
-        socket: null,
+        ws: null,
       });
     }
-  }, [mergedOptions.url, mergedOptions.reconnectionDelay, mergedOptions.maxReconnectionAttempts]);
+  }, [getWsUrl, mergedOptions.reconnectionDelay, mergedOptions.maxReconnectionAttempts]);
 
   /**
    * Disconnect from WebSocket server
    */
   const disconnect = useCallback(() => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-      setState({
-        isConnected: false,
-        isConnecting: false,
-        error: null,
-        socket: null,
-      });
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+    }
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    setState({
+      isConnected: false,
+      isConnecting: false,
+      error: null,
+      ws: null,
+    });
+  }, []);
+
+  /**
+   * Send message to server
+   */
+  const send = useCallback((message: PendingMessage) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(message));
+    } else {
+      // Queue message if not connected
+      pendingMessagesRef.current.push(message);
     }
   }, []);
 
@@ -134,27 +181,38 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
    * Subscribe to price updates
    */
   const subscribeToPrices = useCallback((tickers: string[]) => {
-    if (socketRef.current?.connected) {
-      socketRef.current.emit("subscribe:prices", tickers);
-    }
-  }, []);
+    send({
+      type: "subscribe",
+      tickers,
+    });
+  }, [send]);
 
   /**
-   * Subscribe to news updates
+   * Unsubscribe from price updates
    */
-  const subscribeToNews = useCallback((assets?: string[]) => {
-    if (socketRef.current?.connected) {
-      socketRef.current.emit("subscribe:news", assets);
-    }
-  }, []);
+  const unsubscribeFromPrices = useCallback((tickers: string[]) => {
+    send({
+      type: "unsubscribe",
+      tickers,
+    });
+  }, [send]);
 
   /**
-   * Subscribe to market updates
+   * Listen to message type
    */
-  const subscribeToMarket = useCallback(() => {
-    if (socketRef.current?.connected) {
-      socketRef.current.emit("subscribe:market");
+  const on = useCallback((type: string, handler: (data: any) => void) => {
+    if (!messageHandlersRef.current.has(type)) {
+      messageHandlersRef.current.set(type, new Set());
     }
+    messageHandlersRef.current.get(type)!.add(handler);
+
+    // Return unsubscribe function
+    return () => {
+      const handlers = messageHandlersRef.current.get(type);
+      if (handlers) {
+        handlers.delete(handler);
+      }
+    };
   }, []);
 
   /**
@@ -162,70 +220,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
    */
   const onPriceUpdate = useCallback(
     (callback: (data: any) => void) => {
-      if (socketRef.current) {
-        socketRef.current.on("price:update", callback);
-        return () => {
-          socketRef.current?.off("price:update", callback);
-        };
-      }
-      return () => {};
+      return on("price_update", callback);
     },
-    []
+    [on]
   );
-
-  /**
-   * Listen to news updates
-   */
-  const onNewsUpdate = useCallback(
-    (callback: (data: any) => void) => {
-      if (socketRef.current) {
-        socketRef.current.on("news:update", callback);
-        return () => {
-          socketRef.current?.off("news:update", callback);
-        };
-      }
-      return () => {};
-    },
-    []
-  );
-
-  /**
-   * Listen to market updates
-   */
-  const onMarketUpdate = useCallback(
-    (callback: (data: any) => void) => {
-      if (socketRef.current) {
-        socketRef.current.on("market:update", callback);
-        return () => {
-          socketRef.current?.off("market:update", callback);
-        };
-      }
-      return () => {};
-    },
-    []
-  );
-
-  /**
-   * Emit custom event
-   */
-  const emit = useCallback((event: string, data?: any) => {
-    if (socketRef.current?.connected) {
-      socketRef.current.emit(event, data);
-    }
-  }, []);
-
-  /**
-   * Listen to custom event
-   */
-  const on = useCallback((event: string, callback: (data: any) => void) => {
-    if (socketRef.current) {
-      socketRef.current.on(event, callback);
-      return () => {
-        socketRef.current?.off(event, callback);
-      };
-    }
-    return () => {};
-  }, []);
 
   // Auto-connect on mount
   useEffect(() => {
@@ -234,24 +232,18 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     }
 
     return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
       disconnect();
     };
-  }, [connect, disconnect]);
+  }, [connect, disconnect, mergedOptions.autoConnect]);
 
   return {
     ...state,
     connect,
     disconnect,
+    send,
     subscribeToPrices,
-    subscribeToNews,
-    subscribeToMarket,
-    onPriceUpdate,
-    onNewsUpdate,
-    onMarketUpdate,
-    emit,
+    unsubscribeFromPrices,
     on,
+    onPriceUpdate,
   };
 }

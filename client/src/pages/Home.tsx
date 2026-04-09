@@ -1,11 +1,13 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, TrendingUp, BarChart3, Zap } from "lucide-react";
+import { ArrowRight, TrendingUp, BarChart3, Zap, Wifi, WifiOff } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { useState, useEffect, useCallback } from "react";
 
 // Mock live price data - в реальном приложении будет из API
 const mockPrices = [
@@ -51,11 +53,24 @@ const mockPrices = [
   },
 ];
 
-function PriceCard({ crypto }: { crypto: typeof mockPrices[0] }) {
+interface PriceData {
+  symbol: string;
+  name: string;
+  price: number;
+  change24h: number;
+  high24h: number;
+  low24h: number;
+  volume24h: number;
+  marketCap: number;
+}
+
+function PriceCard({ crypto, isUpdating }: { crypto: PriceData; isUpdating?: boolean }) {
   const isPositive = crypto.change24h >= 0;
 
   return (
-    <Card className="card-elevated p-4 hover:shadow-md transition-shadow">
+    <Card className={`card-elevated p-4 hover:shadow-md transition-all ${
+      isUpdating ? "ring-2 ring-blue-500" : ""
+    }`}>
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="font-semibold text-sm">{crypto.symbol}</p>
@@ -72,7 +87,7 @@ function PriceCard({ crypto }: { crypto: typeof mockPrices[0] }) {
         </div>
       </div>
 
-      <p className="text-lg font-bold mb-3">
+      <p className="text-lg font-bold mb-3 transition-colors">
         ${crypto.price.toLocaleString("en-US", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
@@ -114,6 +129,80 @@ function PriceCard({ crypto }: { crypto: typeof mockPrices[0] }) {
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
+  const { isConnected, onPriceUpdate, subscribeToPrices } = useWebSocket({ autoConnect: true });
+  const [prices, setPrices] = useState<Record<string, PriceData>>({
+    BTC: mockPrices[0],
+    ETH: mockPrices[1],
+    SOL: mockPrices[2],
+    ADA: mockPrices[3],
+  });
+  const [updatingSymbol, setUpdatingSymbol] = useState<string | null>(null);
+
+  // Subscribe to price updates when connected
+  useEffect(() => {
+    if (isConnected) {
+      subscribeToPrices(Object.keys(prices));
+      console.log("[Home] Subscribed to price updates");
+    }
+  }, [isConnected, subscribeToPrices, prices]);
+
+  // Listen to price updates from WebSocket
+  useEffect(() => {
+    const unsubscribe = onPriceUpdate((data) => {
+      console.log("[Home] Price update received:", data);
+      const { ticker, price, change } = data;
+      
+      if (ticker && prices[ticker]) {
+        setUpdatingSymbol(ticker);
+        setPrices((prev) => ({
+          ...prev,
+          [ticker]: {
+            ...prev[ticker],
+            price: price || prev[ticker].price,
+            change24h: change !== undefined ? change : prev[ticker].change24h,
+          },
+        }));
+        
+        setTimeout(() => setUpdatingSymbol(null), 500);
+      }
+    });
+
+    return () => unsubscribe?.();
+  }, [onPriceUpdate, prices]);
+
+  // Fallback: simulate price updates if WebSocket is not connected
+  useEffect(() => {
+    if (isConnected) return; // Don't simulate if connected
+
+    const interval = setInterval(() => {
+      setPrices((prev) => {
+        const updated = { ...prev };
+        const symbols = Object.keys(updated);
+        const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+        const crypto = updated[randomSymbol];
+        
+        // Simulate price change
+        const priceChange = (Math.random() - 0.5) * 100;
+        const newPrice = Math.max(crypto.price + priceChange, 1);
+        const changePercent = ((newPrice - crypto.price) / crypto.price) * 100;
+        
+        updated[randomSymbol] = {
+          ...crypto,
+          price: newPrice,
+          change24h: crypto.change24h + changePercent,
+          high24h: Math.max(crypto.high24h, newPrice),
+          low24h: Math.min(crypto.low24h, newPrice),
+        };
+        
+        setUpdatingSymbol(randomSymbol);
+        setTimeout(() => setUpdatingSymbol(null), 500);
+        
+        return updated;
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isConnected]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -156,10 +245,29 @@ export default function Home() {
             {/* Right - Live Price Ticker */}
             <div className="lg:col-span-1">
               <div className="sticky top-4">
-                <h3 className="text-lg font-bold mb-4">Live Price Ticker</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold">Live Price Ticker</h3>
+                  <div className="flex items-center gap-2">
+                    {isConnected ? (
+                      <>
+                        <Wifi className="h-4 w-4 text-green-500" />
+                        <span className="text-xs text-green-600 dark:text-green-400">Live</span>
+                      </>
+                    ) : (
+                      <>
+                        <WifiOff className="h-4 w-4 text-red-500" />
+                        <span className="text-xs text-red-600 dark:text-red-400">Offline</span>
+                      </>
+                    )}
+                  </div>
+                </div>
                 <div className="space-y-3">
-                  {mockPrices.map((crypto) => (
-                    <PriceCard key={crypto.symbol} crypto={crypto} />
+                  {Object.entries(prices).map(([symbol, crypto]) => (
+                    <PriceCard 
+                      key={symbol} 
+                      crypto={crypto}
+                      isUpdating={updatingSymbol === symbol}
+                    />
                   ))}
                 </div>
               </div>
