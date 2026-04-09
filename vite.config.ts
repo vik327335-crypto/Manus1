@@ -173,7 +173,28 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const pluginsWithoutHmr = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStripHmr()];
+function vitePluginCacheControl(): Plugin {
+  return {
+    name: 'vite-plugin-cache-control',
+    configureServer(server: ViteDevServer) {
+      return () => {
+        server.middlewares.use((req, res, next) => {
+          const url = req.url || '/';
+          if (url === '/' || url.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+          } else if (/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/.test(url)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          }
+          next();
+        });
+      };
+    },
+  };
+}
+
+const pluginsWithoutHmr = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStripHmr(), vitePluginCacheControl()];
 
 export default defineConfig({
   plugins: pluginsWithoutHmr,

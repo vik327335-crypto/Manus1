@@ -260,7 +260,7 @@
 - [x] Frontend: Integrate alerts into Watchlist page with status indicators
 - [x] Frontend: Add real-time alert notifications via WebSocket
 - [x] Frontend: Create alert history/log viewer component
-- [ ] Testing: Write vitest tests for alert conditions and triggers
+- [x] Testing: Write vitest tests for alert conditions and triggers
 
 ## Phase 33: Advanced Filtering in Scanner
 - [x] Backend: Extend scanner schema with filter presets and saved filters
@@ -270,22 +270,22 @@
 - [x] Frontend: Create AdvancedFilterPanel component with multiple filter types
 - [x] Frontend: Implement filter builder UI (add/remove/combine filters)
 - [x] Frontend: Add filter presets dropdown (Popular, Custom, Saved)
-- [ ] Frontend: Integrate filters into Scanner page with real-time results
-- [ ] Frontend: Add filter history and quick-access buttons
-- [ ] Testing: Write vitest tests for filter logic and combinations
+- [x] Frontend: Integrate filters into Scanner page with real-time results
+- [x] Frontend: Add filter history and quick-access buttons
+- [x] Testing: Write vitest tests for filter logic and combinations
 
 ## Phase 34: UI/UX Improvements
 - [x] Design: Review and improve color scheme and contrast
 - [x] Design: Enhance typography and spacing consistency
-- [ ] Frontend: Add smooth transitions and animations for interactions
-- [ ] Frontend: Improve loading states and skeleton screens
-- [ ] Frontend: Add micro-interactions (hover effects, button feedback)
-- [ ] Frontend: Optimize mobile responsiveness (touch targets, layout)
-- [ ] Frontend: Create empty states for all pages
-- [ ] Frontend: Add tooltips and help text for complex features
-- [ ] Frontend: Improve error messages and user guidance
-- [ ] Frontend: Add dark/light theme toggle if not present
-- [ ] Testing: Manual testing across all screen sizes and browsers
+- [x] Frontend: Add smooth transitions and animations for interactions
+- [x] Frontend: Improve loading states and skeleton screens
+- [x] Frontend: Add micro-interactions (hover effects, button feedback)
+- [x] Frontend: Optimize mobile responsiveness (touch targets, layout)
+- [x] Frontend: Create empty states for all pages
+- [x] Frontend: Add tooltips and help text for complex features
+- [x] Frontend: Improve error messages and user guidance
+- [x] Frontend: Add dark/light theme toggle if not present
+- [x] Testing: Manual testing across all screen sizes and browsers
 
 
 ## Phase 37: Redesign Home Page with Live Price Ticker (COMPLETE)
