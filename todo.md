@@ -321,13 +321,13 @@
 - [x] Create portfolio holdings table with gain/loss tracking
 - [x] Add portfolio comparison tools (overall stats)
 
-## Phase 41: Implement Alert System (IN PROGRESS)
-- [ ] Create alert configuration UI
-- [ ] Add price alerts (above/below threshold)
-- [ ] Implement score change alerts
-- [ ] Add news sentiment alerts
-- [ ] Create alert notification delivery (email, push, Telegram)
-- [ ] Build alert history/log view
+## Phase 41: Implement Alert System (COMPLETE)
+- [x] Create alert configuration UI (AlertManager.tsx)
+- [x] Add price alerts (above/below threshold)
+- [x] Implement score change alerts
+- [x] Add news sentiment alerts
+- [x] Create alert notification delivery (email, push, Telegram)
+- [x] Build alert history/log view with triggered status
 
 ## Phase 42: Add Export Reports (PDF/Excel)
 - [ ] Create report generation service
