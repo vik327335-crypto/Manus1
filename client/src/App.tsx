@@ -21,6 +21,7 @@ const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const HistoricalDataAnalysis = lazy(() => import("@/pages/HistoricalDataAnalysis"));
 const AutomatedExportReports = lazy(() => import("@/pages/AutomatedExportReports"));
+const Scanner = lazy(() => import("@/pages/Scanner"));
 
 // Loading fallback component
 function PageLoader() {
@@ -49,6 +50,7 @@ function Router() {
         <Route path="/settings" component={Settings} />
         <Route path="/historical-analysis" component={HistoricalDataAnalysis} />
         <Route path="/export-reports" component={AutomatedExportReports} />
+        <Route path="/scanner" component={Scanner} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/404" component={NotFound} />
         {/* Final fallback route */}
