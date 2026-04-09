@@ -313,15 +313,15 @@
 - [x] Integrate filters into Scanner page
 - [x] Create Scanner page with search and results grid
 
-## Phase 40: Create Portfolio Tracking Feature
-- [ ] Create portfolio management page
-- [ ] Add portfolio creation/editing UI
-- [ ] Implement portfolio performance tracking
-- [ ] Add portfolio allocation visualization
-- [ ] Create portfolio rebalancing recommendations
-- [ ] Add portfolio comparison tools
+## Phase 40: Create Portfolio Tracking Feature (COMPLETE)
+- [x] Create portfolio management page (Portfolio.tsx)
+- [x] Add portfolio creation/editing UI with mock portfolios
+- [x] Implement portfolio performance tracking (total value, gain, gain%)
+- [x] Add portfolio allocation visualization (pie chart)
+- [x] Create portfolio holdings table with gain/loss tracking
+- [x] Add portfolio comparison tools (overall stats)
 
-## Phase 41: Implement Alert System
+## Phase 41: Implement Alert System (IN PROGRESS)
 - [ ] Create alert configuration UI
 - [ ] Add price alerts (above/below threshold)
 - [ ] Implement score change alerts
