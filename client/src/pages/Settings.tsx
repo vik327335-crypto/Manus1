@@ -1,9 +1,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataUpdateSettings } from '@/components/DataUpdateSettings';
-import { Settings as SettingsIcon, Bell, Database, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Settings as SettingsIcon, Bell, Database, User, Moon, Sun, Globe, Lock } from 'lucide-react';
 
 export default function Settings() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [language, setLanguage] = useState('en');
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [telegramNotifications, setTelegramNotifications] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8">
@@ -56,14 +66,45 @@ export default function Settings() {
                 <CardDescription>Control how and when you receive notifications</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">
-                    Notification settings coming soon
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Configure email, push, and in-app notifications for alerts and updates
-                  </p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                    <div>
+                      <p className="font-semibold">Email Notifications</p>
+                      <p className="text-sm text-muted-foreground">Receive alerts via email</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={emailNotifications}
+                      onChange={(e) => setEmailNotifications(e.target.checked)}
+                      className="w-5 h-5 rounded border-input"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                    <div>
+                      <p className="font-semibold">Push Notifications</p>
+                      <p className="text-sm text-muted-foreground">Receive browser push notifications</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={pushNotifications}
+                      onChange={(e) => setPushNotifications(e.target.checked)}
+                      className="w-5 h-5 rounded border-input"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                    <div>
+                      <p className="font-semibold">Telegram Notifications</p>
+                      <p className="text-sm text-muted-foreground">Receive alerts via Telegram</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={telegramNotifications}
+                      onChange={(e) => setTelegramNotifications(e.target.checked)}
+                      className="w-5 h-5 rounded border-input"
+                    />
+                  </div>
                 </div>
+                <Button className="w-full">Save Preferences</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -76,14 +117,54 @@ export default function Settings() {
                 <CardDescription>Manage your account and profile information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">
-                    Profile settings coming soon
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Update your profile, change password, and manage security settings
-                  </p>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="theme">Theme</Label>
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        variant={theme === 'light' ? 'default' : 'outline'}
+                        onClick={() => setTheme('light')}
+                        className="gap-2"
+                      >
+                        <Sun className="h-4 w-4" />
+                        Light
+                      </Button>
+                      <Button
+                        variant={theme === 'dark' ? 'default' : 'outline'}
+                        onClick={() => setTheme('dark')}
+                        className="gap-2"
+                      >
+                        <Moon className="h-4 w-4" />
+                        Dark
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="language">Language</Label>
+                    <select
+                      id="language"
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background"
+                    >
+                      <option value="en">English</option>
+                      <option value="ru">Русский</option>
+                      <option value="es">Español</option>
+                      <option value="fr">Français</option>
+                      <option value="de">Deutsch</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="password">Change Password</Label>
+                    <Button variant="outline" className="w-full mt-2 gap-2">
+                      <Lock className="h-4 w-4" />
+                      Update Password
+                    </Button>
+                  </div>
                 </div>
+                <Button className="w-full">Save Changes</Button>
               </CardContent>
             </Card>
           </TabsContent>
