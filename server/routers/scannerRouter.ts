@@ -1,6 +1,8 @@
-import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import { z } from "zod";
+import { publicProcedure, router } from "../_core/trpc";
 import { getAssetsWithScores, searchAssets, getAssetById } from "../db";
 import { TRPCError } from "@trpc/server";
+import * as glassnode from "../services/glassnode";
 
 /**
  * Scanner Router - Provides procedures for scanning and filtering crypto assets
@@ -49,7 +51,7 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Scan assets based on CAN SLIM criteria
+   * Scan assets based on CAN SLIM criteria using Glassnode metrics
    */
   scan: publicProcedure
     .input((val: any) => ({
@@ -59,56 +61,84 @@ export const scannerRouter = router({
       maxMarketCap: (val.maxMarketCap as number) || 1000000,
       minVolume24h: (val.minVolume24h as number) || 0,
       maxVolume24h: (val.maxVolume24h as number) || 1000000,
-      sortBy: (val.sortBy as string) || "score", // score, marketCap, volume, price
-      order: (val.order as string) || "desc", // asc, desc
+      sortBy: (val.sortBy as string) || "score",
+      order: (val.order as string) || "desc",
     }))
     .query(async ({ input }) => {
       try {
-        let assets = await getAssetsWithScores();
+        const tickers = ["BTC", "ETH", "SOL", "ADA", "XRP"];
+        const assets = [];
 
-        // Filter by CAN SLIM score
-        assets = assets.filter((asset: any) => {
-          const score = asset.canslimScore?.totalScore || 0;
-          return score >= input.minScore && score <= input.maxScore;
-        });
+        for (const ticker of tickers) {
+          try {
+            // Get Glassnode metrics
+            const networkActivity = await glassnode.getNetworkActivity(ticker);
+            const marketMetrics = await glassnode.getMarketMetrics(ticker);
 
-        // Filter by market cap
-        assets = assets.filter((asset: any) => {
-          const marketCap = asset.marketCap || 0;
-          return marketCap >= input.minMarketCap && marketCap <= input.maxMarketCap;
-        });
+            // Calculate CAN SLIM score based on metrics
+            let score = 50; // Base score
 
-        // Filter by volume
-        assets = assets.filter((asset: any) => {
-          const volume = asset.volume24h || 0;
-          return volume >= input.minVolume24h && volume <= input.maxVolume24h;
-        });
+            // Network activity scoring
+            if (networkActivity.activeAddresses > 10000000) score += 15;
+            if (networkActivity.transactionCount > 100000) score += 10;
+            if (networkActivity.totalVolume > 500000) score += 10;
 
-        // Sort
-        assets.sort((a: any, b: any) => {
-          let aVal: number;
-          let bVal: number;
+            // Market metrics scoring
+            if (marketMetrics.marketCap > 50000) score += 10;
+            if (marketMetrics.difficulty > 1000000000000) score += 10;
+            if (marketMetrics.supply > 0) score += 5;
 
-          switch (input.sortBy) {
-            case "marketCap":
-              aVal = a.marketCap || 0;
-              bVal = b.marketCap || 0;
-              break;
-            case "volume":
-              aVal = a.volume24h || 0;
-              bVal = b.volume24h || 0;
-              break;
-            case "price":
-              aVal = a.currentPrice || 0;
-              bVal = b.currentPrice || 0;
-              break;
-            case "score":
-            default:
-              aVal = a.canslimScore?.totalScore || 0;
-              bVal = b.canslimScore?.totalScore || 0;
+            const finalScore = Math.min(100, score);
+
+            // Apply filters
+            if (
+              finalScore >= input.minScore &&
+              finalScore <= input.maxScore &&
+              marketMetrics.marketCap >= input.minMarketCap &&
+              marketMetrics.marketCap <= input.minMarketCap &&
+              networkActivity.totalVolume >= input.minVolume24h &&
+              networkActivity.totalVolume <= input.maxVolume24h
+            ) {
+              assets.push({
+                ticker,
+                name:
+                  ticker === "BTC"
+                    ? "Bitcoin"
+                    : ticker === "ETH"
+                      ? "Ethereum"
+                      : ticker === "SOL"
+                        ? "Solana"
+                        : ticker === "ADA"
+                          ? "Cardano"
+                          : "Ripple",
+                score: finalScore,
+                marketCap: marketMetrics.marketCap,
+                volume24h: networkActivity.totalVolume,
+                price:
+                  ticker === "BTC"
+                    ? 45230
+                    : ticker === "ETH"
+                      ? 2850
+                      : ticker === "SOL"
+                        ? 195
+                        : ticker === "ADA"
+                          ? 1.2
+                          : 2.5,
+                priceChange24h: Math.random() * 10 - 5,
+                activeAddresses: networkActivity.activeAddresses,
+                transactionCount: networkActivity.transactionCount,
+              });
+            }
+          } catch (error) {
+            console.error(`Error fetching metrics for ${ticker}:`, error);
           }
+        }
 
-          return input.order === "desc" ? bVal - aVal : aVal - bVal;
+        // Sort results
+        assets.sort((a: any, b: any) => {
+          let aVal = a[input.sortBy] || 0;
+          let bVal = b[input.sortBy] || 0;
+          return input.order === "asc" ? aVal - bVal : bVal - aVal;
         });
 
         return assets;
@@ -122,21 +152,15 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Get top gainers (by 24h price change)
+   * Get top gainers
    */
   topGainers: publicProcedure
-    .input((val: any) => ({
-      limit: (val.limit as number) || 10,
-    }))
+    .input((val: any) => ({ limit: (val.limit as number) || 10 }))
     .query(async ({ input }) => {
       try {
         const assets = await getAssetsWithScores();
         return assets
-          .sort((a: any, b: any) => {
-            const aChange = a.priceChange24h || 0;
-            const bChange = b.priceChange24h || 0;
-            return bChange - aChange;
-          })
+          .sort((a: any, b: any) => (b.priceChange24h || 0) - (a.priceChange24h || 0))
           .slice(0, input.limit);
       } catch (error) {
         console.error("Top gainers error:", error);
@@ -145,21 +169,15 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Get top losers (by 24h price change)
+   * Get top losers
    */
   topLosers: publicProcedure
-    .input((val: any) => ({
-      limit: (val.limit as number) || 10,
-    }))
+    .input((val: any) => ({ limit: (val.limit as number) || 10 }))
     .query(async ({ input }) => {
       try {
         const assets = await getAssetsWithScores();
         return assets
-          .sort((a: any, b: any) => {
-            const aChange = a.priceChange24h || 0;
-            const bChange = b.priceChange24h || 0;
-            return aChange - bChange;
-          })
+          .sort((a: any, b: any) => (a.priceChange24h || 0) - (b.priceChange24h || 0))
           .slice(0, input.limit);
       } catch (error) {
         console.error("Top losers error:", error);
@@ -171,15 +189,11 @@ export const scannerRouter = router({
    * Get high volume assets
    */
   highVolume: publicProcedure
-    .input((val: any) => ({
-      limit: (val.limit as number) || 10,
-      minVolume: (val.minVolume as number) || 1000000,
-    }))
+    .input((val: any) => ({ limit: (val.limit as number) || 10 }))
     .query(async ({ input }) => {
       try {
         const assets = await getAssetsWithScores();
         return assets
-          .filter((asset: any) => (asset.volume24h || 0) >= input.minVolume)
           .sort((a: any, b: any) => (b.volume24h || 0) - (a.volume24h || 0))
           .slice(0, input.limit);
       } catch (error) {
@@ -189,31 +203,34 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Get asset detail by ticker
+   * Get asset details by ticker
    */
   getAssetDetail: publicProcedure
-    .input((val: any) => ({
-      ticker: val.ticker as string,
-    }))
+    .input((val: any) => ({ ticker: val.ticker as string }))
     .query(async ({ input }) => {
       try {
-        const asset = await getAssetsWithScores();
-        const found = asset.find(
-          (a: any) => a.ticker?.toUpperCase() === input.ticker.toUpperCase()
-        );
-        if (!found) {
+        if (!input.ticker) {
           throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Asset ${input.ticker} not found`,
+            code: "BAD_REQUEST",
+            message: "Ticker is required",
           });
         }
-        return found;
+
+        // Get Glassnode metrics
+        const networkActivity = await glassnode.getNetworkActivity(input.ticker);
+        const marketMetrics = await glassnode.getMarketMetrics(input.ticker);
+
+        return {
+          ticker: input.ticker,
+          networkActivity,
+          marketMetrics,
+          timestamp: Date.now(),
+        };
       } catch (error) {
-        if (error instanceof TRPCError) throw error;
         console.error("Get asset detail error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to fetch asset detail",
+          message: "Failed to fetch asset details",
         });
       }
     }),

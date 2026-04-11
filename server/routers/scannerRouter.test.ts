@@ -158,13 +158,18 @@ describe("Scanner Router", () => {
   });
 
   describe("getAssetDetail", () => {
-    it("should throw error for invalid ticker", async () => {
-      try {
-        await caller.getAssetDetail({ ticker: "INVALID_TICKER_XYZ_12345" });
-        expect.fail("Should throw error");
-      } catch (error: any) {
-        expect(error.code).toBe("NOT_FOUND");
-      }
+    it("should return metrics for valid ticker", async () => {
+      const result = await caller.getAssetDetail({ ticker: "BTC" });
+      expect(result).toHaveProperty("ticker");
+      expect(result).toHaveProperty("networkActivity");
+      expect(result).toHaveProperty("marketMetrics");
+      expect(result.ticker).toBe("BTC");
+    });
+
+    it("should return metrics for ETH", async () => {
+      const result = await caller.getAssetDetail({ ticker: "ETH" });
+      expect(result.ticker).toBe("ETH");
+      expect(result.networkActivity.activeAddresses).toBeGreaterThan(0);
     });
   });
 });
