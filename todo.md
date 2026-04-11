@@ -373,8 +373,8 @@
 - [x] Create tRPC procedures for crypto data (scannerRouter with 7 procedures)
 - [x] Implement Scanner page tRPC integration (Scanner.tsx uses tRPC.scanner queries)
 - [x] Implement Portfolio page tRPC integration (Portfolio.tsx uses tRPC.portfolio queries)
-- [ ] Add database schema for portfolios and holdings
-- [ ] Add database schema for scan results and alerts
+- [x] Add database schema for portfolios and holdings (portfolios, portfolio_holdings tables)
+- [x] Add database schema for scan results and alerts (scanResults table)
 - [x] Implement portfolio CRUD operations (portfolioRouter with 8 procedures)
-- [ ] Add performance optimization (caching, pagination)
+- [x] Add performance optimization (caching, pagination)
 - [x] Write vitest tests for new tRPC procedures (scannerRouter.test.ts with 15 tests)

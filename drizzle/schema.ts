@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -203,3 +203,61 @@ export const alertHistory = mysqlTable("alert_history", {
 
 export type AlertHistory = typeof alertHistory.$inferSelect;
 export type InsertAlertHistory = typeof alertHistory.$inferInsert;
+
+/**
+ * User Portfolios
+ * Stores user's crypto portfolios
+ */
+export const portfolios = mysqlTable("portfolios", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  targetAllocation: json("targetAllocation").$type<Record<string, number>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Portfolio = typeof portfolios.$inferSelect;
+export type InsertPortfolio = typeof portfolios.$inferInsert;
+
+/**
+ * Portfolio Holdings
+ * Stores individual holdings in a portfolio
+ */
+export const portfolioHoldings = mysqlTable("portfolio_holdings", {
+  id: int("id").autoincrement().primaryKey(),
+  portfolioId: int("portfolioId").notNull(),
+  ticker: varchar("ticker", { length: 20 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  quantity: int("quantity"), // stored as integer (multiply by 10000 for decimals)
+  entryPrice: int("entryPrice"), // in cents
+  currentPrice: int("currentPrice"), // in cents
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PortfolioHolding = typeof portfolioHoldings.$inferSelect;
+export type InsertPortfolioHolding = typeof portfolioHoldings.$inferInsert;
+
+/**
+ * Scan Results
+ * Stores results of CAN SLIM scans
+ */
+export const scanResults = mysqlTable("scan_results", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  scanName: varchar("scanName", { length: 255 }).notNull(),
+  minScore: int("minScore"),
+  maxScore: int("maxScore"),
+  minMarketCap: int("minMarketCap"),
+  maxMarketCap: int("maxMarketCap"),
+  minVolume24h: int("minVolume24h"),
+  maxVolume24h: int("maxVolume24h"),
+  resultCount: int("resultCount"),
+  results: json("results").$type<Array<any>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ScanResult = typeof scanResults.$inferSelect;
+export type InsertScanResult = typeof scanResults.$inferInsert;
