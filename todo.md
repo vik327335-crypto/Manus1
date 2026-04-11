@@ -370,11 +370,11 @@
 - [x] Deploy to production (Manus hosting)
 
 ## Phase 47: Connect Scanner & Portfolio to Real tRPC Endpoints
-- [ ] Create tRPC procedures for crypto data (searchCryptos, getCryptoDetails, scanCryptos)
-- [ ] Implement Scanner page tRPC integration (replace mock data)
-- [ ] Implement Portfolio page tRPC integration (replace mock data)
+- [x] Create tRPC procedures for crypto data (scannerRouter with 7 procedures)
+- [x] Implement Scanner page tRPC integration (Scanner.tsx uses tRPC.scanner queries)
+- [x] Implement Portfolio page tRPC integration (Portfolio.tsx uses tRPC.portfolio queries)
 - [ ] Add database schema for portfolios and holdings
 - [ ] Add database schema for scan results and alerts
-- [ ] Implement portfolio CRUD operations (create, read, update, delete)
+- [x] Implement portfolio CRUD operations (portfolioRouter with 8 procedures)
 - [ ] Add performance optimization (caching, pagination)
-- [ ] Write vitest tests for new tRPC procedures
+- [x] Write vitest tests for new tRPC procedures (scannerRouter.test.ts with 15 tests)
