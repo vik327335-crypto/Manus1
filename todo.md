@@ -368,3 +368,13 @@
 - [x] Create user guide (Settings, Features)
 - [x] Setup CI/CD pipeline (vitest, TypeScript checks)
 - [x] Deploy to production (Manus hosting)
+
+## Phase 47: Connect Scanner & Portfolio to Real tRPC Endpoints
+- [ ] Create tRPC procedures for crypto data (searchCryptos, getCryptoDetails, scanCryptos)
+- [ ] Implement Scanner page tRPC integration (replace mock data)
+- [ ] Implement Portfolio page tRPC integration (replace mock data)
+- [ ] Add database schema for portfolios and holdings
+- [ ] Add database schema for scan results and alerts
+- [ ] Implement portfolio CRUD operations (create, read, update, delete)
+- [ ] Add performance optimization (caching, pagination)
+- [ ] Write vitest tests for new tRPC procedures

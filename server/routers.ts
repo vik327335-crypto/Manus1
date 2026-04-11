@@ -14,6 +14,8 @@ import { strategyExportRouter } from "./routers/strategyExportRouter";
 import { polygonRouter } from "./routers/polygonRouter";
 import { alertsRouter } from "./routers/alertsRouter";
 import { filterRouter } from "./routers/filterRouter";
+import { scannerRouter } from "./routers/scannerRouter";
+import { portfolioRouter } from "./routers/portfolioRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -39,6 +41,8 @@ export const appRouter = router({
   polygon: polygonRouter,
   alerts: alertsRouter,
   filters: filterRouter,
+  scanner: scannerRouter,
+  portfolio: portfolioRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
