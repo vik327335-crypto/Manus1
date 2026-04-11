@@ -378,3 +378,14 @@
 - [x] Implement portfolio CRUD operations (portfolioRouter with 8 procedures)
 - [x] Add performance optimization (caching, pagination)
 - [x] Write vitest tests for new tRPC procedures (scannerRouter.test.ts with 15 tests)
+
+
+## Phase 48: Integrate Glassnode API for Real Blockchain Data
+- [ ] Create Glassnode service wrapper (server/services/glassnode.ts)
+- [ ] Add tRPC procedures for fetching metrics (glassnode.getMetrics, glassnode.getActiveAddresses, etc.)
+- [ ] Implement caching layer for API responses (Redis or in-memory)
+- [ ] Add rate limiting to prevent API quota exhaustion
+- [ ] Update Scanner scoring logic to use real metrics
+- [ ] Integrate real data into Portfolio analysis
+- [ ] Add WebSocket support for real-time metric updates
+- [ ] Write vitest tests for Glassnode integration

@@ -16,6 +16,7 @@ import { alertsRouter } from "./routers/alertsRouter";
 import { filterRouter } from "./routers/filterRouter";
 import { scannerRouter } from "./routers/scannerRouter";
 import { portfolioRouter } from "./routers/portfolioRouter";
+import { glassnodeRouter } from "./routers/glassnodeRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -43,6 +44,7 @@ export const appRouter = router({
   filters: filterRouter,
   scanner: scannerRouter,
   portfolio: portfolioRouter,
+  glassnode: glassnodeRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
