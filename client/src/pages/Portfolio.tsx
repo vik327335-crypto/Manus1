@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { Plus, Trash2, TrendingUp, TrendingDown, Loader2, Activity } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export default function Portfolio() {
@@ -44,6 +44,12 @@ export default function Portfolio() {
     { enabled: !!selectedPortfolioId }
   );
 
+  // Get Glassnode metrics for portfolio
+  const glassnodeQuery = trpc.glassnode.getNetworkActivity.useQuery(
+    { ticker: "BTC" },
+    { enabled: !!selectedPortfolioId }
+  );
+
   const handleCreatePortfolio = async () => {
     if (!newPortfolioName.trim()) return;
 
@@ -75,7 +81,7 @@ export default function Portfolio() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Portfolio Management</h1>
-          <p className="text-gray-600">Manage and track your crypto portfolios</p>
+          <p className="text-gray-600">Manage and track your crypto portfolios with real-time Glassnode metrics</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -297,6 +303,42 @@ export default function Portfolio() {
                           </div>
                         )
                       )}
+                    </div>
+                  </Card>
+                )}
+
+                {/* Glassnode Metrics */}
+                {glassnodeQuery.data && (
+                  <Card className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Activity size={20} className="text-blue-600" />
+                      <h3 className="font-bold text-lg">Network Activity (BTC)</h3>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Active Addresses</p>
+                        <p className="text-lg font-bold">
+                          {(glassnodeQuery.data.activeAddresses / 1000000).toFixed(1)}M
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">New Addresses</p>
+                        <p className="text-lg font-bold">
+                          {(glassnodeQuery.data.newAddresses / 1000).toFixed(1)}K
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Transactions</p>
+                        <p className="text-lg font-bold">
+                          {(glassnodeQuery.data.transactionCount / 1000).toFixed(1)}K
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Volume</p>
+                        <p className="text-lg font-bold">
+                          ${(glassnodeQuery.data.totalVolume / 1000000).toFixed(1)}M
+                        </p>
+                      </div>
                     </div>
                   </Card>
                 )}

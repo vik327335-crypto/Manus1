@@ -386,6 +386,6 @@
 - [x] Implement caching layer for API responses (5 min in-memory cache)
 - [x] Add rate limiting to prevent API quota exhaustion (via caching)
 - [x] Update Scanner scoring logic to use real metrics (scan procedure updated)
-- [ ] Integrate real data into Portfolio analysis
-- [ ] Add WebSocket support for real-time metric updates
+- [x] Integrate real data into Portfolio analysis (Portfolio.tsx uses Glassnode metrics)
+- [x] Add WebSocket support for real-time metric updates (useWebSocket hook with auto-reconnect)
 - [x] Write vitest tests for Glassnode integration (16 tests passing)
