@@ -284,3 +284,49 @@ export function generateCSV(
 
   return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
 }
+
+/**
+ * Экспортирует активы в JSON формат
+ */
+export function exportToJSON(assets: Array<Record<string, any>>): string {
+  try {
+    return JSON.stringify(
+      {
+        exportDate: new Date().toISOString(),
+        totalAssets: assets.length,
+        assets: assets,
+      },
+      null,
+      2
+    );
+  } catch (error) {
+    console.error("Error exporting to JSON:", error);
+    throw new Error("Ошибка при экспорте в JSON");
+  }
+}
+
+/**
+ * Получает MIME тип для формата файла
+ */
+export function getMimeType(format: string): string {
+  const mimeTypes: Record<string, string> = {
+    csv: "text/csv",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    json: "application/json",
+    pdf: "application/pdf",
+  };
+  return mimeTypes[format.toLowerCase()] || "application/octet-stream";
+}
+
+/**
+ * Получает расширение файла для формата
+ */
+export function getFileExtension(format: string): string {
+  const extensions: Record<string, string> = {
+    csv: "csv",
+    xlsx: "xlsx",
+    json: "json",
+    pdf: "pdf",
+  };
+  return extensions[format.toLowerCase()] || "txt";
+}

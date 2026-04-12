@@ -392,17 +392,6 @@
 
 
 ## Phase 49: Integrate CoinGecko API for Price History & Trends
-- [ ] Create CoinGecko service wrapper (server/services/coingecko.ts)
-- [ ] Add tRPC procedures for fetching price history (coingeckoRouter)
-- [ ] Implement 24h trend analysis (price momentum, volatility)
-- [ ] Update Scanner scoring to include price trends
-- [ ] Add price history chart to AssetDetail page
-- [ ] Integrate CoinGecko data into Home page Live Price Ticker
-- [ ] Add caching for price data (1 hour TTL)
-- [ ] Write vitest tests for CoinGecko integration
-
-
-## Phase 49: Integrate CoinGecko API for Price History & Trends
 - [x] Create CoinGecko service wrapper (server/services/coingecko.ts)
 - [x] Add tRPC procedures for fetching price history (coingeckoRouter)
 - [x] Implement 24h trend analysis (price momentum, volatility)
@@ -415,3 +404,60 @@
 - [x] Update Home.tsx to fetch real prices from CoinGecko API
 - [x] Add loading skeleton states for price ticker
 - [x] Integrate WebSocket fallback with CoinGecko data
+
+
+## Phase 50: Fix Vite HMR WebSocket Error
+- [x] Создать плагин vitePluginDisableHmr для отключения HMR инжекции
+- [x] Обновить vite.config.ts с правильной конфигурацией HMR
+- [x] Удалить все @vite/client скрипты из HTML
+- [x] Добавить Cache-Control headers для оптимизации
+- [x] Проверить отсутствие ошибок в консоли браузера
+- [x] Убедиться что все 60 тестов passing
+- [x] Проверить стабильность dev сервера
+
+
+## Phase 51: Расширенная фильтрация и поиск
+- [x] Добавить полнотекстовый поиск по названиям криптовалют (SearchBar.tsx)
+- [x] Реализовать фильтрацию по диапазону CAN SLIM score (AdvancedFilter.tsx)
+- [x] Добавить фильтр по рыночной капитализации (AdvancedFilter.tsx)
+- [x] Реализовать фильтр по объёму торговли 24h (AdvancedFilter.tsx)
+- [x] Добавить фильтр по изменению цены за 24h (AdvancedFilter.tsx)
+- [ ] Сохранять пользовательские фильтры в БД
+- [ ] Создать UI для сохранённых фильтров
+- [x] Написать тесты для логики фильтрации (SearchBar.test.ts, AdvancedFilter.test.ts)
+
+## Phase 52: Экспорт данных в различные форматы
+- [x] Добавить экспорт в CSV (exportService.ts, DataExportButton.tsx)
+- [x] Реализовать экспорт в Excel с форматированием (exportService.ts)
+- [x] Добавить экспорт в JSON (exportService.ts)
+- [x] Реализовать экспорт в PDF с графиками (exportService.ts)
+- [x] Добавить кнопки экспорта на Dashboard и Scanner страницы (DataExportButton.tsx)
+- [x] Реализовать пакетный экспорт нескольких активов (DataExportButton.tsx)
+- [ ] Написать тесты для экспорта
+
+## Phase 53: Оптимизация производительности
+- [ ] Добавить виртуализацию списков (React Window)
+- [ ] Реализовать lazy loading для таблиц
+- [ ] Оптимизировать запросы к БД с индексами
+- [ ] Добавить кэширование на клиенте (React Query)
+- [ ] Реализовать пагинацию для больших наборов данных
+- [ ] Оптимизировать размер бандла (code splitting)
+- [ ] Добавить Service Worker для offline поддержки
+
+## Phase 54: Аналитика и статистика
+- [ ] Создать страницу Analytics с общей статистикой
+- [ ] Добавить графики производительности портфеля
+- [ ] Реализовать сравнение активов по метрикам
+- [ ] Добавить тепловую карту корреляций
+- [ ] Создать отчёты по CAN SLIM критериям
+- [ ] Добавить историю изменений score для активов
+- [ ] Реализовать прогнозирование трендов (простое)
+
+## Phase 55: Улучшение UI/UX
+- [ ] Добавить темный режим (dark mode)
+- [ ] Реализовать адаптивный дизайн для мобильных
+- [ ] Улучшить навигацию и структуру меню
+- [ ] Добавить горячие клавиши для основных действий
+- [ ] Реализовать поиск с автодополнением
+- [ ] Добавить всплывающие подсказки (tooltips)
+- [ ] Улучшить доступность (a11y)
