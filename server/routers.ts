@@ -17,6 +17,7 @@ import { filterRouter } from "./routers/filterRouter";
 import { scannerRouter } from "./routers/scannerRouter";
 import { portfolioRouter } from "./routers/portfolioRouter";
 import { glassnodeRouter } from "./routers/glassnodeRouter";
+import { coingeckoRouter } from "./routers/coingeckoRouter";
 import {
   getAssetsWithScores,
   getLatestMarketTrend,
@@ -45,6 +46,7 @@ export const appRouter = router({
   scanner: scannerRouter,
   portfolio: portfolioRouter,
   glassnode: glassnodeRouter,
+  coingecko: coingeckoRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

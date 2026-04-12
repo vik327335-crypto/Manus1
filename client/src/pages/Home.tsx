@@ -7,49 +7,49 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
-// Mock live price data - в реальном приложении будет из API
-const mockPrices = [
+// Default price data - будет заменено на реальные данные из CoinGecko
+const defaultPrices = [
   {
     symbol: "BTC",
     name: "Bitcoin",
-    price: 45230,
-    change24h: 2.50,
-    high24h: 46100,
-    low24h: 44500,
-    volume24h: 28.50,
-    marketCap: 890.00,
+    price: 0,
+    change24h: 0,
+    high24h: 0,
+    low24h: 0,
+    volume24h: 0,
+    marketCap: 0,
   },
   {
     symbol: "ETH",
     name: "Ethereum",
-    price: 2850,
-    change24h: -1.20,
-    high24h: 2950,
-    low24h: 2800,
-    volume24h: 15.20,
-    marketCap: 342.00,
+    price: 0,
+    change24h: 0,
+    high24h: 0,
+    low24h: 0,
+    volume24h: 0,
+    marketCap: 0,
   },
   {
     symbol: "SOL",
     name: "Solana",
-    price: 145.50,
-    change24h: 5.75,
-    high24h: 150.00,
-    low24h: 138.00,
-    volume24h: 2.10,
-    marketCap: 68.50,
+    price: 0,
+    change24h: 0,
+    high24h: 0,
+    low24h: 0,
+    volume24h: 0,
+    marketCap: 0,
   },
   {
     symbol: "ADA",
     name: "Cardano",
-    price: 0.98,
-    change24h: 1.30,
-    high24h: 1.02,
-    low24h: 0.95,
-    volume24h: 0.85,
-    marketCap: 35.20,
+    price: 0,
+    change24h: 0,
+    high24h: 0,
+    low24h: 0,
+    volume24h: 0,
+    marketCap: 0,
   },
 ];
 
@@ -131,12 +131,61 @@ export default function Home() {
   const [, navigate] = useLocation();
   const { isConnected, onPriceUpdate, subscribeToPrices } = useWebSocket({ autoConnect: true });
   const [prices, setPrices] = useState<Record<string, PriceData>>({
-    BTC: mockPrices[0],
-    ETH: mockPrices[1],
-    SOL: mockPrices[2],
-    ADA: mockPrices[3],
+    BTC: defaultPrices[0],
+    ETH: defaultPrices[1],
+    SOL: defaultPrices[2],
+    ADA: defaultPrices[3],
   });
   const [updatingSymbol, setUpdatingSymbol] = useState<string | null>(null);
+  const [isLoadingPrices, setIsLoadingPrices] = useState(true);
+  
+  // Fetch real prices from CoinGecko
+  const marketDataQuery = trpc.coingecko.getMarketData.useQuery(
+    { tickers: ["BTC", "ETH", "SOL", "ADA"] },
+    { refetchInterval: 60000 } // Refresh every 60 seconds
+  );
+
+  // Update prices when CoinGecko data is fetched
+  useEffect(() => {
+    if (marketDataQuery.data) {
+      const cryptoMap: Record<string, any> = {};
+      for (const crypto of marketDataQuery.data) {
+        cryptoMap[crypto.ticker] = crypto;
+      }
+      
+      setPrices((prev) => ({
+        BTC: {
+          ...prev.BTC,
+          price: cryptoMap.BTC?.price || prev.BTC.price,
+          change24h: cryptoMap.BTC?.priceChange24h || prev.BTC.change24h,
+          marketCap: (cryptoMap.BTC?.marketCap || 0) / 1e9, // Convert to billions
+          volume24h: (cryptoMap.BTC?.volume24h || 0) / 1e9,
+        },
+        ETH: {
+          ...prev.ETH,
+          price: cryptoMap.ETH?.price || prev.ETH.price,
+          change24h: cryptoMap.ETH?.priceChange24h || prev.ETH.change24h,
+          marketCap: (cryptoMap.ETH?.marketCap || 0) / 1e9,
+          volume24h: (cryptoMap.ETH?.volume24h || 0) / 1e9,
+        },
+        SOL: {
+          ...prev.SOL,
+          price: cryptoMap.SOL?.price || prev.SOL.price,
+          change24h: cryptoMap.SOL?.priceChange24h || prev.SOL.change24h,
+          marketCap: (cryptoMap.SOL?.marketCap || 0) / 1e9,
+          volume24h: (cryptoMap.SOL?.volume24h || 0) / 1e9,
+        },
+        ADA: {
+          ...prev.ADA,
+          price: cryptoMap.ADA?.price || prev.ADA.price,
+          change24h: cryptoMap.ADA?.priceChange24h || prev.ADA.change24h,
+          marketCap: (cryptoMap.ADA?.marketCap || 0) / 1e9,
+          volume24h: (cryptoMap.ADA?.volume24h || 0) / 1e9,
+        },
+      }));
+      setIsLoadingPrices(false);
+    }
+  }, [marketDataQuery.data]);
 
   // Subscribe to price updates when connected
   useEffect(() => {
@@ -248,6 +297,7 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold">Live Price Ticker</h3>
                   <div className="flex items-center gap-2">
+                    {isLoadingPrices && <Skeleton className="h-4 w-4 rounded-full" />}
                     {isConnected ? (
                       <>
                         <Wifi className="h-4 w-4 text-green-500" />
@@ -261,6 +311,13 @@ export default function Home() {
                     )}
                   </div>
                 </div>
+                {isLoadingPrices ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <Skeleton key={i} className="h-32 rounded-lg" />
+                    ))}
+                  </div>
+                ) : (
                 <div className="space-y-3">
                   {Object.entries(prices).map(([symbol, crypto]) => (
                     <PriceCard 
@@ -270,6 +327,7 @@ export default function Home() {
                     />
                   ))}
                 </div>
+                )}
               </div>
             </div>
           </div>

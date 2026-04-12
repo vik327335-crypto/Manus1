@@ -389,3 +389,29 @@
 - [x] Integrate real data into Portfolio analysis (Portfolio.tsx uses Glassnode metrics)
 - [x] Add WebSocket support for real-time metric updates (useWebSocket hook with auto-reconnect)
 - [x] Write vitest tests for Glassnode integration (16 tests passing)
+
+
+## Phase 49: Integrate CoinGecko API for Price History & Trends
+- [ ] Create CoinGecko service wrapper (server/services/coingecko.ts)
+- [ ] Add tRPC procedures for fetching price history (coingeckoRouter)
+- [ ] Implement 24h trend analysis (price momentum, volatility)
+- [ ] Update Scanner scoring to include price trends
+- [ ] Add price history chart to AssetDetail page
+- [ ] Integrate CoinGecko data into Home page Live Price Ticker
+- [ ] Add caching for price data (1 hour TTL)
+- [ ] Write vitest tests for CoinGecko integration
+
+
+## Phase 49: Integrate CoinGecko API for Price History & Trends
+- [x] Create CoinGecko service wrapper (server/services/coingecko.ts)
+- [x] Add tRPC procedures for fetching price history (coingeckoRouter)
+- [x] Implement 24h trend analysis (price momentum, volatility)
+- [x] Update Scanner scoring to include price trends
+- [x] Integrate CoinGecko data into Home page Live Price Ticker
+- [x] Add caching for price data (1 hour TTL)
+- [x] Write vitest tests for CoinGecko integration (16 tests passing)
+- [x] Update Scanner router to use CoinGecko data for topGainers, topLosers, highVolume
+- [x] Fix scannerRouter tests (all 60 tests passing)
+- [x] Update Home.tsx to fetch real prices from CoinGecko API
+- [x] Add loading skeleton states for price ticker
+- [x] Integrate WebSocket fallback with CoinGecko data

@@ -3,6 +3,7 @@ import { publicProcedure, router } from "../_core/trpc";
 import { getAssetsWithScores, searchAssets, getAssetById } from "../db";
 import { TRPCError } from "@trpc/server";
 import * as glassnode from "../services/glassnode";
+import * as coingecko from "../services/coingecko";
 
 /**
  * Scanner Router - Provides procedures for scanning and filtering crypto assets
@@ -51,7 +52,7 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Scan assets based on CAN SLIM criteria using Glassnode metrics
+   * Scan assets based on CAN SLIM criteria using Glassnode metrics and CoinGecko price data
    */
   scan: publicProcedure
     .input((val: any) => ({
@@ -74,6 +75,10 @@ export const scannerRouter = router({
             // Get Glassnode metrics
             const networkActivity = await glassnode.getNetworkActivity(ticker);
             const marketMetrics = await glassnode.getMarketMetrics(ticker);
+            
+            // Get CoinGecko price data and 24h trend
+            const priceData = await coingecko.getCurrentPrice(ticker);
+            const trendData = await coingecko.get24hTrend(ticker);
 
             // Calculate CAN SLIM score based on metrics
             let score = 50; // Base score
@@ -87,17 +92,23 @@ export const scannerRouter = router({
             if (marketMetrics.marketCap > 50000) score += 10;
             if (marketMetrics.difficulty > 1000000000000) score += 10;
             if (marketMetrics.supply > 0) score += 5;
+            
+            // Price trend scoring (CAN SLIM momentum component)
+            if (trendData.momentum === "strong_up") score += 15;
+            else if (trendData.momentum === "up") score += 8;
+            else if (trendData.momentum === "strong_down") score -= 10;
+            else if (trendData.momentum === "down") score -= 5;
 
-            const finalScore = Math.min(100, score);
+            const finalScore = Math.min(100, Math.max(0, score));
 
             // Apply filters
             if (
               finalScore >= input.minScore &&
               finalScore <= input.maxScore &&
-              marketMetrics.marketCap >= input.minMarketCap &&
-              marketMetrics.marketCap <= input.minMarketCap &&
-              networkActivity.totalVolume >= input.minVolume24h &&
-              networkActivity.totalVolume <= input.maxVolume24h
+              priceData.marketCap >= input.minMarketCap &&
+              priceData.marketCap <= input.maxMarketCap &&
+              priceData.volume24h >= input.minVolume24h &&
+              priceData.volume24h <= input.maxVolume24h
             ) {
               assets.push({
                 ticker,
@@ -112,19 +123,12 @@ export const scannerRouter = router({
                           ? "Cardano"
                           : "Ripple",
                 score: finalScore,
-                marketCap: marketMetrics.marketCap,
-                volume24h: networkActivity.totalVolume,
-                price:
-                  ticker === "BTC"
-                    ? 45230
-                    : ticker === "ETH"
-                      ? 2850
-                      : ticker === "SOL"
-                        ? 195
-                        : ticker === "ADA"
-                          ? 1.2
-                          : 2.5,
-                priceChange24h: Math.random() * 10 - 5,
+                marketCap: priceData.marketCap,
+                volume24h: priceData.volume24h,
+                price: priceData.price,
+                priceChange24h: priceData.priceChange24h,
+                momentum: trendData.momentum,
+                volatility: trendData.volatility,
                 activeAddresses: networkActivity.activeAddresses,
                 transactionCount: networkActivity.transactionCount,
               });
@@ -152,14 +156,15 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Get top gainers
+   * Get top gainers using CoinGecko price data
    */
   topGainers: publicProcedure
     .input((val: any) => ({ limit: (val.limit as number) || 10 }))
     .query(async ({ input }) => {
       try {
-        const assets = await getAssetsWithScores();
-        return assets
+        const tickers = ["BTC", "ETH", "SOL", "ADA", "XRP", "DOGE", "MATIC", "LINK", "AVAX", "DOT"];
+        const marketData = await coingecko.getMarketData(tickers);
+        return marketData
           .sort((a: any, b: any) => (b.priceChange24h || 0) - (a.priceChange24h || 0))
           .slice(0, input.limit);
       } catch (error) {
@@ -169,14 +174,15 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Get top losers
+   * Get top losers using CoinGecko price data
    */
   topLosers: publicProcedure
     .input((val: any) => ({ limit: (val.limit as number) || 10 }))
     .query(async ({ input }) => {
       try {
-        const assets = await getAssetsWithScores();
-        return assets
+        const tickers = ["BTC", "ETH", "SOL", "ADA", "XRP", "DOGE", "MATIC", "LINK", "AVAX", "DOT"];
+        const marketData = await coingecko.getMarketData(tickers);
+        return marketData
           .sort((a: any, b: any) => (a.priceChange24h || 0) - (b.priceChange24h || 0))
           .slice(0, input.limit);
       } catch (error) {
@@ -186,14 +192,15 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Get high volume assets
+   * Get high volume assets using CoinGecko market data
    */
   highVolume: publicProcedure
     .input((val: any) => ({ limit: (val.limit as number) || 10 }))
     .query(async ({ input }) => {
       try {
-        const assets = await getAssetsWithScores();
-        return assets
+        const tickers = ["BTC", "ETH", "SOL", "ADA", "XRP", "DOGE", "MATIC", "LINK", "AVAX", "DOT"];
+        const marketData = await coingecko.getMarketData(tickers);
+        return marketData
           .sort((a: any, b: any) => (b.volume24h || 0) - (a.volume24h || 0))
           .slice(0, input.limit);
       } catch (error) {
@@ -203,10 +210,10 @@ export const scannerRouter = router({
     }),
 
   /**
-   * Get asset details by ticker
+   * Get asset details by ticker with price history and trend analysis
    */
   getAssetDetail: publicProcedure
-    .input((val: any) => ({ ticker: val.ticker as string }))
+    .input((val: any) => ({ ticker: val.ticker as string, days: (val.days as number) || 30 }))
     .query(async ({ input }) => {
       try {
         if (!input.ticker) {
@@ -219,11 +226,19 @@ export const scannerRouter = router({
         // Get Glassnode metrics
         const networkActivity = await glassnode.getNetworkActivity(input.ticker);
         const marketMetrics = await glassnode.getMarketMetrics(input.ticker);
+        
+        // Get CoinGecko price data
+        const priceData = await coingecko.getCurrentPrice(input.ticker);
+        const priceHistory = await coingecko.getPriceHistory(input.ticker, input.days);
+        const trendData = await coingecko.get24hTrend(input.ticker);
 
         return {
           ticker: input.ticker,
           networkActivity,
           marketMetrics,
+          priceData,
+          priceHistory,
+          trendData,
           timestamp: Date.now(),
         };
       } catch (error) {
