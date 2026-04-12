@@ -69,24 +69,34 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
 }
 
 /**
- * Vite plugin to collect browser debug logs
- * - POST /__manus__/logs: Browser sends logs, written directly to files
- * - Files: browserConsole.log, networkRequests.log, sessionReplay.log
- * - Auto-trimmed when exceeding 1MB (keeps newest entries)
+ * Vite plugin to completely disable HMR client injection
+ * This prevents WebSocket connection errors in the browser console
  */
-/**
- * Vite plugin to strip @vite/client from HTML
- */
-function vitePluginStripHmr(): Plugin {
+function vitePluginDisableHmr(): Plugin {
   return {
-    name: 'vite-plugin-strip-hmr',
+    name: 'vite-plugin-disable-hmr',
+    
+    // Prevent Vite from injecting HMR client script
+    resolveId(id) {
+      if (id === '@vite/client') {
+        return { id, external: true };
+      }
+    },
+    
+    // Transform HTML to remove any @vite/client references
     transformIndexHtml(html) {
-      // Remove @vite/client script tags - handle all possible patterns
-      return html.replace(/<script[^>]*@vite\/client[^>]*><\/script>/g, '')
-                 .replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '')
-                 .replace(/<script[^>]*src="\/@vite\/client"[^>]*type="module"[^>]*><\/script>/g, '')
-                 .replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '')
-                 .replace(/<script[^>]*@vite\/client[^>]*type="module"[^>]*><\/script>/g, '');
+      // Remove all @vite/client script tags - handle all possible patterns
+      let result = html;
+      
+      // Remove various script tag patterns
+      result = result.replace(/<script[^>]*@vite\/client[^>]*><\/script>/g, '');
+      result = result.replace(/<script[^>]*type="module"[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '');
+      result = result.replace(/<script[^>]*src="\/@vite\/client"[^>]*type="module"[^>]*><\/script>/g, '');
+      result = result.replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '');
+      result = result.replace(/<script[^>]*@vite\/client[^>]*type="module"[^>]*><\/script>/g, '');
+      result = result.replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>/g, '');
+      
+      return result;
     },
   };
 }
@@ -194,7 +204,7 @@ function vitePluginCacheControl(): Plugin {
   };
 }
 
-const pluginsWithoutHmr = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStripHmr(), vitePluginCacheControl()];
+const pluginsWithoutHmr = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginDisableHmr(), vitePluginCacheControl()];
 
 export default defineConfig({
   plugins: pluginsWithoutHmr,
@@ -235,12 +245,13 @@ export default defineConfig({
     },
   },
   server: {
-    hmr: false,
+    hmr: false, // Disable HMR WebSocket to prevent browser connection errors
     host: '0.0.0.0',
     allowedHosts: ['**'],
     fs: {
       strict: true,
       deny: ["**/..*"],
     },
+    middlewareMode: false,
   },
 });
