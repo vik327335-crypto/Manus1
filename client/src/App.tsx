@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Suspense, lazy, useEffect } from "react";
 import { useServiceWorker } from "@/hooks/useServiceWorker";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import NotFound from "@/pages/NotFound";
 import Home from "./pages/Home";
@@ -25,6 +26,7 @@ const Scanner = lazy(() => import("@/pages/Scanner"));
 const Portfolio = lazy(() => import("@/pages/Portfolio"));
 const AlertManager = lazy(() => import("@/pages/AlertManager"));
 const ReportGenerator = lazy(() => import("@/pages/ReportGenerator"));
+const Analytics = lazy(() => import("@/pages/Analytics"));
 
 // Loading fallback component
 function PageLoader() {
@@ -48,6 +50,7 @@ function Router() {
         <Route path="/asset/:ticker" component={AssetDetail} />
         <Route path="/watchlist" component={Watchlist} />
         <Route path="/portfolio" component={PortfolioComparison} />
+        <Route path="/analytics" component={Analytics} />
         <Route path="/notification-settings" component={NotificationSettings} />
         <Route path="/backtesting" component={Backtesting} />
         <Route path="/settings" component={Settings} />
@@ -74,6 +77,9 @@ function Router() {
 function AppContent() {
   // Initialize Service Worker
   const swState = useServiceWorker();
+  
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts();
 
   useEffect(() => {
     if (swState.isSupported && swState.isRegistered) {
