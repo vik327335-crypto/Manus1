@@ -458,5 +458,5 @@
 - [x] Улучшить навигацию и структуру меню (EnhancedNavigation.tsx)
 - [x] Добавить горячие клавиши для основных акций (useKeyboardShortcuts.ts)
 - [x] Реализовать поиск с автодополнением (CommandPalette.tsx)
-- [ ] Добавить всплывающие подсказки (tooltips)
+- [x] Добавить всплывающие подсказки (tooltips) (EnhancedTooltip.tsx)
 - [ ] Улучшить доступность (a11y)
