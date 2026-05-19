@@ -513,3 +513,32 @@
 - [x] Поддержка размещения ордеров через XT.COM (в xtcomRouter)
 - [x] Реализовать историю сделок с XT.COM (в xtcomRouter.getTrades)
 - [x] Написать тесты для XT.COM интеграции (xtcomRouter.test.ts)
+
+
+## Phase 65: Binance API интеграция
+- [x] Создать Binance API сервис (server/services/binance.ts)
+- [ ] Добавить управление Binance API ключами
+- [ ] Создать tRPC роутер для Binance
+- [ ] Реализовать импорт позиций из Binance
+- [ ] Написать тесты для Binance интеграции
+
+## Phase 66: Kraken API интеграция
+- [x] Создать Kraken API сервис (server/services/kraken.ts)
+- [ ] Добавить управление Kraken API ключами
+- [ ] Создать tRPC роутер для Kraken
+- [ ] Реализовать импорт позиций из Kraken
+- [ ] Написать тесты для Kraken интеграции
+
+## Phase 67: Coinbase API интеграция
+- [x] Создать Coinbase API сервис (server/services/coinbase.ts)
+- [ ] Добавить управление Coinbase API ключами
+- [ ] Создать tRPC роутер для Coinbase
+- [ ] Реализовать импорт позиций из Coinbase
+- [ ] Написать тесты для Coinbase интеграции
+
+## Phase 68: Унифицированный интерфейс
+- [ ] Создать MultiExchangePortfolio компонент
+- [ ] Добавить синхронизацию со всеми биржами
+- [ ] Создать UI для управления несколькими биржами
+- [ ] Добавить агрегированный портфель
+- [ ] Написать тесты для унифицированного интерфейса
