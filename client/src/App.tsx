@@ -18,6 +18,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Watchlist = lazy(() => import("./pages/Watchlist"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Traders = lazy(() => import("./pages/Traders"));
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/analytics" component={Analytics} />
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/watchlist" component={Watchlist} />
+      <Route path="/traders" component={Traders} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

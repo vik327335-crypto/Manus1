@@ -9,6 +9,7 @@ import { adminRouter } from "./routers/adminRouter";
 import { notificationRouter } from "./routers/notificationRouter";
 import { backtestRouter } from "./routers/backtestRouter";
 import { backtestingRouter } from "./routers/backtestingRouter";
+import { socialTradingRouter } from "./routers/socialTradingRouter";
 import { realTimeRouter } from "./routers/realTimeRouter";
 import { historicalDataRouter } from "./routers/historicalDataRouter";
 import { strategyExportRouter } from "./routers/strategyExportRouter";
@@ -40,6 +41,7 @@ export const appRouter = router({
   notifications: notificationRouter,
   backtest: backtestRouter,
   backtesting: backtestingRouter,
+  socialTrading: socialTradingRouter,
   realTime: realTimeRouter,
   historicalData: historicalDataRouter,
   strategyExport: strategyExportRouter,

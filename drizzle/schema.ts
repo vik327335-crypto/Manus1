@@ -289,3 +289,65 @@ export const backtests = mysqlTable("backtests", {
 
 export type Backtest = typeof backtests.$inferSelect;
 export type InsertBacktest = typeof backtests.$inferInsert;
+
+/**
+ * Social Trading - Traders
+ * Stores trader profiles for social trading feature
+ */
+export const traders = mysqlTable("traders", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  avatar: varchar("avatar", { length: 512 }),
+  winRate: int("winRate").notNull(), // basis points (10000 = 100%)
+  totalTrades: int("totalTrades").notNull(),
+  profitableTrades: int("profitableTrades").notNull(),
+  avgReturn: int("avgReturn").notNull(), // basis points
+  maxDrawdown: int("maxDrawdown").notNull(), // basis points
+  followers: int("followers").default(0).notNull(),
+  copiedTrades: int("copiedTrades").default(0).notNull(),
+  rating: int("rating").notNull(), // 1-5 stars * 100
+  verified: int("verified").default(0).notNull(), // 0 = false, 1 = true
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Trader = typeof traders.$inferSelect;
+export type InsertTrader = typeof traders.$inferInsert;
+
+/**
+ * Social Trading - Copied Trades
+ * Tracks trades copied from other traders
+ */
+export const copiedTrades = mysqlTable("copied_trades", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  traderId: int("traderId").notNull().references(() => traders.id),
+  tradeId: varchar("tradeId", { length: 255 }).notNull(),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  entryPrice: int("entryPrice").notNull(), // in cents
+  exitPrice: int("exitPrice"),
+  quantity: int("quantity").notNull(),
+  pnl: int("pnl"), // in cents
+  status: varchar("status", { length: 20 }).notNull().default("OPEN"), // OPEN, CLOSED, CANCELLED
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  closedAt: timestamp("closedAt"),
+});
+
+export type CopiedTrade = typeof copiedTrades.$inferSelect;
+export type InsertCopiedTrade = typeof copiedTrades.$inferInsert;
+
+/**
+ * Social Trading - Trader Followers
+ * Tracks followers of traders
+ */
+export const traderFollowers = mysqlTable("trader_followers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  traderId: int("traderId").notNull().references(() => traders.id),
+  followedAt: timestamp("followedAt").defaultNow().notNull(),
+});
+
+export type TraderFollower = typeof traderFollowers.$inferSelect;
+export type InsertTraderFollower = typeof traderFollowers.$inferInsert;
