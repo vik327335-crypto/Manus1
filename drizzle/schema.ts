@@ -261,3 +261,31 @@ export const scanResults = mysqlTable("scan_results", {
 
 export type ScanResult = typeof scanResults.$inferSelect;
 export type InsertScanResult = typeof scanResults.$inferInsert;
+
+/**
+ * Backtesting Results
+ * Stores results of strategy backtests
+ */
+export const backtests = mysqlTable("backtests", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  strategyId: varchar("strategyId", { length: 255 }).notNull(),
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate").notNull(),
+  initialCapital: int("initialCapital").notNull(), // in cents
+  totalReturn: int("totalReturn").notNull(), // basis points (10000 = 100%)
+  annualizedReturn: int("annualizedReturn"),
+  sharpeRatio: int("sharpeRatio").notNull(), // multiplied by 100
+  maxDrawdown: int("maxDrawdown").notNull(), // basis points
+  winRate: int("winRate").notNull(), // basis points (10000 = 100%)
+  profitFactor: int("profitFactor").notNull(), // multiplied by 100
+  totalTrades: int("totalTrades").notNull(),
+  winningTrades: int("winningTrades").notNull(),
+  losingTrades: int("losingTrades").notNull(),
+  averageWin: int("averageWin"), // in cents
+  averageLoss: int("averageLoss"), // in cents
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Backtest = typeof backtests.$inferSelect;
+export type InsertBacktest = typeof backtests.$inferInsert;

@@ -1,6 +1,6 @@
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend, alertConditions, alertHistory, AlertCondition, InsertAlertCondition, AlertHistory, InsertAlertHistory } from "../drizzle/schema";
+import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend, alertConditions, alertHistory, AlertCondition, InsertAlertCondition, AlertHistory, InsertAlertHistory, backtests, Backtest, InsertBacktest } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;

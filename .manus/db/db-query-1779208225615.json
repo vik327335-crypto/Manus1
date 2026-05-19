@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `backtests` (\n\t`id` varchar(64) NOT NULL,\n\t`userId` int NOT NULL,\n\t`strategyId` varchar(255) NOT NULL,\n\t`startDate` timestamp NOT NULL,\n\t`endDate` timestamp NOT NULL,\n\t`initialCapital` int NOT NULL,\n\t`totalReturn` int NOT NULL,\n\t`annualizedReturn` int,\n\t`sharpeRatio` int NOT NULL,\n\t`maxDrawdown` int NOT NULL,\n\t`winRate` int NOT NULL,\n\t`profitFactor` int NOT NULL,\n\t`totalTrades` int NOT NULL,\n\t`winningTrades` int NOT NULL,\n\t`losingTrades` int NOT NULL,\n\t`averageWin` int,\n\t`averageLoss` int,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `backtests_id` PRIMARY KEY(`id`)\n);\nALTER TABLE `backtests` ADD CONSTRAINT `backtests_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4CaeKKnrPiHJ9qv.root --database LsyvnSNiFMT42LysW9wVcJ --execute CREATE TABLE `backtests` (\n\t`id` varchar(64) NOT NULL,\n\t`userId` int NOT NULL,\n\t`strategyId` varchar(255) NOT NULL,\n\t`startDate` timestamp NOT NULL,\n\t`endDate` timestamp NOT NULL,\n\t`initialCapital` int NOT NULL,\n\t`totalReturn` int NOT NULL,\n\t`annualizedReturn` int,\n\t`sharpeRatio` int NOT NULL,\n\t`maxDrawdown` int NOT NULL,\n\t`winRate` int NOT NULL,\n\t`profitFactor` int NOT NULL,\n\t`totalTrades` int NOT NULL,\n\t`winningTrades` int NOT NULL,\n\t`losingTrades` int NOT NULL,\n\t`averageWin` int,\n\t`averageLoss` int,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `backtests_id` PRIMARY KEY(`id`)\n);\nALTER TABLE `backtests` ADD CONSTRAINT `backtests_userId_users_id_fk` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 740
+}
