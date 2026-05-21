@@ -10,6 +10,8 @@ import { notificationRouter } from "./routers/notificationRouter";
 import { backtestRouter } from "./routers/backtestRouter";
 import { backtestingRouter } from "./routers/backtestingRouter";
 import { socialTradingRouter } from "./routers/socialTradingRouter";
+import { tutorialRouter } from "./routers/tutorialRouter";
+import { paperTradingRouter } from "./routers/paperTradingRouter";
 import { realTimeRouter } from "./routers/realTimeRouter";
 import { historicalDataRouter } from "./routers/historicalDataRouter";
 import { strategyExportRouter } from "./routers/strategyExportRouter";
@@ -42,6 +44,8 @@ export const appRouter = router({
   backtest: backtestRouter,
   backtesting: backtestingRouter,
   socialTrading: socialTradingRouter,
+  tutorial: tutorialRouter,
+  paperTrading: paperTradingRouter,
   realTime: realTimeRouter,
   historicalData: historicalDataRouter,
   strategyExport: strategyExportRouter,

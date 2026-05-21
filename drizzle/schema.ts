@@ -351,3 +351,162 @@ export const traderFollowers = mysqlTable("trader_followers", {
 
 export type TraderFollower = typeof traderFollowers.$inferSelect;
 export type InsertTraderFollower = typeof traderFollowers.$inferInsert;
+
+
+/**
+ * Tutorials System
+ * Interactive tutorials for new users
+ */
+export const tutorials = mysqlTable("tutorials", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 50 }).notNull(), // "getting-started", "scanning", "trading", "portfolio"
+  difficulty: varchar("difficulty", { length: 20 }).notNull().default("beginner"), // beginner, intermediate, advanced
+  estimatedTime: int("estimatedTime").notNull(), // in minutes
+  order: int("order").notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Tutorial = typeof tutorials.$inferSelect;
+export type InsertTutorial = typeof tutorials.$inferInsert;
+
+/**
+ * Tutorial Steps
+ * Individual steps within a tutorial
+ */
+export const tutorialSteps = mysqlTable("tutorial_steps", {
+  id: int("id").autoincrement().primaryKey(),
+  tutorialId: int("tutorialId").notNull().references(() => tutorials.id),
+  stepNumber: int("stepNumber").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  action: varchar("action", { length: 255 }), // "click", "fill", "navigate"
+  targetElement: varchar("targetElement", { length: 255 }), // CSS selector
+  highlightArea: varchar("highlightArea", { length: 255 }), // JSON for highlight coordinates
+  tips: text("tips"),
+  order: int("order").notNull(),
+});
+
+export type TutorialStep = typeof tutorialSteps.$inferSelect;
+export type InsertTutorialStep = typeof tutorialSteps.$inferInsert;
+
+/**
+ * Tutorial Progress
+ * Tracks user progress through tutorials
+ */
+export const tutorialProgress = mysqlTable("tutorial_progress", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  tutorialId: int("tutorialId").notNull().references(() => tutorials.id),
+  currentStep: int("currentStep").notNull().default(0),
+  completedSteps: int("completedSteps").notNull().default(0),
+  isCompleted: int("isCompleted").default(0).notNull(),
+  completedAt: timestamp("completedAt"),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TutorialProgress = typeof tutorialProgress.$inferSelect;
+export type InsertTutorialProgress = typeof tutorialProgress.$inferInsert;
+
+/**
+ * Paper Trading Accounts
+ * Virtual trading accounts for practice
+ */
+export const paperTradingAccounts = mysqlTable("paper_trading_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  initialBalance: int("initialBalance").notNull(), // in cents
+  currentBalance: int("currentBalance").notNull(),
+  totalProfit: int("totalProfit").notNull().default(0),
+  totalReturn: int("totalReturn").notNull().default(0), // basis points
+  trades: int("trades").notNull().default(0),
+  winRate: int("winRate").notNull().default(0), // basis points
+  maxDrawdown: int("maxDrawdown").notNull().default(0), // basis points
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PaperTradingAccount = typeof paperTradingAccounts.$inferSelect;
+export type InsertPaperTradingAccount = typeof paperTradingAccounts.$inferInsert;
+
+/**
+ * Paper Trades
+ * Virtual trades in paper trading accounts
+ */
+export const paperTrades = mysqlTable("paper_trades", {
+  id: int("id").autoincrement().primaryKey(),
+  accountId: int("accountId").notNull().references(() => paperTradingAccounts.id),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  type: varchar("type", { length: 10 }).notNull(), // "BUY", "SELL"
+  entryPrice: int("entryPrice").notNull(), // in cents
+  exitPrice: int("exitPrice"),
+  quantity: int("quantity").notNull(),
+  pnl: int("pnl"), // in cents
+  pnlPercent: int("pnlPercent"), // basis points
+  status: varchar("status", { length: 20 }).notNull().default("OPEN"), // OPEN, CLOSED, CANCELLED
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  closedAt: timestamp("closedAt"),
+});
+
+export type PaperTrade = typeof paperTrades.$inferSelect;
+export type InsertPaperTrade = typeof paperTrades.$inferInsert;
+
+/**
+ * Quests
+ * Learning quests and challenges
+ */
+export const quests = mysqlTable("quests", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 50 }).notNull(), // "learning", "trading", "social"
+  difficulty: varchar("difficulty", { length: 20 }).notNull(),
+  reward: int("reward").notNull(), // points
+  badge: varchar("badge", { length: 100 }), // badge name
+  requirements: text("requirements"), // JSON with requirements
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Quest = typeof quests.$inferSelect;
+export type InsertQuest = typeof quests.$inferInsert;
+
+/**
+ * Quest Progress
+ * Tracks user progress on quests
+ */
+export const questProgress = mysqlTable("quest_progress", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  questId: int("questId").notNull().references(() => quests.id),
+  progress: int("progress").notNull().default(0), // percentage
+  isCompleted: int("isCompleted").default(0).notNull(),
+  completedAt: timestamp("completedAt"),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+});
+
+export type QuestProgress = typeof questProgress.$inferSelect;
+export type InsertQuestProgress = typeof questProgress.$inferInsert;
+
+/**
+ * User Achievements
+ * Badges and achievements earned by users
+ */
+export const userAchievements = mysqlTable("user_achievements", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  badge: varchar("badge", { length: 100 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  points: int("points").notNull().default(0),
+  earnedAt: timestamp("earnedAt").defaultNow().notNull(),
+});
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = typeof userAchievements.$inferInsert;

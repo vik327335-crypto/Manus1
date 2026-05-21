@@ -19,6 +19,8 @@ const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Watchlist = lazy(() => import("./pages/Watchlist"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Traders = lazy(() => import("./pages/Traders"));
+const LearningHub = lazy(() => import("./pages/LearningHub"));
+const PaperTrading = lazy(() => import("./pages/PaperTrading"));
 
 function Router() {
   return (
@@ -30,6 +32,8 @@ function Router() {
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/watchlist" component={Watchlist} />
       <Route path="/traders" component={Traders} />
+      <Route path="/learning" component={LearningHub} />
+      <Route path="/paper-trading" component={PaperTrading} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
