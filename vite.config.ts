@@ -245,7 +245,7 @@ export default defineConfig({
     },
   },
   server: {
-    hmr: false, // Disable HMR WebSocket to prevent browser connection errors
+    hmr: false,
     host: '0.0.0.0',
     allowedHosts: ['**'],
     fs: {

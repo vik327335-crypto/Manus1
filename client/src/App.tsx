@@ -21,6 +21,8 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Traders = lazy(() => import("./pages/Traders"));
 const LearningHub = lazy(() => import("./pages/LearningHub"));
 const PaperTrading = lazy(() => import("./pages/PaperTrading"));
+const DayTradingChart = lazy(() => import("./pages/DayTradingChart"));
+const DayTradingPositions = lazy(() => import("./pages/DayTradingPositions"));
 
 function Router() {
   return (
@@ -34,6 +36,8 @@ function Router() {
       <Route path="/traders" component={Traders} />
       <Route path="/learning" component={LearningHub} />
       <Route path="/paper-trading" component={PaperTrading} />
+      <Route path="/day-trading/chart" component={DayTradingChart} />
+      <Route path="/day-trading/positions" component={DayTradingPositions} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
