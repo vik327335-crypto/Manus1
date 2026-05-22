@@ -23,6 +23,7 @@ const LearningHub = lazy(() => import("./pages/LearningHub"));
 const PaperTrading = lazy(() => import("./pages/PaperTrading"));
 const DayTradingChart = lazy(() => import("./pages/DayTradingChart"));
 const DayTradingPositions = lazy(() => import("./pages/DayTradingPositions"));
+const StrategyComparison = lazy(() => import("./pages/StrategyComparison").then(m => ({ default: m.StrategyComparison })));
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/paper-trading" component={PaperTrading} />
       <Route path="/day-trading/chart" component={DayTradingChart} />
       <Route path="/day-trading/positions" component={DayTradingPositions} />
+      <Route path="/strategy-comparison" component={StrategyComparison} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
