@@ -8,10 +8,11 @@ import { newsRouter } from "./routers/newsRouter";
 import { adminRouter } from "./routers/adminRouter";
 import { notificationRouter } from "./routers/notificationRouter";
 import { backtestRouter } from "./routers/backtestRouter";
-import { backtestingRouter } from "./routers/backtestingRouter";
-import { socialTradingRouter } from "./routers/socialTradingRouter";
-import { tutorialRouter } from "./routers/tutorialRouter";
-import { paperTradingRouter } from "./routers/paperTradingRouter";
+import { backtestingRouter } from './routers/backtestingRouter';
+import { socialTradingRouter } from './routers/socialTradingRouter';
+import { tutorialRouter } from './routers/tutorialRouter';
+import { paperTradingRouter } from './routers/paperTradingRouter';
+import { strategyDataRouter } from './routers/strategyDataRouter';
 import { realTimeRouter } from "./routers/realTimeRouter";
 import { historicalDataRouter } from "./routers/historicalDataRouter";
 import { strategyExportRouter } from "./routers/strategyExportRouter";
@@ -46,6 +47,7 @@ export const appRouter = router({
   socialTrading: socialTradingRouter,
   tutorial: tutorialRouter,
   paperTrading: paperTradingRouter,
+  strategyData: strategyDataRouter,
   realTime: realTimeRouter,
   historicalData: historicalDataRouter,
   strategyExport: strategyExportRouter,

@@ -43,6 +43,13 @@
       "when": 1779376354857,
       "tag": "0005_illegal_millenium_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1779524067675,
+      "tag": "0006_plain_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }
