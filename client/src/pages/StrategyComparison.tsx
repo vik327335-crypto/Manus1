@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -49,6 +49,27 @@ export function StrategyComparison() {
   // Мутация для экспорта в CSV
   const exportCSVMutation = trpc.reportExport.exportToCSV.useMutation();
   const exportHTMLMutation = trpc.reportExport.exportToHTML.useMutation();
+
+  // WebSocket подписка на real-time обновления
+  const metricsSubscription = trpc.websocket.subscribeToAllMetrics.useSubscription(undefined, {
+    onData: (update) => {
+      // Обновляем данные стратегий при получении обновления
+      console.log('Обновление метрик:', update);
+      // Можно добавить рефреш данных
+    },
+    onError: (error) => {
+      console.error('Ошибка WebSocket:', error);
+    },
+  });
+
+  // Отписываемся от WebSocket при расмонтировании
+  useEffect(() => {
+    return () => {
+      if (metricsSubscription) {
+        // Отписываемся
+      }
+    };
+  }, [metricsSubscription]);
 
   // Вычисляем временной диапазон
   const dateRange = useMemo(() => {

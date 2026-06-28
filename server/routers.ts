@@ -17,6 +17,8 @@ import { realTimeRouter } from "./routers/realTimeRouter";
 import { historicalDataRouter } from "./routers/historicalDataRouter";
 import { strategyExportRouter } from "./routers/strategyExportRouter";
 import { reportExportRouter } from "./routers/reportExportRouter";
+import { websocketRouter } from "./routers/websocketRouter";
+import { strategyComparisonRouter } from "./routers/strategyComparisonRouter";
 import { polygonRouter } from "./routers/polygonRouter";
 import { alertsRouter } from "./routers/alertsRouter";
 import { filterRouter } from "./routers/filterRouter";
@@ -53,6 +55,8 @@ export const appRouter = router({
   historicalData: historicalDataRouter,
   strategyExport: strategyExportRouter,
   reportExport: reportExportRouter,
+  websocket: websocketRouter,
+  strategyComparison: strategyComparisonRouter,
   polygon: polygonRouter,
   alerts: alertsRouter,
   filters: filterRouter,
