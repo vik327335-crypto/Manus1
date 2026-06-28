@@ -16,6 +16,7 @@ import { strategyDataRouter } from './routers/strategyDataRouter';
 import { realTimeRouter } from "./routers/realTimeRouter";
 import { historicalDataRouter } from "./routers/historicalDataRouter";
 import { strategyExportRouter } from "./routers/strategyExportRouter";
+import { reportExportRouter } from "./routers/reportExportRouter";
 import { polygonRouter } from "./routers/polygonRouter";
 import { alertsRouter } from "./routers/alertsRouter";
 import { filterRouter } from "./routers/filterRouter";
@@ -51,6 +52,7 @@ export const appRouter = router({
   realTime: realTimeRouter,
   historicalData: historicalDataRouter,
   strategyExport: strategyExportRouter,
+  reportExport: reportExportRouter,
   polygon: polygonRouter,
   alerts: alertsRouter,
   filters: filterRouter,

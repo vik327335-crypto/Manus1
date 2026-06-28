@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StrategyMetricsCard } from '@/components/StrategyMetricsCard';
 import { StrategyComparisonTable } from '@/components/StrategyComparisonTable';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, Award, AlertCircle, Loader2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Award, AlertCircle, Loader2, Download, FileText } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -44,6 +44,11 @@ interface StrategyMetricsDisplay extends StrategyMetrics {}
 export function StrategyComparison() {
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyMetricsDisplay | null>(null);
   const [period, setPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+  const [exporting, setExporting] = useState(false);
+
+  // Мутация для экспорта в CSV
+  const exportCSVMutation = trpc.reportExport.exportToCSV.useMutation();
+  const exportHTMLMutation = trpc.reportExport.exportToHTML.useMutation();
 
   // Вычисляем временной диапазон
   const dateRange = useMemo(() => {
@@ -203,6 +208,100 @@ export function StrategyComparison() {
               {p === '7d' ? '7 дней' : p === '30d' ? '30 дней' : p === '90d' ? '90 дней' : 'Все'}
             </Button>
           ))}
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                setExporting(true);
+                const result = await exportCSVMutation.mutateAsync({
+                  strategies: strategies.map((s) => ({
+                    strategyName: s.strategyName,
+                    totalTrades: s.totalTrades,
+                    winningTrades: s.winningTrades,
+                    losingTrades: s.losingTrades,
+                    winRate: s.winRate,
+                    totalProfit: s.totalProfit,
+                    totalLoss: s.totalLoss,
+                    roi: s.roi,
+                    profitFactor: s.profitFactor,
+                    sharpeRatio: s.sharpeRatio,
+                    maxDrawdown: s.maxDrawdown,
+                    averageWin: s.averageWin,
+                    averageLoss: s.averageLoss,
+                    largestWin: s.largestWin,
+                    largestLoss: s.largestLoss,
+                  })),
+                  filename: `strategies-${period}-${Date.now()}.csv`,
+                });
+                
+                // Скачиваем CSV
+                const blob = new Blob([result.data], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = result.filename;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                toast.success('Отчёт экспортирован в CSV');
+              } catch (error: any) {
+                toast.error(`Ошибка экспорта: ${error.message}`);
+              } finally {
+                setExporting(false);
+              }
+            }}
+            disabled={exporting || strategies.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            CSV
+          </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                setExporting(true);
+                const result = await exportHTMLMutation.mutateAsync({
+                  strategies: strategies.map((s) => ({
+                    strategyName: s.strategyName,
+                    totalTrades: s.totalTrades,
+                    winningTrades: s.winningTrades,
+                    losingTrades: s.losingTrades,
+                    winRate: s.winRate,
+                    totalProfit: s.totalProfit,
+                    totalLoss: s.totalLoss,
+                    roi: s.roi,
+                    profitFactor: s.profitFactor,
+                    sharpeRatio: s.sharpeRatio,
+                    maxDrawdown: s.maxDrawdown,
+                    averageWin: s.averageWin,
+                    averageLoss: s.averageLoss,
+                    largestWin: s.largestWin,
+                    largestLoss: s.largestLoss,
+                  })),
+                  title: `Strategy Report - ${period}`,
+                });
+                
+                // Скачиваем HTML
+                const blob = new Blob([result.data], { type: 'text/html' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `strategies-${period}-${Date.now()}.html`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                toast.success('Отчёт экспортирован в HTML');
+              } catch (error: any) {
+                toast.error(`Ошибка экспорта: ${error.message}`);
+              } finally {
+                setExporting(false);
+              }
+            }}
+            disabled={exporting || strategies.length === 0}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            PDF
+          </Button>
         </div>
       </div>
 
