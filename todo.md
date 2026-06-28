@@ -650,3 +650,14 @@
 - [x] Написать интеграционные тесты
 - [x] Создать документацию для пользователей
 - [x] Провести финальное тестирование и оптимизацию
+
+
+## Phase 82: Интеграция strategyDataRouter с UI
+- [x] Создать strategyDataRouter с 5 процедурами (getStrategySignals, getStrategyPositions, getStrategyMetrics, getUserStrategies, getAllStrategiesMetrics)
+- [x] Написать 11 unit тестов для strategyDataRouter (все passing)
+- [x] Переписать StrategyComparison.tsx с реальной интеграцией API
+- [x] Обновить типы данных для совместимости между backend и frontend
+- [x] Исправить TypeScript ошибки в компонентах
+- [ ] Протестировать StrategyComparison страницу в браузере
+- [ ] Добавить обработку ошибок и loading состояний
+- [ ] Оптимизировать запросы к БД для больших объёмов данных

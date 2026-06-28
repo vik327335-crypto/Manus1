@@ -9,25 +9,29 @@ interface StrategyMetrics {
   losingTrades: number;
   breakEvenTrades: number;
   winRate: number;
-  lossRate: number;
+  lossRate?: number;
   totalProfit: number;
   totalLoss: number;
-  netProfit: number;
+  netProfit?: number;
   roi: number;
   profitFactor: number;
   sharpeRatio: number;
   maxDrawdown: number;
-  avgWin: number;
-  avgLoss: number;
-  expectancy: number;
+  averageWin: number;
+  averageLoss: number;
+  largestWin: number;
+  largestLoss: number;
+  avgWin?: number;
+  avgLoss?: number;
+  expectancy?: number;
   consecutiveWins: number;
   consecutiveLosses: number;
-  avgTradeTime: number;
-  bestTrade: number;
-  worstTrade: number;
-  recoveryFactor: number;
-  profitability: number;
-  lastUpdated: number;
+  avgTradeTime?: number;
+  bestTrade?: number;
+  worstTrade?: number;
+  recoveryFactor?: number;
+  profitability?: number;
+  lastUpdated?: number;
 }
 
 interface StrategyComparisonTableProps {
@@ -193,8 +197,8 @@ export function StrategyComparisonTable({
                   <td className={`text-center py-3 px-4 font-semibold ${getCellColor('maxDrawdown', strategy.maxDrawdown)}`}>
                     {strategy.maxDrawdown.toFixed(2)}%
                   </td>
-                  <td className={`text-center py-3 px-4 font-semibold ${strategy.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    ${strategy.netProfit.toFixed(2)}
+                  <td className={`text-center py-3 px-4 font-semibold ${(strategy.netProfit ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ${(strategy.netProfit ?? 0).toFixed(2)}
                   </td>
                   <td className="text-center py-3 px-4">
                     <Button
