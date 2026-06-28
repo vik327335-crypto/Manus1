@@ -1,8 +1,8 @@
-import { protectedProcedure, router } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
 import { dayTradingSignals, dayTradingPositions } from "../../drizzle/schema";
 import { eq, gte, lte, desc, and } from "drizzle-orm";
+import { router, protectedProcedure } from "../_core/trpc";
 
 export const strategyDataRouter = router({
   // Получить все сигналы для стратегии
@@ -31,11 +31,7 @@ export const strategyDataRouter = router({
         filters.push(lte(dayTradingSignals.timestamp, input.endDate));
       }
 
-      const signals = await db.query.dayTradingSignals.findMany({
-        where: and(...filters),
-        orderBy: desc(dayTradingSignals.timestamp),
-        limit: input.limit,
-      });
+      const signals = await db.select().from(dayTradingSignals).where(and(...filters)).orderBy(desc(dayTradingSignals.timestamp)).limit(input.limit);
 
       return signals;
     }),
@@ -66,11 +62,7 @@ export const strategyDataRouter = router({
         filters.push(lte(dayTradingPositions.closeTime || 0, input.endDate));
       }
 
-      const positions = await db.query.dayTradingPositions.findMany({
-        where: and(...filters),
-        orderBy: desc(dayTradingPositions.openTime),
-        limit: input.limit,
-      });
+      const positions = await db.select().from(dayTradingPositions).where(and(...filters)).orderBy(desc(dayTradingPositions.openTime)).limit(input.limit);
 
       return positions;
     }),
@@ -88,14 +80,12 @@ export const strategyDataRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const positions = await db.query.dayTradingPositions.findMany({
-        where: and(
-          eq(dayTradingPositions.strategyName, input.strategyName),
-          eq(dayTradingPositions.userId, ctx.user.id),
-          gte(dayTradingPositions.openTime, input.startDate),
-          lte(dayTradingPositions.openTime, input.endDate)
-        ),
-      });
+      const positions = await db.select().from(dayTradingPositions).where(and(
+        eq(dayTradingPositions.strategyName, input.strategyName),
+        eq(dayTradingPositions.userId, ctx.user.id),
+        gte(dayTradingPositions.openTime, input.startDate),
+        lte(dayTradingPositions.openTime, input.endDate)
+      ));
 
       if (positions.length === 0) {
         return {
@@ -199,9 +189,7 @@ export const strategyDataRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 
-    const positions = await db.query.dayTradingPositions.findMany({
-      where: eq(dayTradingPositions.userId, ctx.user.id),
-    });
+    const positions = await db.select().from(dayTradingPositions).where(eq(dayTradingPositions.userId, ctx.user.id));
 
     const strategies = Array.from(new Set(positions.map((p: any) => p.strategyName as string)));
     return strategies;
@@ -219,9 +207,7 @@ export const strategyDataRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const positions = await db.query.dayTradingPositions.findMany({
-        where: eq(dayTradingPositions.userId, ctx.user.id),
-      });
+      const positions = await db.select().from(dayTradingPositions).where(eq(dayTradingPositions.userId, ctx.user.id));
 
       const strategies = Array.from(new Set(positions.map((p: any) => p.strategyName as string)));
 
