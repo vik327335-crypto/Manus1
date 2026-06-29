@@ -100,9 +100,9 @@ export function StrategyComparison() {
 
   // Трансформируем данные в нужный формат
   const strategies: StrategyMetrics[] = useMemo(() => {
-    if (!strategiesData) return [];
+    if (!strategiesData || typeof strategiesData !== 'object' || Array.isArray(strategiesData) === false) return [];
     
-    return strategiesData.map((strategy) => ({
+    return (strategiesData as any[]).map((strategy: any) => ({
       strategyName: strategy.strategyName,
       totalTrades: strategy.totalTrades,
       winningTrades: strategy.winningTrades,

@@ -3,6 +3,7 @@ import { getDb } from "../db";
 import { dayTradingSignals, dayTradingPositions } from "../../drizzle/schema";
 import { eq, gte, lte, desc, and } from "drizzle-orm";
 import { router, protectedProcedure } from "../_core/trpc";
+import { cacheService, cacheKeys } from "../cache";
 
 export const strategyDataRouter = router({
   // Получить все сигналы для стратегии
@@ -204,6 +205,14 @@ export const strategyDataRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
+      // Check cache first
+      const cacheKey = cacheKeys.allMetrics(ctx.user.id);
+      const cachedMetrics = cacheService.get(cacheKey);
+      if (cachedMetrics) {
+        console.log(`[Cache] Hit for all metrics (user: ${ctx.user.id})`);
+        return cachedMetrics;
+      }
+
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -308,6 +317,10 @@ export const strategyDataRouter = router({
           };
         })
       );
+
+      // Cache the results for 5 minutes (300 seconds)
+      cacheService.set(cacheKey, allMetrics, 300);
+      console.log(`[Cache] Stored all metrics for user ${ctx.user.id}`);
 
       return allMetrics;
     }),
