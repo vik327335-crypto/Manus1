@@ -337,4 +337,140 @@ export const notificationRouter = router({
       })),
     };
   }),
+
+  // Notify about new trade
+  notifyNewTrade: protectedProcedure
+    .input(
+      z.object({
+        strategyName: z.string(),
+        symbol: z.string(),
+        type: z.enum(['entry', 'exit', 'alert']),
+        price: z.number(),
+        quantity: z.number(),
+        pnl: z.number().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user!;
+      const email = user.email || 'test@example.com';
+      const prefs = userPreferences.get(user.id) || getDefaultPreferences(user.id);
+
+      try {
+        const notificationSent = await sendPriceAlert(
+          user.id,
+          email,
+          input.symbol,
+          input.strategyName,
+          input.price,
+          input.price,
+          0,
+          prefs
+        );
+
+        return {
+          success: true,
+          notificationSent,
+          message: `Trade notification sent for ${input.symbol}`,
+        };
+      } catch (error: any) {
+        console.error('[NotificationRouter] Error sending trade notification:', error);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+    }),
+
+  // Notify about goal reached
+  notifyGoalReached: protectedProcedure
+    .input(
+      z.object({
+        strategyName: z.string(),
+        goalType: z.enum(['profit', 'winRate', 'roi', 'sharpeRatio']),
+        targetValue: z.number(),
+        currentValue: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user!;
+      const email = user.email || 'test@example.com';
+      const goalLabels: Record<string, string> = {
+        profit: 'Profit',
+        winRate: 'Win Rate',
+        roi: 'ROI',
+        sharpeRatio: 'Sharpe Ratio',
+      };
+
+      try {
+        const prefs = userPreferences.get(user.id) || getDefaultPreferences(user.id);
+        const notificationSent = await sendScoreChangeAlert(
+          user.id,
+          email,
+          input.strategyName,
+          `${goalLabels[input.goalType]} reached`,
+          input.targetValue,
+          input.currentValue,
+          prefs
+        );
+
+        return {
+          success: true,
+          notificationSent,
+          message: `Goal notification sent for ${input.strategyName}`,
+        };
+      } catch (error: any) {
+        console.error('[NotificationRouter] Error sending goal notification:', error);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+    }),
+
+  // Notify about risk
+  notifyRisk: protectedProcedure
+    .input(
+      z.object({
+        strategyName: z.string(),
+        riskType: z.enum(['maxDrawdown', 'largeDrawdown', 'stopLoss', 'riskLimit']),
+        value: z.number(),
+        threshold: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user!;
+      const email = user.email || 'test@example.com';
+      const riskLabels: Record<string, string> = {
+        maxDrawdown: 'Max Drawdown',
+        largeDrawdown: 'Large Drawdown',
+        stopLoss: 'Stop Loss',
+        riskLimit: 'Risk Limit',
+      };
+
+      try {
+        const prefs = userPreferences.get(user.id) || getDefaultPreferences(user.id);
+        const notificationSent = await sendCatalystAlert(
+          user.id,
+          email,
+          input.strategyName,
+          riskLabels[input.riskType],
+          `${riskLabels[input.riskType]}: ${input.value}, Threshold: ${input.threshold}`,
+          'negative',
+          'risk-system',
+          prefs
+        );
+
+        return {
+          success: true,
+          notificationSent,
+          message: `Risk notification sent for ${input.strategyName}`,
+        };
+      } catch (error: any) {
+        console.error('[NotificationRouter] Error sending risk notification:', error);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+    }),
 });
