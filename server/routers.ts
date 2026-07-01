@@ -39,6 +39,9 @@ import {
   searchAssets,
 } from "./db";
 
+import { strategyHistoryRouter } from './routers/strategyHistoryRouter';
+import { recommendationsRouter } from './routers/recommendationsRouter';
+
 export const appRouter = router({
   system: systemRouter,
   market: marketRouter,
@@ -57,6 +60,8 @@ export const appRouter = router({
   reportExport: reportExportRouter,
   websocket: websocketRouter,
   strategyComparison: strategyComparisonRouter,
+  strategyHistory: strategyHistoryRouter,
+  recommendations: recommendationsRouter,
   polygon: polygonRouter,
   alerts: alertsRouter,
   filters: filterRouter,
