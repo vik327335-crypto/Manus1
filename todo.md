@@ -754,4 +754,4 @@
 - [x] Обновлены графики StrategyComparisonChart с ComparisonTooltip
 - [x] Обновлен StrategyKPICard с интерактивными подсказками
 - [x] Добавлены три типа tooltip: CustomTooltip, KPITooltip, ComparisonTooltip
-- [ ] Протестировать интерактивность и сохранить checkpoint
+[x] Протестирована интерактивность (все tooltip-ы работают)
