@@ -1,3 +1,4 @@
+import { CustomTooltip, ComparisonTooltip } from '@/components/CustomTooltip';
 import React from 'react';
 import { BarChart, Bar, LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,7 +52,7 @@ export function StrategyComparisonChart({
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip content={<CustomTooltip showMetricDescription={true} />} />
               <Legend />
               {metrics.map((metric, index) => (
                 <Bar
@@ -72,7 +73,7 @@ export function StrategyComparisonChart({
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
+              <Tooltip content={<CustomTooltip showMetricDescription={true} />} />
               <Legend />
               {metrics.map((metric, index) => (
                 <Line
@@ -117,7 +118,7 @@ export function StrategyComparisonChart({
                 fillOpacity={0.25}
               />
               <Legend />
-              <Tooltip />
+              <Tooltip content={<CustomTooltip showMetricDescription={true} />} />
             </RadarChart>
           </ResponsiveContainer>
         );

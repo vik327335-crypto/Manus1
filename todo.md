@@ -746,3 +746,12 @@
 - [x] Интегрированы все компоненты в StrategyDashboard
 [x] Написать тесты для компонентов дашборда (StrategyDashboard.test.tsx - 6 тестов)
 [x] Протестировать дашборд в браузере (все компоненты работают)
+
+
+## Phase 93: Улучшение интерактивности графиков
+- [x] Создан CustomTooltip с подробной информацией о метриках
+- [x] Обновлены все графики StrategyDashboard с CustomTooltip
+- [x] Обновлены графики StrategyComparisonChart с ComparisonTooltip
+- [x] Обновлен StrategyKPICard с интерактивными подсказками
+- [x] Добавлены три типа tooltip: CustomTooltip, KPITooltip, ComparisonTooltip
+- [ ] Протестировать интерактивность и сохранить checkpoint

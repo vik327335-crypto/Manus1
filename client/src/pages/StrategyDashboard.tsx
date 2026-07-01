@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { trpc } from '@/lib/trpc';
 import { Loader2, TrendingUp, TrendingDown, Activity, Target } from 'lucide-react';
+import { CustomTooltip, ComparisonTooltip } from '@/components/CustomTooltip';
 
 interface MetricData {
   timestamp: number;
@@ -246,7 +247,7 @@ export function StrategyDashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="timestamp" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<CustomTooltip showMetricDescription={true} />} />
                 <Legend />
                 <Line type="monotone" dataKey="roi" stroke="#3b82f6" name="ROI (%)" dot={false} />
               </LineChart>
@@ -266,7 +267,7 @@ export function StrategyDashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="timestamp" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<CustomTooltip showMetricDescription={true} />} />
                 <Legend />
                 <Line type="monotone" dataKey="winRate" stroke="#10b981" name="Win Rate (%)" dot={false} />
               </LineChart>
@@ -286,7 +287,7 @@ export function StrategyDashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="timestamp" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<CustomTooltip showMetricDescription={true} />} />
                 <Legend />
                 <Line type="monotone" dataKey="sharpeRatio" stroke="#f59e0b" name="Sharpe Ratio" dot={false} />
               </LineChart>
@@ -306,7 +307,7 @@ export function StrategyDashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="timestamp" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<CustomTooltip showMetricDescription={true} />} />
                 <Legend />
                 <Line type="monotone" dataKey="profitFactor" stroke="#8b5cf6" name="Profit Factor" dot={false} />
               </LineChart>
@@ -322,14 +323,22 @@ export function StrategyDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={comparisonChartData}>
+                            <BarChart data={comparisonChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="period" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<ComparisonTooltip />} />
                 <Legend />
-                <Bar dataKey="roi" fill="#3b82f6" name="ROI (%)" />
-                <Bar dataKey="winRate" fill="#10b981" name="Win Rate (%)" />
+                <Bar
+                  dataKey="roi"
+                  fill="#3b82f6"
+                  name="ROI (%)"
+                />
+                <Bar
+                  dataKey="winRate"
+                  fill="#10b981"
+                  name="Win Rate (%)"
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -347,7 +356,7 @@ export function StrategyDashboard() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="timestamp" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<CustomTooltip showMetricDescription={true} />} />
                 <Legend />
                 <Line type="monotone" dataKey="maxDrawdown" stroke="#ef4444" name="Max Drawdown (%)" dot={false} />
               </LineChart>
