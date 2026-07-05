@@ -25,6 +25,10 @@ const DayTradingChart = lazy(() => import("./pages/DayTradingChart"));
 const DayTradingPositions = lazy(() => import("./pages/DayTradingPositions"));
 const StrategyComparison = lazy(() => import("./pages/StrategyComparison").then(m => ({ default: m.StrategyComparison })));
 const StrategyDashboard = lazy(() => import("./pages/StrategyDashboard").then(m => ({ default: m.StrategyDashboard })));
+const ExchangeIntegration = lazy(() => import("./pages/ExchangeIntegration").then(m => ({ default: m.ExchangeIntegration })));
+const BacktestingEngine = lazy(() => import("./pages/BacktestingEngine").then(m => ({ default: m.BacktestingEngine })));
+const StrategySharing = lazy(() => import("./pages/StrategySharing").then(m => ({ default: m.StrategySharing })));
+const CommunityLeaderboard = lazy(() => import("./pages/CommunityLeaderboard").then(m => ({ default: m.CommunityLeaderboard })));
 
 function Router() {
   return (
@@ -42,6 +46,10 @@ function Router() {
       <Route path="/day-trading/positions" component={DayTradingPositions} />
       <Route path="/strategy-comparison" component={StrategyComparison} />
       <Route path="/strategy-dashboard" component={StrategyDashboard} />
+      <Route path="/exchange-integration" component={ExchangeIntegration} />
+      <Route path="/backtesting" component={BacktestingEngine} />
+      <Route path="/strategy-sharing" component={StrategySharing} />
+      <Route path="/community-leaderboard" component={CommunityLeaderboard} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

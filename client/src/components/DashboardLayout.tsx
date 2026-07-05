@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Settings, Zap, TrendingUp, Share2, Trophy } from "lucide-react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -29,7 +29,11 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: Zap, label: "Exchange Integration", path: "/exchange-integration" },
+  { icon: TrendingUp, label: "Backtesting", path: "/backtesting" },
+  { icon: Share2, label: "Strategy Sharing", path: "/strategy-sharing" },
+  { icon: Trophy, label: "Community Leaderboard", path: "/community-leaderboard" },
   { icon: Users, label: "Watchlist", path: "/watchlist" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
