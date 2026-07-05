@@ -41,6 +41,10 @@ import {
 
 import { strategyHistoryRouter } from './routers/strategyHistoryRouter';
 import { recommendationsRouter } from './routers/recommendationsRouter';
+import { binanceApiRouter } from './routers/binanceApiRouter';
+import { exchangeRouter } from './routers/exchangeRouter';
+import { backtestingEngineRouter } from './routers/backtestingEngineRouter';
+import { parameterOptimizationRouter } from './routers/parameterOptimizationRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -70,6 +74,10 @@ export const appRouter = router({
   glassnode: glassnodeRouter,
   coingecko: coingeckoRouter,
   xtcom: xtcomRouter,
+  binanceApi: binanceApiRouter,
+  exchange: exchangeRouter,
+  backtestingEngine: backtestingEngineRouter,
+  parameterOptimization: parameterOptimizationRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

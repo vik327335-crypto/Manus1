@@ -558,3 +558,169 @@ export const dayTradingPositions = mysqlTable("day_trading_positions", {
 
 export type DayTradingPosition = typeof dayTradingPositions.$inferSelect;
 export type InsertDayTradingPosition = typeof dayTradingPositions.$inferInsert;
+
+
+/**
+ * Exchange API Keys
+ * Stores encrypted API keys for various exchanges (Binance, Coinbase, Kraken)
+ */
+export const exchangeApiKeys = mysqlTable("exchange_api_keys", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  exchange: mysqlEnum("exchange", ["binance", "coinbase", "kraken"]).notNull(),
+  apiKey: varchar("apiKey", { length: 512 }).notNull(), // encrypted
+  apiSecret: varchar("apiSecret", { length: 512 }).notNull(), // encrypted
+  passphrase: varchar("passphrase", { length: 512 }), // for Coinbase
+  isActive: int("isActive").default(1).notNull(),
+  lastUsedAt: timestamp("lastUsedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ExchangeApiKey = typeof exchangeApiKeys.$inferSelect;
+export type InsertExchangeApiKey = typeof exchangeApiKeys.$inferInsert;
+
+/**
+ * Exchange Account Balances
+ * Stores cached account balance data from exchanges
+ */
+export const exchangeBalances = mysqlTable("exchange_balances", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  apiKeyId: int("apiKeyId").notNull().references(() => exchangeApiKeys.id),
+  exchange: varchar("exchange", { length: 20 }).notNull(),
+  asset: varchar("asset", { length: 20 }).notNull(), // BTC, ETH, USDT, etc.
+  free: varchar("free", { length: 64 }).notNull(), // available balance
+  locked: varchar("locked", { length: 64 }).notNull(), // locked in orders
+  total: varchar("total", { length: 64 }).notNull(), // total balance
+  usdValue: int("usdValue"), // in cents
+  lastSyncedAt: timestamp("lastSyncedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ExchangeBalance = typeof exchangeBalances.$inferSelect;
+export type InsertExchangeBalance = typeof exchangeBalances.$inferInsert;
+
+/**
+ * Backtesting Results
+ * Stores detailed backtesting results for strategies
+ */
+export const backtestResults = mysqlTable("backtest_results", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  strategyId: varchar("strategyId", { length: 255 }).notNull(),
+  strategyName: varchar("strategyName", { length: 255 }).notNull(),
+  exchange: varchar("exchange", { length: 20 }).notNull(),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  timeframe: varchar("timeframe", { length: 20 }).notNull(), // 1m, 5m, 1h, 1d, etc.
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate").notNull(),
+  initialCapital: int("initialCapital").notNull(), // in cents
+  finalCapital: int("finalCapital").notNull(), // in cents
+  totalReturn: int("totalReturn").notNull(), // basis points
+  annualizedReturn: int("annualizedReturn"),
+  sharpeRatio: int("sharpeRatio"), // multiplied by 100
+  maxDrawdown: int("maxDrawdown").notNull(), // basis points
+  winRate: int("winRate").notNull(), // basis points
+  profitFactor: int("profitFactor"), // multiplied by 100
+  totalTrades: int("totalTrades").notNull(),
+  winningTrades: int("winningTrades").notNull(),
+  losingTrades: int("losingTrades").notNull(),
+  averageWin: int("averageWin"), // in cents
+  averageLoss: int("averageLoss"), // in cents
+  trades: json("trades").$type<Array<any>>(), // detailed trade list
+  parameters: json("parameters").$type<Record<string, any>>(), // strategy parameters used
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type BacktestResult = typeof backtestResults.$inferSelect;
+export type InsertBacktestResult = typeof backtestResults.$inferInsert;
+
+/**
+ * Optimization Jobs
+ * Tracks parameter optimization jobs
+ */
+export const optimizationJobs = mysqlTable("optimization_jobs", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  strategyId: varchar("strategyId", { length: 255 }).notNull(),
+  strategyName: varchar("strategyName", { length: 255 }).notNull(),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  status: mysqlEnum("status", ["pending", "running", "completed", "failed"]).default("pending").notNull(),
+  progress: int("progress").default(0).notNull(), // 0-100
+  parameterRanges: json("parameterRanges").$type<Record<string, any>>(),
+  bestParameters: json("bestParameters").$type<Record<string, any>>(),
+  bestResult: json("bestResult").$type<Record<string, any>>(),
+  totalCombinations: int("totalCombinations"),
+  completedCombinations: int("completedCombinations").default(0),
+  startedAt: timestamp("startedAt").notNull(),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OptimizationJob = typeof optimizationJobs.$inferSelect;
+export type InsertOptimizationJob = typeof optimizationJobs.$inferInsert;
+
+/**
+ * Shared Strategies
+ * Stores strategies shared by users in the community
+ */
+export const sharedStrategies = mysqlTable("shared_strategies", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  strategyId: varchar("strategyId", { length: 255 }).notNull(),
+  strategyName: varchar("strategyName", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 64 }), // technical, fundamental, hybrid, etc.
+  parameters: json("parameters").$type<Record<string, any>>(),
+  backtestResults: json("backtestResults").$type<Record<string, any>>(),
+  isPublic: int("isPublic").default(1).notNull(),
+  views: int("views").default(0).notNull(),
+  copies: int("copies").default(0).notNull(),
+  rating: int("rating").default(0).notNull(), // average rating * 100
+  ratingCount: int("ratingCount").default(0).notNull(),
+  tags: json("tags").$type<Array<string>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SharedStrategy = typeof sharedStrategies.$inferSelect;
+export type InsertSharedStrategy = typeof sharedStrategies.$inferInsert;
+
+/**
+ * Strategy Ratings
+ * Stores user ratings and comments for shared strategies
+ */
+export const strategyRatings = mysqlTable("strategy_ratings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  strategyId: varchar("strategyId", { length: 64 }).notNull().references(() => sharedStrategies.id),
+  rating: int("rating").notNull(), // 1-5 stars
+  comment: text("comment"),
+  helpful: int("helpful").default(0).notNull(), // count of helpful votes
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type StrategyRating = typeof strategyRatings.$inferSelect;
+export type InsertStrategyRating = typeof strategyRatings.$inferInsert;
+
+/**
+ * Community Leaderboard
+ * Tracks top strategies and traders in the community
+ */
+export const communityLeaderboard = mysqlTable("community_leaderboard", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  strategyId: varchar("strategyId", { length: 64 }).notNull().references(() => sharedStrategies.id),
+  rank: int("rank").notNull(),
+  score: int("score").notNull(), // calculated from rating, copies, views
+  totalReturn: int("totalReturn").notNull(), // basis points from backtests
+  winRate: int("winRate").notNull(), // basis points
+  followers: int("followers").default(0).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CommunityLeaderboardEntry = typeof communityLeaderboard.$inferSelect;
+export type InsertCommunityLeaderboardEntry = typeof communityLeaderboard.$inferInsert;
