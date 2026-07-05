@@ -45,6 +45,8 @@ import { binanceApiRouter } from './routers/binanceApiRouter';
 import { exchangeRouter } from './routers/exchangeRouter';
 import { backtestingEngineRouter } from './routers/backtestingEngineRouter';
 import { parameterOptimizationRouter } from './routers/parameterOptimizationRouter';
+import { socialRouter } from './routers/socialRouter';
+import { communityRouter } from './routers/communityRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -78,6 +80,8 @@ export const appRouter = router({
   exchange: exchangeRouter,
   backtestingEngine: backtestingEngineRouter,
   parameterOptimization: parameterOptimizationRouter,
+  social: socialRouter,
+  community: communityRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

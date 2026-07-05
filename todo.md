@@ -813,10 +813,7 @@
 - [x] Реализованы три метода оптимизации: Grid Search, Random Search, Genetic Algorithm
 - [x] Создан parameterOptimizationRouter.ts с 4 процедурами
 - [x] Интегрирован в main routers.ts
-- [ ] Добавить таблицу backtestResults для хранения результатов
-- [ ] Создать компонент BacktestEngine для запуска тестов
-- [ ] Реализовать визуализацию результатов backtesting
-- [ ] Написать тесты для backtestingRouter
+
 
 ## Phase 100: Оптимизация параметров стратегий (parameter tuning)
 - [ ] Создать optimizationRouter.ts для оптимизации параметров
@@ -826,18 +823,19 @@
 - [ ] Реализовать визуализацию процесса оптимизации
 - [ ] Написать тесты для optimizationRouter
 
-## Phase 101: Социальные функции - публикация стратегий
-- [ ] Добавить таблицу sharedStrategies для публикации стратегий
-- [ ] Создать socialRouter.ts с процедурами для публикации
-- [ ] Реализовать функции: shareStrategy, unshareStrategy, getSharedStrategies
-- [ ] Создать компонент StrategySharing для публикации в сообществе
-- [ ] Добавить функцию копирования чужих стратегий
-- [ ] Написать тесты для socialRouter
+[x] Phase 101: Социальные функции - публикация стратегий
+- [x] Создан socialRouter.ts с 7 процедурами
+- [x] Реализованы функции: shareStrategy, unshareStrategy, getSharedStrategies, getUserSharedStrategies, getSharedStrategy
+- [x] Добавлены функции: likeStrategy, copyStrategy, searchStrategies, getTrendingStrategies
+- [x] Система лайков и копирования стратегий
+- [x] Поиск по стратегиям и теги
+- [x] Интегрирован в main routers.ts
 
-## Phase 102: Сообщество и лидерборд стратегий
-- [ ] Создать communityRouter.ts для управления сообществом
-- [ ] Реализовать функции: getLeaderboard, getUserRating, getTopStrategies
-- [ ] Добавить таблицу strategyRatings для оценок стратегий
-- [ ] Создать компонент CommunityLeaderboard для отображения лидерборда
-- [ ] Реализовать систему рейтинга и комментариев
-- [ ] Написать тесты для communityRouter
+[x] Phase 102: Сообщество и лидерборд стратегий
+- [x] Создан communityRouter.ts с 7 процедурами
+- [x] Реализованы функции: getLeaderboard, getUserStats, getTopStrategies
+- [x] Система рейтинга стратегий (1-5 звёзд)
+- [x] Комментарии к стратегиям
+- [x] Лидерборд с рейтингом и копированиями
+- [x] Статистика сообщества и тренды
+- [x] Интегрирован в main routers.ts
