@@ -48,6 +48,7 @@ import { parameterOptimizationRouter } from './routers/parameterOptimizationRout
 import { socialRouter } from './routers/socialRouter';
 import { communityRouter } from './routers/communityRouter';
 import { schedulerRouter } from './routers/schedulerRouter';
+import { tradingSignalRouter } from './routers/tradingSignalRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -84,6 +85,7 @@ export const appRouter = router({
   social: socialRouter,
   community: communityRouter,
   scheduler: schedulerRouter,
+  tradingSignal: tradingSignalRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

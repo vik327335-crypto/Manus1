@@ -1,4 +1,5 @@
 import { z } from "zod";
+import PolygonApiService from "../services/polygonApiService";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import {
   fetchPolygonOHLCV,
@@ -241,5 +242,112 @@ export const polygonRouter = router({
 
   getJobStats: publicProcedure.query(() => {
     return getJobStats();
+  }),
+
+  // New Polygon.io API endpoints
+  getTickerDetails: publicProcedure
+    .input(z.object({ ticker: z.string() }))
+    .query(async ({ input }) => {
+      try {
+        const polygonService = new PolygonApiService(process.env.POLYGON_API_KEY || "");
+        const details = await polygonService.getTickerDetails(input.ticker);
+        return { success: true, data: details };
+      } catch (error) {
+        return { success: false, error: String(error) };
+      }
+    }),
+
+  getSnapshot: publicProcedure
+    .input(z.object({ ticker: z.string() }))
+    .query(async ({ input }) => {
+      try {
+        const polygonService = new PolygonApiService(process.env.POLYGON_API_KEY || "");
+        const snapshot = await polygonService.getSnapshot(input.ticker);
+        return { success: true, data: snapshot };
+      } catch (error) {
+        return { success: false, error: String(error) };
+      }
+    }),
+
+  getTechnicalIndicator: publicProcedure
+    .input(
+      z.object({
+        ticker: z.string(),
+        indicator: z.enum(["sma", "ema", "macd", "rsi"]),
+        timespan: z.string(),
+        window: z.number().optional().default(20),
+        series_type: z.string().optional().default("close"),
+      })
+    )
+    .query(async ({ input }) => {
+      try {
+        const polygonService = new PolygonApiService(process.env.POLYGON_API_KEY || "");
+        const indicator = await polygonService.getTechnicalIndicator(
+          input.ticker,
+          input.indicator,
+          input.timespan,
+          input.window,
+          input.series_type
+        );
+        return { success: true, data: indicator };
+      } catch (error) {
+        return { success: false, error: String(error) };
+      }
+    }),
+
+  getNews: publicProcedure
+    .input(z.object({ ticker: z.string(), limit: z.number().optional().default(10) }))
+    .query(async ({ input }) => {
+      try {
+        const polygonService = new PolygonApiService(process.env.POLYGON_API_KEY || "");
+        const news = await polygonService.getNews(input.ticker, input.limit);
+        return { success: true, data: news };
+      } catch (error) {
+        return { success: false, error: String(error) };
+      }
+    }),
+
+  getEarnings: publicProcedure
+    .input(z.object({ ticker: z.string(), limit: z.number().optional().default(10) }))
+    .query(async ({ input }) => {
+      try {
+        const polygonService = new PolygonApiService(process.env.POLYGON_API_KEY || "");
+        const earnings = await polygonService.getEarnings(input.ticker, input.limit);
+        return { success: true, data: earnings };
+      } catch (error) {
+        return { success: false, error: String(error) };
+      }
+    }),
+
+  getFinancials: publicProcedure
+    .input(z.object({ ticker: z.string(), limit: z.number().optional().default(10) }))
+    .query(async ({ input }) => {
+      try {
+        const polygonService = new PolygonApiService(process.env.POLYGON_API_KEY || "");
+        const financials = await polygonService.getFinancials(input.ticker, input.limit);
+        return { success: true, data: financials };
+      } catch (error) {
+        return { success: false, error: String(error) };
+      }
+    }),
+
+  getMarketStatus: publicProcedure.query(async () => {
+    try {
+      const polygonService = new PolygonApiService(process.env.POLYGON_API_KEY || "");
+      const status = await polygonService.getMarketStatus();
+      return { success: true, data: status };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  }),
+
+  getMarketHolidays: publicProcedure.query(async () => {
+    try {
+      const polygonService = new PolygonApiService(process.env.POLYGON_API_KEY || "");
+      const holidays = await polygonService.getMarketHolidays();
+      return { success: true, data: holidays };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
   }),
 });
