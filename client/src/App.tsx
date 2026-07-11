@@ -5,6 +5,7 @@ import { useServiceWorker } from "@/hooks/useServiceWorker";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { CommandPalette } from "@/components/CommandPalette";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { BacktestNotifications } from "@/components/BacktestNotifications";
 import NotFound from "@/pages/NotFound";
 import Home from "./pages/Home";
 import { Route, Switch } from "wouter";
@@ -29,6 +30,7 @@ const ExchangeIntegration = lazy(() => import("./pages/ExchangeIntegration").the
 const BacktestingEngine = lazy(() => import("./pages/BacktestingEngine").then(m => ({ default: m.BacktestingEngine })));
 const StrategySharing = lazy(() => import("./pages/StrategySharing").then(m => ({ default: m.StrategySharing })));
 const CommunityLeaderboard = lazy(() => import("./pages/CommunityLeaderboard").then(m => ({ default: m.CommunityLeaderboard })));
+const SchedulerManager = lazy(() => import("./pages/SchedulerManager").then(m => ({ default: m.SchedulerManager })));
 
 function Router() {
   return (
@@ -50,6 +52,7 @@ function Router() {
       <Route path="/backtesting" component={BacktestingEngine} />
       <Route path="/strategy-sharing" component={StrategySharing} />
       <Route path="/community-leaderboard" component={CommunityLeaderboard} />
+      <Route path="/scheduler" component={SchedulerManager} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
@@ -76,6 +79,7 @@ function AppContent() {
       <CommandPalette />
       <Toaster />
       <OfflineIndicator />
+      <BacktestNotifications />
       <Suspense fallback={<div>Loading...</div>}>
         <Router />
       </Suspense>

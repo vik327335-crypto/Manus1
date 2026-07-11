@@ -869,3 +869,11 @@
 - [x] Интегрирован schedulerRouter в main routers.ts
 - [x] Все TypeScript ошибки исправлены
 - [x] Периодические задачи готовы к использованию
+
+[x] Phase 106: Frontend для управления периодическими задачами
+- [x] Создан SchedulerManager.tsx компонент
+- [x] Добавлен маршрут /scheduler в App.tsx
+- [x] Обновлена навигация в DashboardLayout
+- [x] Создан BacktestNotifications.tsx для real-time уведомлений
+- [x] Создан BacktestExporter.tsx для экспорта результатов
+- [x] Поддержка экспорта в CSV, JSON, HTML форматах
