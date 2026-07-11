@@ -8,6 +8,13 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { setupWebSocket } from "../websocket";
+import {
+  syncBalancesHandler,
+  runBacktestsHandler,
+  updateLeaderboardHandler,
+  cleanupDataHandler,
+  generateDailySummaryHandler,
+} from "./scheduledHandlers";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -36,6 +43,14 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // Scheduled handlers for periodic tasks
+  app.post("/api/scheduled/sync-balances", syncBalancesHandler);
+  app.post("/api/scheduled/run-backtests", runBacktestsHandler);
+  app.post("/api/scheduled/update-leaderboard", updateLeaderboardHandler);
+  app.post("/api/scheduled/cleanup-data", cleanupDataHandler);
+  app.post("/api/scheduled/generate-daily-summary", generateDailySummaryHandler);
+  
   // tRPC API
   app.use(
     "/api/trpc",

@@ -862,9 +862,10 @@
 - [x] Интеграция с Heartbeat системой для периодических задач
 - [x] Все TypeScript ошибки исправлены
 
-## Phase 105: Интеграция scheduled handlers в Express
-- [ ] Добавить обработчики в server/_core/index.ts
-- [ ] Создать tRPC процедуры для управления расписанием
-- [ ] Добавить UI для создания и управления периодическими задачами
-- [ ] Протестировать периодические задачи
-- [ ] Документировать API периодических задач
+[x] Phase 105: Интеграция scheduled handlers в Express
+- [x] Добавлены обработчики в server/_core/index.ts
+- [x] Созданы tRPC процедуры для управления расписанием
+- [x] Реализованы 7 процедур: createBalanceSyncJob, createBacktestJob, createLeaderboardUpdateJob, createCleanupJob, createDailySummaryJob, listJobs, updateJob, deleteJob, pauseJob, resumeJob
+- [x] Интегрирован schedulerRouter в main routers.ts
+- [x] Все TypeScript ошибки исправлены
+- [x] Периодические задачи готовы к использованию

@@ -47,6 +47,7 @@ import { backtestingEngineRouter } from './routers/backtestingEngineRouter';
 import { parameterOptimizationRouter } from './routers/parameterOptimizationRouter';
 import { socialRouter } from './routers/socialRouter';
 import { communityRouter } from './routers/communityRouter';
+import { schedulerRouter } from './routers/schedulerRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -82,6 +83,7 @@ export const appRouter = router({
   parameterOptimization: parameterOptimizationRouter,
   social: socialRouter,
   community: communityRouter,
+  scheduler: schedulerRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
