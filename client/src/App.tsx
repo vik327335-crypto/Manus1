@@ -31,6 +31,7 @@ const BacktestingEngine = lazy(() => import("./pages/BacktestingEngine").then(m 
 const StrategySharing = lazy(() => import("./pages/StrategySharing").then(m => ({ default: m.StrategySharing })));
 const CommunityLeaderboard = lazy(() => import("./pages/CommunityLeaderboard").then(m => ({ default: m.CommunityLeaderboard })));
 const SchedulerManager = lazy(() => import("./pages/SchedulerManager").then(m => ({ default: m.SchedulerManager })));
+const PortfolioTracker = lazy(() => import("./pages/PortfolioTracker"));
 
 function Router() {
   return (
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/strategy-sharing" component={StrategySharing} />
       <Route path="/community-leaderboard" component={CommunityLeaderboard} />
       <Route path="/scheduler" component={SchedulerManager} />
+      <Route path="/portfolio-tracker" component={PortfolioTracker} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
