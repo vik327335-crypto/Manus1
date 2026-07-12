@@ -1,14 +1,27 @@
 /**
  * Custom React hook for WebSocket connection with auto-reconnect
- * Uses native WebSocket API instead of socket.io for compatibility with ws server
+ * Supports both native WebSocket and socket.io
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { io, Socket } from "socket.io-client";
 
 export interface UseWebSocketOptions {
   autoConnect?: boolean;
   reconnectionDelay?: number;
   maxReconnectionAttempts?: number;
+  useSocketIO?: boolean;
+  onPriceUpdate?: (data: any) => void;
+  onAlert?: (data: any) => void;
+  onSentimentUpdate?: (data: any) => void;
+  onPortfolioUpdate?: (data: any) => void;
+  onTradingSignal?: (data: any) => void;
+  onBacktestComplete?: (data: any) => void;
+  onOptimizationProgress?: (data: any) => void;
+  onLeaderboardUpdate?: (data: any) => void;
+  onStrategyShared?: (data: any) => void;
+  onMarketStatus?: (data: any) => void;
+  onNotification?: (data: any) => void;
 }
 
 export interface WebSocketState {
