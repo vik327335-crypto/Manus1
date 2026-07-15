@@ -53,6 +53,7 @@ import { tradingSignalRouter } from './routers/tradingSignalRouter';
 import { portfolioManagementRouter } from './routers/portfolioManagementRouter';
 import { alertRouter } from './routers/alertRouter';
 import { sentimentRouter } from './routers/sentimentRouter';
+import { autoTradingRouter } from './routers/autoTradingRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -91,9 +92,10 @@ export const appRouter = router({
   scheduler: schedulerRouter,
   tradingSignal: tradingSignalRouter,
   portfolioManagement: portfolioManagementRouter,
-  alerts: alertRouter,
+  alertsManagement: alertRouter,
   sentiment: sentimentRouter,
   mlPrediction: mlPredictionRouter,
+  autoTrading: autoTradingRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
