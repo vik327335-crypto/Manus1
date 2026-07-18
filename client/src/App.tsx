@@ -32,6 +32,7 @@ const StrategySharing = lazy(() => import("./pages/StrategySharing").then(m => (
 const CommunityLeaderboard = lazy(() => import("./pages/CommunityLeaderboard").then(m => ({ default: m.CommunityLeaderboard })));
 const SchedulerManager = lazy(() => import("./pages/SchedulerManager").then(m => ({ default: m.SchedulerManager })));
 const PortfolioTracker = lazy(() => import("./pages/PortfolioTracker"));
+const DeFiIntegration = lazy(() => import("./pages/DeFiIntegration"));
 
 function Router() {
   return (
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/community-leaderboard" component={CommunityLeaderboard} />
       <Route path="/scheduler" component={SchedulerManager} />
       <Route path="/portfolio-tracker" component={PortfolioTracker} />
+      <Route path="/defi-integration" component={DeFiIntegration} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

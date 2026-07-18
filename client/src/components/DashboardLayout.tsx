@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Settings, Zap, TrendingUp, Share2, Trophy, Clock, Briefcase } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Settings, Zap, TrendingUp, Share2, Trophy, Clock, Briefcase, Coins } from "lucide-react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -36,6 +36,7 @@ const menuItems = [
   { icon: Trophy, label: "Community Leaderboard", path: "/community-leaderboard" },
   { icon: Clock, label: "Scheduler", path: "/scheduler" },
   { icon: Briefcase, label: "Portfolio Tracker", path: "/portfolio-tracker" },
+  { icon: Coins, label: "DeFi Integration", path: "/defi-integration" },
   { icon: Users, label: "Watchlist", path: "/watchlist" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];

@@ -54,6 +54,7 @@ import { portfolioManagementRouter } from './routers/portfolioManagementRouter';
 import { alertRouter } from './routers/alertRouter';
 import { sentimentRouter } from './routers/sentimentRouter';
 import { autoTradingRouter } from './routers/autoTradingRouter';
+import { defiIntegrationRouter } from './routers/defiIntegrationRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -96,6 +97,7 @@ export const appRouter = router({
   sentiment: sentimentRouter,
   mlPrediction: mlPredictionRouter,
   autoTrading: autoTradingRouter,
+  defiIntegration: defiIntegrationRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
