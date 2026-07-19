@@ -56,6 +56,7 @@ import { sentimentRouter } from './routers/sentimentRouter';
 import { autoTradingRouter } from './routers/autoTradingRouter';
 import { defiIntegrationRouter } from './routers/defiIntegrationRouter';
 import { socialCopyTradingRouter } from './routers/socialCopyTradingRouter';
+import { nftPortfolioRouter } from './routers/nftPortfolioRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -100,6 +101,7 @@ export const appRouter = router({
   autoTrading: autoTradingRouter,
   defiIntegration: defiIntegrationRouter,
   socialCopyTrading: socialCopyTradingRouter,
+  nftPortfolio: nftPortfolioRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

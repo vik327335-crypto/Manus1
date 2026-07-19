@@ -34,6 +34,7 @@ const SchedulerManager = lazy(() => import("./pages/SchedulerManager").then(m =>
 const PortfolioTracker = lazy(() => import("./pages/PortfolioTracker"));
 const DeFiIntegration = lazy(() => import("./pages/DeFiIntegration"));
 const SocialCopyTrading = lazy(() => import("./pages/SocialCopyTrading"));
+const NFTPortfolio = lazy(() => import("./pages/NFTPortfolio"));
 
 function Router() {
   return (
@@ -59,6 +60,7 @@ function Router() {
       <Route path="/portfolio-tracker" component={PortfolioTracker} />
       <Route path="/defi-integration" component={DeFiIntegration} />
       <Route path="/social-copy-trading" component={SocialCopyTrading} />
+      <Route path="/nft-portfolio" component={NFTPortfolio} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
