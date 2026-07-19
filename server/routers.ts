@@ -56,7 +56,6 @@ import { sentimentRouter } from './routers/sentimentRouter';
 import { autoTradingRouter } from './routers/autoTradingRouter';
 import { defiIntegrationRouter } from './routers/defiIntegrationRouter';
 import { socialCopyTradingRouter } from './routers/socialCopyTradingRouter';
-import { paymentAndNotificationRouter } from './routers/paymentAndNotificationRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -101,7 +100,6 @@ export const appRouter = router({
   autoTrading: autoTradingRouter,
   defiIntegration: defiIntegrationRouter,
   socialCopyTrading: socialCopyTradingRouter,
-  paymentAndNotification: paymentAndNotificationRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -166,16 +164,6 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         return await removeFromWatchlist(ctx.user.id, input.assetId);
-      }),
-  }),
-
-  sentiment: router({
-    getForAsset: publicProcedure
-      .input((val: any) => ({
-        assetId: val.assetId as number,
-      }))
-      .query(async ({ input }) => {
-        return await getAssetSentiment(input.assetId);
       }),
   }),
 

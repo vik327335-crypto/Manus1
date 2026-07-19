@@ -64,7 +64,7 @@ export class ReportExportService {
     const titleCell = worksheet.getCell("A1");
     titleCell.value = `Portfolio Report - ${new Date(report.timestamp).toLocaleDateString()}`;
     titleCell.font = { bold: true, size: 14 };
-    titleCell.alignment = { horizontal: "center", vertical: "center" };
+    (titleCell.alignment as any) = { horizontal: "justify", vertical: "center" };
 
     // Add summary section
     worksheet.mergeCells("A3:D3");
@@ -115,7 +115,7 @@ export class ReportExportService {
       { width: 12 },
     ];
 
-    return await workbook.xlsx.writeBuffer() as Buffer;
+    return (await workbook.xlsx.writeBuffer()) as any as Buffer;
   }
 
   /**
@@ -130,7 +130,7 @@ export class ReportExportService {
     const titleCell = worksheet.getCell("A1");
     titleCell.value = `Backtest Report - ${report.strategyName}`;
     titleCell.font = { bold: true, size: 14 };
-    titleCell.alignment = { horizontal: "center", vertical: "center" };
+    (titleCell.alignment as any) = { horizontal: "justify", vertical: "center" };
 
     // Add summary section
     worksheet.mergeCells("A3:D3");
@@ -171,7 +171,7 @@ export class ReportExportService {
     // Set column widths
     worksheet.columns = [{ width: 20 }, { width: 20 }, { width: 20 }, { width: 20 }];
 
-    return await workbook.xlsx.writeBuffer() as Buffer;
+    return (await workbook.xlsx.writeBuffer()) as any as Buffer;
   }
 
   /**
@@ -186,7 +186,7 @@ export class ReportExportService {
     const titleCell = worksheet.getCell("A1");
     titleCell.value = `Sentiment Report - ${report.ticker}`;
     titleCell.font = { bold: true, size: 14 };
-    titleCell.alignment = { horizontal: "center", vertical: "center" };
+    (titleCell.alignment as any) = { horizontal: "justify", vertical: "center" };
 
     // Add summary section
     worksheet.mergeCells("A3:D3");
@@ -215,7 +215,7 @@ export class ReportExportService {
     });
 
     // Add trends section
-    worksheet.mergeCells("A", row + 1, "D", row + 1);
+    worksheet.mergeCells("A" + (row + 1) + ":D" + (row + 1));
     const trendsTitle = worksheet.getCell(row + 1, 1);
     trendsTitle.value = "Trends";
     trendsTitle.font = { bold: true, size: 12 };
@@ -236,7 +236,7 @@ export class ReportExportService {
     // Set column widths
     worksheet.columns = [{ width: 20 }, { width: 20 }, { width: 20 }, { width: 20 }];
 
-    return await workbook.xlsx.writeBuffer() as Buffer;
+    return (await workbook.xlsx.writeBuffer()) as any as Buffer;
   }
 
   /**
