@@ -57,6 +57,7 @@ import { autoTradingRouter } from './routers/autoTradingRouter';
 import { defiIntegrationRouter } from './routers/defiIntegrationRouter';
 import { socialCopyTradingRouter } from './routers/socialCopyTradingRouter';
 import { nftPortfolioRouter } from './routers/nftPortfolioRouter';
+import { telegramBotRouter } from './routers/telegramBotRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -102,6 +103,7 @@ export const appRouter = router({
   defiIntegration: defiIntegrationRouter,
   socialCopyTrading: socialCopyTradingRouter,
   nftPortfolio: nftPortfolioRouter,
+  telegramBot: telegramBotRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

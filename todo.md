@@ -877,3 +877,12 @@
 - [x] Создан BacktestNotifications.tsx для real-time уведомлений
 - [x] Создан BacktestExporter.tsx для экспорта результатов
 - [x] Поддержка экспорта в CSV, JSON, HTML форматах
+
+## Phase 122: Telegram Bot интеграция
+- [x] Создан telegramBotService.ts с 11 методами
+- [x] Поддержка отправки уведомлений (alerts, signals, portfolio, backtest, sentiment, NFT, copy trading, DeFi)
+- [x] Создан telegramBotRouter.ts с 11 tRPC процедурами
+- [x] Интегрирован в main routers.ts
+- [x] Написаны 19 unit тестов (все проходят)
+- [x] Поддержка регистрации пользователей и batch сообщений
+- [x] Получение информации о боте
