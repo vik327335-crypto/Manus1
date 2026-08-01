@@ -910,3 +910,13 @@
 - [x] Создан solanaRouter с 11 tRPC процедурами
 - [x] Интегрирован solanaRouter в главный appRouter
 - [x] Поддержка Solana кошельков, NFT рарити, рекомендаций
+
+
+## Phase 125: Push Notifications система
+- [x] Создан PushNotificationService с поддержкой Firebase Cloud Messaging
+- [x] Реализованы методы отправки уведомлений (одиночные, мультикаст, по топикам)
+- [x] Добавлены специализированные методы для разных типов алертов
+- [x] Создан pushNotificationRouter с 16 tRPC процедурами
+- [x] Интегрирован pushNotificationRouter в главный appRouter
+- [x] Поддержка управления предпочтениями уведомлений
+- [x] Поддержка подписки на топики (цена, сигналы, портфолио, NFT, DeFi)
