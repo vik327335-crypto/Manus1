@@ -886,3 +886,18 @@
 - [x] Написаны 19 unit тестов (все проходят)
 - [x] Поддержка регистрации пользователей и batch сообщений
 - [x] Получение информации о боте
+
+## Phase 123: Мобильное приложение (React Native с Expo)
+- [x] Создана структура проекта Expo
+- [x] Настроена навигация (Stack + Tab Navigator)
+- [x] Создан API клиент для подключения к backend
+- [x] Реализованы 4 custom hooks (usePortfolio, useAlerts, useSignals, useAssets)
+- [x] Создан экран HomeScreen с поиском и списком активов
+- [x] Создан экран PortfolioScreen с управлением позициями
+- [x] Создан экран AlertsScreen с управлением алертами
+- [x] Создан экран SignalsScreen с торговыми сигналами и sentiment анализом
+- [x] Создан экран SettingsScreen с настройками приложения
+- [x] Создан экран AssetDetailScreen с детальной информацией об активе
+- [x] Создан экран LoginScreen с аутентификацией
+- [x] Интегрирована React Query для управления состоянием
+- [x] Поддержка iOS, Android и Web
