@@ -724,3 +724,51 @@ export const communityLeaderboard = mysqlTable("community_leaderboard", {
 
 export type CommunityLeaderboardEntry = typeof communityLeaderboard.$inferSelect;
 export type InsertCommunityLeaderboardEntry = typeof communityLeaderboard.$inferInsert;
+
+
+/**
+ * Solana NFT Portfolios
+ * Stores user's Solana NFT holdings from Magic Eden and Tensor
+ */
+export const solanaPortfolios = mysqlTable("solana_portfolios", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  walletAddress: varchar("walletAddress", { length: 255 }).notNull(),
+  nftId: varchar("nftId", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  collection: varchar("collection", { length: 255 }).notNull(),
+  floorPrice: int("floorPrice").notNull(), // in lamports (1 SOL = 1e9 lamports)
+  yourPrice: int("yourPrice"), // in lamports
+  gain: int("gain"), // in lamports
+  gainPercent: int("gainPercent"), // basis points
+  rarity: int("rarity"), // 0-100
+  marketplace: mysqlEnum("marketplace", ["magic-eden", "tensor", "solanart", "other"]).notNull(),
+  image: varchar("image", { length: 512 }),
+  lastUpdated: timestamp("lastUpdated").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SolanaPortfolio = typeof solanaPortfolios.$inferSelect;
+export type InsertSolanaPortfolio = typeof solanaPortfolios.$inferInsert;
+
+/**
+ * Solana Collections
+ * Stores Solana NFT collection metadata and stats
+ */
+export const solanaCollections = mysqlTable("solana_collections", {
+  id: int("id").autoincrement().primaryKey(),
+  collectionId: varchar("collectionId", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  floorPrice: int("floorPrice").notNull(), // in lamports
+  floorPriceChange24h: int("floorPriceChange24h"), // basis points
+  volume24h: int("volume24h"), // in lamports
+  holders: int("holders"),
+  supply: int("supply"),
+  image: varchar("image", { length: 512 }),
+  verified: int("verified").default(0).notNull(), // 0 = false, 1 = true
+  lastUpdated: timestamp("lastUpdated").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SolanaCollection = typeof solanaCollections.$inferSelect;
+export type InsertSolanaCollection = typeof solanaCollections.$inferInsert;

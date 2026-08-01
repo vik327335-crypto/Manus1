@@ -901,3 +901,12 @@
 - [x] Создан экран LoginScreen с аутентификацией
 - [x] Интегрирована React Query для управления состоянием
 - [x] Поддержка iOS, Android и Web
+
+
+## Phase 124: Solana NFT интеграция
+- [x] Создан SolanaIntegrationService с поддержкой Magic Eden и Tensor
+- [x] Реализованы методы получения портфолио, статистики коллекций, трендов
+- [x] Добавлены таблицы solana_portfolios и solana_collections в schema
+- [x] Создан solanaRouter с 11 tRPC процедурами
+- [x] Интегрирован solanaRouter в главный appRouter
+- [x] Поддержка Solana кошельков, NFT рарити, рекомендаций

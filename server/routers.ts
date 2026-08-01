@@ -48,6 +48,7 @@ import { parameterOptimizationRouter } from './routers/parameterOptimizationRout
 import { socialRouter } from './routers/socialRouter';
 import { communityRouter } from './routers/communityRouter';
 import { schedulerRouter } from './routers/schedulerRouter';
+import { solanaRouter } from './routers/solanaRouter';
 import { mlPredictionRouter } from './routers/mlPredictionRouter';
 import { tradingSignalRouter } from './routers/tradingSignalRouter';
 import { portfolioManagementRouter } from './routers/portfolioManagementRouter';
@@ -104,6 +105,7 @@ export const appRouter = router({
   socialCopyTrading: socialCopyTradingRouter,
   nftPortfolio: nftPortfolioRouter,
   telegramBot: telegramBotRouter,
+  solana: solanaRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

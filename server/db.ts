@@ -1,6 +1,6 @@
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend, alertConditions, alertHistory, AlertCondition, InsertAlertCondition, AlertHistory, InsertAlertHistory, backtests, Backtest, InsertBacktest, traders, Trader, InsertTrader, copiedTrades, CopiedTrade, InsertCopiedTrade, traderFollowers, TraderFollower, InsertTraderFollower, dayTradingSignals, DayTradingSignal, InsertDayTradingSignal, dayTradingPositions, DayTradingPosition, InsertDayTradingPosition } from "../drizzle/schema";
+import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend, alertConditions, alertHistory, AlertCondition, InsertAlertCondition, AlertHistory, InsertAlertHistory, backtests, Backtest, InsertBacktest, traders, Trader, InsertTrader, copiedTrades, CopiedTrade, InsertCopiedTrade, traderFollowers, TraderFollower, InsertTraderFollower, dayTradingSignals, DayTradingSignal, InsertDayTradingSignal, dayTradingPositions, DayTradingPosition, InsertDayTradingPosition, solanaPortfolios, SolanaPortfolio, InsertSolanaPortfolio, solanaCollections, SolanaCollection, InsertSolanaCollection } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
