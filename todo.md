@@ -985,3 +985,16 @@
 - [x] Создан WalletConnect компонент для фронтенда
 - [x] Реализована валидация адресов кошельков
 - [x] Добавлена функция связывания кошелька с аккаунтом пользователя
+
+
+## Phase 131: Scheduled Email Digest System
+- [x] Создан EmailDigestService с AI-powered анализом портфолио
+- [x] Реализована генерация performance summary используя LLM
+- [x] Добавлена генерация trading insights
+- [x] Реализована генерация персонализированных рекомендаций
+- [x] Создан HTML email template для digest с профессиональным дизайном
+- [x] Реализована функция расчета расписания digest
+- [x] Добавлена валидация digest frequency
+- [x] Создан emailDigestRouter с 7 tRPC процедурами
+- [x] Реализована поддержка daily, weekly и monthly digest
+- [x] Добавлена история digest emails

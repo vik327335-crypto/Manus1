@@ -64,6 +64,7 @@ import { telegramBotRouter } from './routers/telegramBotRouter';
 import { emailNotificationRouter } from './routers/emailNotificationRouter';
 import { portfolioRecommendationRouter } from './routers/portfolioRecommendationRouter';
 import { walletIntegrationRouter } from './routers/walletIntegrationRouter';
+import { emailDigestRouter } from './routers/emailDigestRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -116,6 +117,7 @@ export const appRouter = router({
   emailNotifications: emailNotificationRouter,
   portfolioRecommendations: portfolioRecommendationRouter,
   walletIntegration: walletIntegrationRouter,
+  emailDigests: emailDigestRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
