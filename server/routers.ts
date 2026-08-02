@@ -63,6 +63,7 @@ import { nftPortfolioRouter } from './routers/nftPortfolioRouter';
 import { telegramBotRouter } from './routers/telegramBotRouter';
 import { emailNotificationRouter } from './routers/emailNotificationRouter';
 import { portfolioRecommendationRouter } from './routers/portfolioRecommendationRouter';
+import { walletIntegrationRouter } from './routers/walletIntegrationRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -114,6 +115,7 @@ export const appRouter = router({
   nftAnalytics: nftAnalyticsRouter,
   emailNotifications: emailNotificationRouter,
   portfolioRecommendations: portfolioRecommendationRouter,
+  walletIntegration: walletIntegrationRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
