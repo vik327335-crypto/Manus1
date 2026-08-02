@@ -50,6 +50,7 @@ import { communityRouter } from './routers/communityRouter';
 import { schedulerRouter } from './routers/schedulerRouter';
 import { solanaRouter } from './routers/solanaRouter';
 import { pushNotificationRouter } from './routers/pushNotificationRouter';
+import { nftAnalyticsRouter } from './routers/nftAnalyticsRouter';
 import { mlPredictionRouter } from './routers/mlPredictionRouter';
 import { tradingSignalRouter } from './routers/tradingSignalRouter';
 import { portfolioManagementRouter } from './routers/portfolioManagementRouter';
@@ -108,6 +109,7 @@ export const appRouter = router({
   telegramBot: telegramBotRouter,
   solana: solanaRouter,
   pushNotifications: pushNotificationRouter,
+  nftAnalytics: nftAnalyticsRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
