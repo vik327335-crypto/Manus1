@@ -946,3 +946,14 @@
 - [x] Реализована функция создания/удаления/переключения алертов
 - [x] Добавлена поддержка push notifications для изменений цен
 - [x] Интегрирована с backend API для получения данных
+
+
+## Phase 128: Email Notification Templates
+- [x] Создан EmailNotificationService с 5 типами шаблонов
+- [x] Реализованы HTML email шаблоны для всех типов уведомлений
+- [x] Добавлены шаблоны: Price Alerts, Trading Signals, Portfolio Updates, Backtest Completion, Weekly Digest
+- [x] Реализована функция генерации unsubscribe ссылок
+- [x] Создан emailNotificationRouter с 6 tRPC процедурами
+- [x] Добавлена поддержка nodemailer для SMTP доставки
+- [x] Интегрирован с backend API
+- [x] Все шаблоны имеют брендирование и responsive дизайн
