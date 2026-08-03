@@ -998,3 +998,18 @@
 - [x] Создан emailDigestRouter с 7 tRPC процедурами
 - [x] Реализована поддержка daily, weekly и monthly digest
 - [x] Добавлена история digest emails
+
+
+## Phase 132: Advanced Backtesting Dashboard
+- [x] Создан BacktestingDashboard компонент с интерактивным UI
+- [x] Реализована визуализация equity curve используя Recharts
+- [x] Добавлена диаграмма monthly returns
+- [x] Реализована визуализация drawdown series
+- [x] Добавлена поддержка Monte Carlo симуляций
+- [x] Реализована генерация scatter chart для MC результатов
+- [x] Создан backtestingAnalyticsRouter с 5 tRPC процедурами
+- [x] Реализована функция расчета backtest метрик
+- [x] Добавлена функция запуска Monte Carlo симуляций
+- [x] Реализована функция сравнения стратегий
+- [x] Добавлена функция анализа robustness
+- [x] Реализована функция генерации отчетов

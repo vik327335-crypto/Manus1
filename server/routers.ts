@@ -65,6 +65,7 @@ import { emailNotificationRouter } from './routers/emailNotificationRouter';
 import { portfolioRecommendationRouter } from './routers/portfolioRecommendationRouter';
 import { walletIntegrationRouter } from './routers/walletIntegrationRouter';
 import { emailDigestRouter } from './routers/emailDigestRouter';
+import { backtestingAnalyticsRouter } from './routers/backtestingAnalyticsRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -118,6 +119,7 @@ export const appRouter = router({
   portfolioRecommendations: portfolioRecommendationRouter,
   walletIntegration: walletIntegrationRouter,
   emailDigests: emailDigestRouter,
+  backtestingAnalytics: backtestingAnalyticsRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
