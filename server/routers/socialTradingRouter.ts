@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getDb } from "../db";
 import { traders, copiedTrades, traderFollowers } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
+import SocialTradingService from "../services/socialTradingService";
 
 export const socialTradingRouter = router({
   /**
