@@ -1041,3 +1041,18 @@
 - [x] Реализована система управления кешем (clear, cleanup, stats)
 - [x] Добавлена функция проверки rate limits
 - [x] Реализована функция warm cache для инициализации
+
+
+## Phase 135: Advanced Risk Management
+- [x] Создан RiskManagementService с поддержкой Kelly Criterion
+- [x] Реализована функция расчета volatility-based position sizing
+- [x] Добавлена функция расчета Value at Risk (VaR)
+- [x] Реализована функция расчета Conditional VaR (CVaR)
+- [x] Добавлена функция генерации stop-loss и take-profit уровней
+- [x] Реализована функция генерации hedging стратегий
+- [x] Добавлена функция расчета Sharpe Ratio
+- [x] Реализована функция расчета maximum drawdown
+- [x] Добавлена функция расчета portfolio concentration risk
+- [x] Реализована функция расчета correlation между активами
+- [x] Создан riskManagementRouter с 10 tRPC процедурами
+- [x] Реализована функция генерации comprehensive risk report
