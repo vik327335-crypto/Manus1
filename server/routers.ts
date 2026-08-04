@@ -66,6 +66,7 @@ import { portfolioRecommendationRouter } from './routers/portfolioRecommendation
 import { walletIntegrationRouter } from './routers/walletIntegrationRouter';
 import { emailDigestRouter } from './routers/emailDigestRouter';
 import { backtestingAnalyticsRouter } from './routers/backtestingAnalyticsRouter';
+import { cachingRouter } from './routers/cachingRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -120,6 +121,7 @@ export const appRouter = router({
   walletIntegration: walletIntegrationRouter,
   emailDigests: emailDigestRouter,
   backtestingAnalytics: backtestingAnalyticsRouter,
+  caching: cachingRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
