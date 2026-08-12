@@ -1,0 +1,29 @@
+{
+  "hypothesisStatus":"rejected",
+  "reason":"The independent validation basket did not reach the preregistered Profit Factor threshold of 1.5 despite adequate sample size. The cost-stress result is lower still.",
+  "protocolPath":"reports/protocols/regime-aware-relative-momentum-hypothesis.md",
+  "source":"Binance Spot /api/v3/klines",
+  "preTestUniverse":["BTCUSDT","ETHUSDT","SOLUSDT"],
+  "independentValidationUniverse":["DOGEUSDT","LINKUSDT","AVAXUSDT","LTCUSDT"],
+  "preTestFolds":[
+    {"name":"fold_1","start":"2020-08-11","end":"2021-08-09"},
+    {"name":"fold_2","start":"2021-08-11","end":"2022-08-09"},
+    {"name":"fold_3","start":"2022-08-11","end":"2023-08-09"}
+  ],
+  "holdout":{"start":"2024-08-12","end":"2026-08-11"},
+  "parameterCombinationsTested":64,
+  "selectedOnPreTestOnly":{"momentumLookback":20,"momentumThreshold":0.05,"topRank":2,"rsiMinimum":55,"exitLookback":20,"stopLossPct":0.15},
+  "preTestAggregate":{"completedTrades":38,"positiveFolds":2,"grossProfit":914943.599372,"grossLoss":225057.387108,"profitFactor":4.065379,"meanAssetReturn":0.76654,"maxHhi":0.996057},
+  "independentValidation":{
+    "assumptions":{"feeRatePerSide":0.001,"slippageBeyondFee":"not modelled","initialCapitalPerAsset":100000},
+    "aggregate":{"completedTrades":30,"grossProfit":284144.709075,"grossLoss":211936.39284,"profitFactor":1.340707,"meanAssetReturn":0.180521,"positiveReturnAssets":2,"profitConcentrationHhi":0.442314,"largestProfitContributor":{"symbol":"DOGEUSDT","share":0.542069}},
+    "assetMetrics":[
+      {"symbol":"DOGEUSDT","completedTrades":5,"profitFactor":5.499228,"totalReturn":1.260174,"maxDrawdown":0.357716},
+      {"symbol":"LINKUSDT","completedTrades":9,"profitFactor":1.479948,"totalReturn":0.349008,"maxDrawdown":0.556757},
+      {"symbol":"AVAXUSDT","completedTrades":8,"profitFactor":0.509389,"totalReturn":-0.192527,"maxDrawdown":0.515963},
+      {"symbol":"LTCUSDT","completedTrades":8,"profitFactor":0.034882,"totalReturn":-0.694571,"maxDrawdown":0.730793}
+    ]
+  },
+  "costStress":{"feeRatePerSide":0.0025,"aggregate":{"completedTrades":30,"grossProfit":279493.098121,"grossLoss":216882.529305,"profitFactor":1.288684,"meanAssetReturn":0.156526,"positiveReturnAssets":2,"profitConcentrationHhi":0.446399,"largestProfitContributor":{"symbol":"DOGEUSDT","share":0.548368}}},
+  "target":{"minimumProfitFactor":1.5,"minimumHoldoutTrades":12,"minimumPositiveReturnAssets":2,"maximumProfitConcentrationHhi":0.55,"passed":false}
+}
