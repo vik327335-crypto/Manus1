@@ -69,6 +69,7 @@ import { backtestingAnalyticsRouter } from './routers/backtestingAnalyticsRouter
 import { cachingRouter } from './routers/cachingRouter';
 import { riskManagementRouter } from './routers/riskManagementRouter';
 import { notificationsManagementRouter } from './routers/notificationsManagementRouter';
+import { performanceMonitoringRouter } from './routers/performanceMonitoringRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -126,6 +127,7 @@ export const appRouter = router({
   caching: cachingRouter,
   riskManagement: riskManagementRouter,
   notificationsManagement: notificationsManagementRouter,
+  performanceMonitoring: performanceMonitoringRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

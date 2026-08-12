@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { setupWebSocket } from "../websocket";
+import PerformanceMonitoringService from "../services/performanceMonitoringService";
 import {
   syncBalancesHandler,
   runBacktestsHandler,
@@ -41,6 +42,23 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use("/api", (req, res, next) => {
+    const startedAt = performance.now();
+
+    res.on("finish", () => {
+      if (req.path.startsWith("/oauth")) return;
+
+      PerformanceMonitoringService.recordMetric(
+        req.path,
+        req.method,
+        Math.round(performance.now() - startedAt),
+        res.statusCode,
+        false
+      );
+    });
+
+    next();
+  });
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   

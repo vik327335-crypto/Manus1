@@ -35,6 +35,7 @@ const PortfolioTracker = lazy(() => import("./pages/PortfolioTracker"));
 const DeFiIntegration = lazy(() => import("./pages/DeFiIntegration"));
 const SocialCopyTrading = lazy(() => import("./pages/SocialCopyTrading"));
 const NFTPortfolio = lazy(() => import("./pages/NFTPortfolio"));
+const PerformanceMonitoringDashboard = lazy(() => import("./pages/PerformanceMonitoringDashboard"));
 
 function Router() {
   return (
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/defi-integration" component={DeFiIntegration} />
       <Route path="/social-copy-trading" component={SocialCopyTrading} />
       <Route path="/nft-portfolio" component={NFTPortfolio} />
+      <Route path="/performance-monitoring" component={PerformanceMonitoringDashboard} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

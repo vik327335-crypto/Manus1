@@ -1069,3 +1069,13 @@
 - [x] Реализована система severity-based styling
 - [x] Создан notificationsManagementRouter с 8 tRPC процедурами
 - [x] Реализована система управления предпочтениями уведомлений
+
+## Phase 137: Performance Monitoring & Analytics
+- [x] Добавлен сервис сбора API-метрик с ограничением объёма хранимой истории.
+- [x] Реализованы агрегированные показатели latency, cache hit rate, error rate и нагрузки.
+- [x] Добавлены мониторинг состояния процесса, медленных endpoint-ов и пороговые alerts.
+- [x] Создан защищённый tRPC API для отчётов, health-check, slow endpoints и обслуживания метрик.
+- [x] Подключён middleware для сбора показателей API-запросов в реальном времени.
+- [x] Добавлен экран Performance Monitoring с живыми графиками и автообновлением каждые 30 секунд.
+- [x] Зарегистрированы маршрут /performance-monitoring и пункт навигации Performance.
+- [x] Добавлены unit-тесты PerformanceMonitoringService: 4 теста успешно проходят.
