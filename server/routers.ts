@@ -70,6 +70,7 @@ import { cachingRouter } from './routers/cachingRouter';
 import { riskManagementRouter } from './routers/riskManagementRouter';
 import { notificationsManagementRouter } from './routers/notificationsManagementRouter';
 import { performanceMonitoringRouter } from './routers/performanceMonitoringRouter';
+import { portfolioRebalancingRouter } from './routers/portfolioRebalancingRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -128,6 +129,7 @@ export const appRouter = router({
   riskManagement: riskManagementRouter,
   notificationsManagement: notificationsManagementRouter,
   performanceMonitoring: performanceMonitoringRouter,
+  portfolioRebalancing: portfolioRebalancingRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
