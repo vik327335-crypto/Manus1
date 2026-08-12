@@ -71,6 +71,13 @@
       "when": 1786554653978,
       "tag": "0009_wealthy_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1786556129556,
+      "tag": "0010_marvelous_magdalene",
+      "breakpoints": true
     }
   ]
 }

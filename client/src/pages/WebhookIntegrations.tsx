@@ -55,6 +55,15 @@ export default function WebhookIntegrations() {
     () => new Map((channelsQuery.data?.channels ?? []).map((channel) => [channel.id, channel.name])),
     [channelsQuery.data?.channels]
   );
+  const retryStats = useMemo(() => {
+    const logs = deliveryLogsQuery.data?.logs ?? [];
+    return {
+      deliveries: logs.length,
+      retries: logs.filter((log) => log.retried).length,
+      recovered: logs.filter((log) => log.success && log.attemptCount > 1).length,
+      failures: logs.filter((log) => !log.success).length,
+    };
+  }, [deliveryLogsQuery.data?.logs]);
 
   const toggleEvent = (eventType: string) => {
     setSelectedEvents((current) =>
@@ -138,13 +147,19 @@ export default function WebhookIntegrations() {
           <CardDescription>Automatic event deliveries and explicit connection tests from the last 20 attempts.</CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
+          <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="rounded-md bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Deliveries</p><p className="mt-1 text-xl font-semibold">{retryStats.deliveries}</p></div>
+            <div className="rounded-md bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Retried</p><p className="mt-1 text-xl font-semibold">{retryStats.retries}</p></div>
+            <div className="rounded-md bg-emerald-500/10 p-3"><p className="text-xs text-muted-foreground">Recovered</p><p className="mt-1 text-xl font-semibold text-emerald-600">{retryStats.recovered}</p></div>
+            <div className="rounded-md bg-destructive/10 p-3"><p className="text-xs text-muted-foreground">Final failures</p><p className="mt-1 text-xl font-semibold text-destructive">{retryStats.failures}</p></div>
+          </div>
           {deliveryLogsQuery.isLoading && <p className="text-sm text-muted-foreground">Loading delivery history…</p>}
           {deliveryLogsQuery.isError && <p className="text-sm text-destructive">Unable to load delivery history.</p>}
           {!deliveryLogsQuery.isLoading && (deliveryLogsQuery.data?.logs.length ?? 0) === 0 && <p className="py-4 text-sm text-muted-foreground">No deliveries have been recorded yet.</p>}
           {(deliveryLogsQuery.data?.logs.length ?? 0) > 0 && (
             <table className="w-full min-w-[760px] text-sm">
-              <thead className="border-b text-left text-muted-foreground"><tr><th className="px-3 py-3">Time</th><th className="px-3 py-3">Channel</th><th className="px-3 py-3">Event</th><th className="px-3 py-3">Result</th><th className="px-3 py-3">HTTP</th><th className="px-3 py-3">Response</th></tr></thead>
-              <tbody>{deliveryLogsQuery.data?.logs.map((log) => <tr key={log.id} className="border-b"><td className="whitespace-nowrap px-3 py-3">{new Date(log.createdAt).toLocaleString()}</td><td className="px-3 py-3">{channelNames.get(log.channelId) ?? `Channel #${log.channelId}`}</td><td className="px-3 py-3"><Badge variant="outline">{log.eventType.replaceAll("_", " ")}</Badge></td><td className="px-3 py-3"><Badge variant={log.success ? "default" : "destructive"}>{log.success ? "Delivered" : "Failed"}</Badge></td><td className="px-3 py-3">{log.statusCode ?? "—"}</td><td className="max-w-[280px] truncate px-3 py-3 text-muted-foreground" title={log.responseSummary ?? undefined}>{log.responseSummary ?? "—"}</td></tr>)}</tbody>
+              <thead className="border-b text-left text-muted-foreground"><tr><th className="px-3 py-3">Time</th><th className="px-3 py-3">Channel</th><th className="px-3 py-3">Event</th><th className="px-3 py-3">Result</th><th className="px-3 py-3">Attempts</th><th className="px-3 py-3">HTTP</th><th className="px-3 py-3">Response</th></tr></thead>
+              <tbody>{deliveryLogsQuery.data?.logs.map((log) => <tr key={log.id} className="border-b"><td className="whitespace-nowrap px-3 py-3">{new Date(log.createdAt).toLocaleString()}</td><td className="px-3 py-3">{channelNames.get(log.channelId) ?? `Channel #${log.channelId}`}</td><td className="px-3 py-3"><Badge variant="outline">{log.eventType.replaceAll("_", " ")}</Badge></td><td className="px-3 py-3"><Badge variant={log.success ? "default" : "destructive"}>{log.success ? "Delivered" : "Failed"}</Badge></td><td className="px-3 py-3">{log.attemptCount}{log.retried ? " (retry)" : ""}</td><td className="px-3 py-3">{log.statusCode ?? "—"}</td><td className="max-w-[280px] truncate px-3 py-3 text-muted-foreground" title={log.responseSummary ?? undefined}>{log.responseSummary ?? "—"}</td></tr>)}</tbody>
             </table>
           )}
         </CardContent>

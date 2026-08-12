@@ -54,6 +54,8 @@ export const webhookDeliveryLogs = mysqlTable("webhook_delivery_logs", {
   eventType: varchar("eventType", { length: 64 }).notNull(),
   success: int("success").notNull().default(0),
   statusCode: int("statusCode"),
+  attemptCount: int("attemptCount").notNull().default(1),
+  retried: int("retried").notNull().default(0),
   responseSummary: varchar("responseSummary", { length: 500 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });

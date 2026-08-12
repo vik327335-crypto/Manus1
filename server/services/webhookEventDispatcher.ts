@@ -49,6 +49,8 @@ export class WebhookEventDispatcher {
           eventType: event.type,
           success: result.success ? 1 : 0,
           statusCode: result.statusCode ?? null,
+          attemptCount: result.attemptCount,
+          retried: result.retried ? 1 : 0,
           responseSummary: result.responseSummary,
         });
         return result;
