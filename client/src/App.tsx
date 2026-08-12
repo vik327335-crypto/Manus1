@@ -37,6 +37,7 @@ const SocialCopyTrading = lazy(() => import("./pages/SocialCopyTrading"));
 const NFTPortfolio = lazy(() => import("./pages/NFTPortfolio"));
 const PerformanceMonitoringDashboard = lazy(() => import("./pages/PerformanceMonitoringDashboard"));
 const PortfolioRebalancing = lazy(() => import("./pages/PortfolioRebalancing"));
+const WebhookIntegrations = lazy(() => import("./pages/WebhookIntegrations"));
 
 function Router() {
   return (
@@ -65,6 +66,7 @@ function Router() {
       <Route path="/nft-portfolio" component={NFTPortfolio} />
       <Route path="/performance-monitoring" component={PerformanceMonitoringDashboard} />
       <Route path="/portfolio-rebalancing" component={PortfolioRebalancing} />
+      <Route path="/webhook-integrations" component={WebhookIntegrations} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

@@ -64,6 +64,13 @@
       "when": 1785566867896,
       "tag": "0008_useful_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1786554653978,
+      "tag": "0009_wealthy_komodo",
+      "breakpoints": true
     }
   ]
 }

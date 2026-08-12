@@ -71,6 +71,7 @@ import { riskManagementRouter } from './routers/riskManagementRouter';
 import { notificationsManagementRouter } from './routers/notificationsManagementRouter';
 import { performanceMonitoringRouter } from './routers/performanceMonitoringRouter';
 import { portfolioRebalancingRouter } from './routers/portfolioRebalancingRouter';
+import { webhookIntegrationRouter } from './routers/webhookIntegrationRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -130,6 +131,7 @@ export const appRouter = router({
   notificationsManagement: notificationsManagementRouter,
   performanceMonitoring: performanceMonitoringRouter,
   portfolioRebalancing: portfolioRebalancingRouter,
+  webhookIntegration: webhookIntegrationRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

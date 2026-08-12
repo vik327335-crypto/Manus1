@@ -26,6 +26,42 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 /**
+ * User-managed outbound webhook channels. Webhook URLs are user data, scoped by userId.
+ * The application never stores signing secrets in this table.
+ */
+export const webhookChannels = mysqlTable("webhook_channels", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  name: varchar("name", { length: 120 }).notNull(),
+  channelType: mysqlEnum("channelType", ["generic", "discord", "slack", "telegram"]).notNull().default("generic"),
+  endpointUrl: text("endpointUrl").notNull(),
+  eventTypes: text("eventTypes").notNull(),
+  enabled: int("enabled").notNull().default(1),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WebhookChannel = typeof webhookChannels.$inferSelect;
+export type InsertWebhookChannel = typeof webhookChannels.$inferInsert;
+
+/**
+ * Auditable history of outbound webhook delivery attempts.
+ */
+export const webhookDeliveryLogs = mysqlTable("webhook_delivery_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  channelId: int("channelId").notNull().references(() => webhookChannels.id),
+  eventType: varchar("eventType", { length: 64 }).notNull(),
+  success: int("success").notNull().default(0),
+  statusCode: int("statusCode"),
+  responseSummary: varchar("responseSummary", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type WebhookDeliveryLog = typeof webhookDeliveryLogs.$inferSelect;
+export type InsertWebhookDeliveryLog = typeof webhookDeliveryLogs.$inferInsert;
+
+/**
  * CAN SLIM Crypto Assets
  * Stores cryptocurrency projects with their fundamental data
  */
