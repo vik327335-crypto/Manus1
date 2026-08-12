@@ -1,0 +1,19 @@
+{
+  "hypothesisStatus":"rejected_on_pretest",
+  "conclusion":"No candidate passed all preregistered pre-test gates. Independent validation and transaction-cost stress testing were not run because the pre-test grid produced no adequately sampled and diversified candidate.",
+  "protocolPath":"reports/protocols/volatility-compression-breakout-hypothesis.md",
+  "source":"Binance Spot /api/v3/klines",
+  "preTestUniverse":["BTCUSDT","ETHUSDT","SOLUSDT"],
+  "preTestFolds":[
+    {"name":"fold_1","start":"2019-08-11","end":"2020-08-09"},
+    {"name":"fold_2","start":"2020-08-11","end":"2021-08-09"},
+    {"name":"fold_3","start":"2021-08-11","end":"2022-08-09"}
+  ],
+  "assumptions":{"feeRatePerSide":0.001,"slippageBeyondFee":"not modelled","initialCapitalPerAsset":100000},
+  "parameterCombinationsTested":32,
+  "preTestGateCounts":{"total":32,"sufficientTrades":0,"positiveFolds":32,"positiveFiniteProfitFactor":24,"diversifiedProfit":0},
+  "acceptanceGates":{"minimumCompletedTrades":18,"minimumPositiveFolds":2,"requiresFiniteProfitFactor":true,"requiresPositiveMeanAssetReturn":true,"maximumPreTestProfitConcentrationHhi":0.7},
+  "independentValidation":{"status":"not_run","reason":"No candidate passed every pre-test gate."},
+  "costStress":{"status":"not_run","reason":"No candidate passed every pre-test gate."},
+  "targetMet":false
+}
