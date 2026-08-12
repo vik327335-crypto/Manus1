@@ -1,0 +1,20 @@
+{
+  "target":{"profitFactor":1.5,"scope":"six-asset equal-capital basket","minimumAggregateTrades":18,"minimumPositiveReturnAssets":3},
+  "targetMet":false,
+  "conclusion":"Adding BNB, XRP and ADA without changing the strategy degraded the aggregate result. The target is not robust across this pre-declared wider liquid universe.",
+  "source":"Binance Spot /api/v3/klines",
+  "protocol":"The six-asset universe BTC, ETH, SOL, BNB, XRP and ADA was declared before the evaluation. Strategy parameters were selected before 2024-08-12 and were not changed.",
+  "period":{"start":"2024-08-12","end":"2026-08-11","completedDailyBars":730},
+  "execution":"Entries and signal exits use the next daily open from indicators calculated only from preceding completed daily closes. Stop-loss takes precedence over take-profit when both thresholds are reached intraday.",
+  "assumptions":{"feeRatePerSide":0.001,"slippageBeyondFee":"not modelled","equalInitialCapitalPerAsset":100000,"assetWeight":0.16666666666666666},
+  "parameters":{"signalType":"momentum","trendPeriod":100,"rsiMinimum":60,"momentumLookback":10,"momentumThreshold":0.15,"stopLossPct":0.05,"takeProfitPct":null},
+  "assetMetrics":[
+    {"symbol":"BTCUSDT","completedTrades":1,"grossProfit":9411.372886,"grossLoss":0,"profitFactor":null,"totalReturn":0.094114,"profitContribution":0.196669},
+    {"symbol":"ETHUSDT","completedTrades":3,"grossProfit":24842.517735,"grossLoss":5456.076888,"profitFactor":4.553183,"totalReturn":0.193864,"profitContribution":0.519132},
+    {"symbol":"SOLUSDT","completedTrades":6,"grossProfit":13600.040349,"grossLoss":19890.023209,"profitFactor":0.683762,"totalReturn":-0.0629,"profitContribution":0.284199},
+    {"symbol":"BNBUSDT","completedTrades":6,"grossProfit":0,"grossLoss":27510.04052,"profitFactor":0,"totalReturn":-0.2751,"profitContribution":0},
+    {"symbol":"XRPUSDT","completedTrades":1,"grossProfit":0,"grossLoss":5189.81019,"profitFactor":0,"totalReturn":-0.051898,"profitContribution":0},
+    {"symbol":"ADAUSDT","completedTrades":3,"grossProfit":0,"grossLoss":32201.629353,"profitFactor":0,"totalReturn":-0.322016,"profitContribution":0}
+  ],
+  "aggregate":{"completedTrades":20,"grossProfit":47853.93097,"grossLoss":90247.58016,"profitFactor":0.530252,"positiveReturnAssets":2,"profitConcentrationHhi":0.388946,"largestProfitContributor":{"symbol":"ETHUSDT","share":0.519132},"targetMet":false}
+}
