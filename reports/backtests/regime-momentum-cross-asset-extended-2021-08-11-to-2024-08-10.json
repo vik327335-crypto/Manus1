@@ -1,0 +1,17 @@
+{
+  "target": {"profitFactor": 1.5, "scope": "aggregate equal-capital cross-asset basket", "minimumAggregateTrades": 18, "minimumPositiveReturnAssets": 2},
+  "targetMet": true,
+  "scopeCaveat": "The aggregate cross-asset basket reached the target. BTC/USDT alone did not: PF 0.828435 and total return -4.2150% over the held-out period.",
+  "source": "Binance Spot /api/v3/klines",
+  "selectionProtocol": "The 2,048 regime/momentum candidates were selected on BTC/USDT pre-test folds ending 2021-08-09. The BTC, ETH and SOL records from 2021-08-11 through 2024-08-10 were not used to select or alter the parameters.",
+  "execution": "Entries and signal exits use the next daily open from indicators calculated only from preceding completed daily closes. Stop-loss takes precedence over take-profit when both thresholds are reached intraday.",
+  "assumptions": {"feeRatePerSide":0.001,"slippageBeyondFee":"not modelled","equalInitialCapitalPerAsset":100000},
+  "parameters": {"signalType":"momentum","trendPeriod":100,"rsiMinimum":60,"momentumLookback":10,"momentumThreshold":0.15,"stopLossPct":0.05,"takeProfitPct":null},
+  "period": {"start":"2021-08-11","end":"2024-08-10"},
+  "assetMetrics": [
+    {"symbol":"BTCUSDT","completedTrades":8,"winningTrades":2,"losingTrades":6,"winRate":0.25,"grossProfit":20353.230115,"grossLoss":24568.275925,"profitFactor":0.828435,"totalReturn":-0.04215,"maxDrawdown":0.251514},
+    {"symbol":"ETHUSDT","completedTrades":9,"winningTrades":3,"losingTrades":6,"winRate":0.333333,"grossProfit":55742.660276,"grossLoss":30162.867425,"profitFactor":1.848056,"totalReturn":0.255798,"maxDrawdown":0.316898},
+    {"symbol":"SOLUSDT","completedTrades":12,"winningTrades":3,"losingTrades":9,"winRate":0.25,"grossProfit":204218.228548,"grossLoss":86987.081471,"profitFactor":2.347685,"totalReturn":1.172311,"maxDrawdown":0.337655}
+  ],
+  "aggregate": {"completedTrades":29,"grossProfit":280314.118939,"grossLoss":141718.224821,"profitFactor":1.977968,"positiveReturnAssets":2,"targetMet":true}
+}
