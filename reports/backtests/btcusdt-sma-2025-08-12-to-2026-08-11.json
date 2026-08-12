@@ -1,0 +1,38 @@
+{
+  "strategy": "BTCUSDT 10/20-day SMA crossover",
+  "symbol": "BTCUSDT",
+  "source": "Binance Spot /api/v3/klines",
+  "evaluationStart": "2025-08-12",
+  "evaluationEnd": "2026-08-11",
+  "completedDailyBars": 365,
+  "initialCapital": 100000,
+  "feeRatePerSide": 0.001,
+  "execution": "next daily open after a signal computed only from prior completed daily closes",
+  "trades": [
+    {"entryDate":"2025-08-14","exitDate":"2025-08-23","entryPrice":123429.74644,"exitPrice":116819.064,"pnl":-5355.825990628189,"pnlPercent":-5.3558259906281895,"exitReason":"death_cross"},
+    {"entryDate":"2025-09-12","exitDate":"2025-09-27","entryPrice":115598.17269,"exitPrice":109533.81654,"pnl":-4965.0956010747905,"pnlPercent":-5.246065754225019,"exitReason":"death_cross"},
+    {"entryDate":"2025-10-05","exitDate":"2025-10-17","entryPrice":122513.38099,"exitPrice":108086.07573,"pnl":-10560.703077303711,"pnlPercent":-11.776105714670955,"exitReason":"death_cross"},
+    {"entryDate":"2025-10-30","exitDate":"2025-11-06","entryPrice":110131.3213,"exitPrice":103781.27484,"pnl":-4561.875343554289,"pnlPercent":-5.765886021382002,"exitReason":"death_cross"},
+    {"entryDate":"2025-12-05","exitDate":"2025-12-16","entryPrice":92170.13806,"exitPrice":86345.64792,"pnl":-4711.434833341162,"pnlPercent":-6.319281127916312,"exitReason":"death_cross"},
+    {"entryDate":"2026-01-03","exitDate":"2026-01-25","entryPrice":90085.13514,"exitPrice":89136.11466,"pnl":-735.7972783762962,"pnlPercent":-1.053470673630156,"exitReason":"death_cross"},
+    {"entryDate":"2026-03-06","exitDate":"2026-03-28","entryPrice":70961.91102,"exitPrice":66340.87272,"pnl":-4500.394213575521,"pnlPercent":-6.511998103739907,"exitReason":"death_cross"},
+    {"entryDate":"2026-04-10","exitDate":"2026-05-20","entryPrice":71859.76798,"exitPrice":76757.52564,"pnl":4403.557300252069,"pnlPercent":6.815715939081734,"exitReason":"death_cross"},
+    {"entryDate":"2026-06-21","exitDate":"2026-06-26","entryPrice":64362.30801,"exitPrice":59734.84536,"pnl":-4961.792958303842,"pnlPercent":-7.189708997509896,"exitReason":"death_cross"},
+    {"entryDate":"2026-07-09","exitDate":"2026-08-01","entryPrice":62352.30001,"exitPrice":62824.99212,"pnl":485.5671919102606,"pnlPercent":0.7580989152351957,"exitReason":"death_cross"}
+  ],
+  "metrics": {
+    "completedTrades": 10,
+    "winningTrades": 2,
+    "losingTrades": 8,
+    "winRate": 0.2,
+    "grossProfit": 4889.124492162329,
+    "grossLoss": 40352.9192961578,
+    "profitFactor": 0.12115912745445029,
+    "averageWinningTrade": 2444.5622460811646,
+    "averageLosingTrade": -5044.114912019725,
+    "endingCapital": 64536.20519600453,
+    "totalReturn": -0.35463794803995474,
+    "buyAndHoldReturn": -0.46520291295580707,
+    "excessReturnVsBuyAndHold": 0.11056496491585233
+  }
+}
