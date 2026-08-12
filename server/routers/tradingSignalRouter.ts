@@ -1,8 +1,31 @@
-import { router, publicProcedure } from "../_core/trpc";
+import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import TradingSignalService from "../services/tradingSignalService";
+import WebhookEventDispatcher from "../services/webhookEventDispatcher";
 
 export const tradingSignalRouter = router({
+  generateSignalAndDeliver: protectedProcedure
+    .input(
+      z.object({
+        ticker: z.string().min(1).max(20),
+        price: z.number().positive(),
+        indicators: z.object({
+          sma20: z.number(), sma50: z.number(), rsi: z.number(), macdValue: z.number(), macdSignal: z.number(), ema12: z.number(), ema26: z.number(),
+        }),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const signal = TradingSignalService.generateSignal(input.ticker, input.price, input.indicators);
+      const summary = await WebhookEventDispatcher.dispatchForUser(ctx.user.id, {
+        type: "trading_signal",
+        title: `${signal.ticker} ${signal.signal} signal`,
+        message: `Strength ${signal.strength.toFixed(0)} · confidence ${signal.confidence.toFixed(0)}% · price ${signal.price}`,
+        data: { ticker: signal.ticker, signal: signal.signal, strength: signal.strength, confidence: signal.confidence, price: signal.price, reasoning: signal.reasoning },
+        occurredAt: signal.timestamp,
+      });
+      return { success: true, signal, summary };
+    }),
+
   /**
    * Generate trading signal based on indicators
    */

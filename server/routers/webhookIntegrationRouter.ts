@@ -9,6 +9,7 @@ import {
   type WebhookChannelType,
   type WebhookEventType,
 } from "../services/webhookIntegrationService";
+import WebhookEventDispatcher from "../services/webhookEventDispatcher";
 
 const channelTypeSchema = z.enum(["generic", "discord", "slack", "telegram"]);
 const eventTypeSchema = z.enum(WEBHOOK_EVENT_TYPES);
@@ -96,6 +97,23 @@ export const webhookIntegrationRouter = router({
       payload: WebhookIntegrationService.buildPayload(input.channelType as WebhookChannelType, { type: input.eventType, title: input.title, message: input.message }),
     })),
 
+  dispatchEvent: protectedProcedure
+    .input(z.object({
+      eventType: eventTypeSchema,
+      title: z.string().min(1).max(200),
+      message: z.string().min(1).max(1000),
+      data: z.record(z.string(), z.unknown()).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => ({
+      success: true,
+      summary: await WebhookEventDispatcher.dispatchForUser(ctx.user.id, {
+        type: input.eventType,
+        title: input.title,
+        message: input.message,
+        data: input.data,
+      }),
+    })),
+
   sendTest: protectedProcedure.input(z.object({ channelId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -126,6 +144,15 @@ export const webhookIntegrationRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       const logs = await db.select().from(webhookDeliveryLogs).where(and(eq(webhookDeliveryLogs.userId, ctx.user.id), eq(webhookDeliveryLogs.channelId, input.channelId))).orderBy(desc(webhookDeliveryLogs.createdAt)).limit(input.limit);
+      return { success: true, logs: logs.map((log) => ({ ...log, success: Boolean(log.success) })) };
+    }),
+
+  getRecentDeliveryLogs: protectedProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(50).default(20) }))
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const logs = await db.select().from(webhookDeliveryLogs).where(eq(webhookDeliveryLogs.userId, ctx.user.id)).orderBy(desc(webhookDeliveryLogs.createdAt)).limit(input.limit);
       return { success: true, logs: logs.map((log) => ({ ...log, success: Boolean(log.success) })) };
     }),
 });

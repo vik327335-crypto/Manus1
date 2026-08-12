@@ -19,6 +19,10 @@ export default function WebhookIntegrations() {
   const utils = trpc.useUtils();
   const channelsQuery = trpc.webhookIntegration.listChannels.useQuery();
   const supportedEventsQuery = trpc.webhookIntegration.getSupportedEvents.useQuery();
+  const deliveryLogsQuery = trpc.webhookIntegration.getRecentDeliveryLogs.useQuery(
+    { limit: 20 },
+    { refetchInterval: 30_000 }
+  );
   const createChannel = trpc.webhookIntegration.createChannel.useMutation({
     onSuccess: () => {
       utils.webhookIntegration.listChannels.invalidate();
@@ -46,6 +50,10 @@ export default function WebhookIntegrations() {
   const isFormValid = useMemo(
     () => name.trim().length >= 2 && endpointUrl.startsWith("https://") && selectedEvents.length > 0,
     [name, endpointUrl, selectedEvents]
+  );
+  const channelNames = useMemo(
+    () => new Map((channelsQuery.data?.channels ?? []).map((channel) => [channel.id, channel.name])),
+    [channelsQuery.data?.channels]
   );
 
   const toggleEvent = (eventType: string) => {
@@ -121,6 +129,24 @@ export default function WebhookIntegrations() {
               {testChannel.isSuccess && testChannel.variables?.channelId === channel.id && <p className={`basis-full text-sm ${testChannel.data.success ? "text-emerald-600" : "text-destructive"}`}>{testChannel.data.success ? "Test webhook delivered." : testChannel.data.responseSummary}</p>}
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Delivery history</CardTitle>
+          <CardDescription>Automatic event deliveries and explicit connection tests from the last 20 attempts.</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {deliveryLogsQuery.isLoading && <p className="text-sm text-muted-foreground">Loading delivery history…</p>}
+          {deliveryLogsQuery.isError && <p className="text-sm text-destructive">Unable to load delivery history.</p>}
+          {!deliveryLogsQuery.isLoading && (deliveryLogsQuery.data?.logs.length ?? 0) === 0 && <p className="py-4 text-sm text-muted-foreground">No deliveries have been recorded yet.</p>}
+          {(deliveryLogsQuery.data?.logs.length ?? 0) > 0 && (
+            <table className="w-full min-w-[760px] text-sm">
+              <thead className="border-b text-left text-muted-foreground"><tr><th className="px-3 py-3">Time</th><th className="px-3 py-3">Channel</th><th className="px-3 py-3">Event</th><th className="px-3 py-3">Result</th><th className="px-3 py-3">HTTP</th><th className="px-3 py-3">Response</th></tr></thead>
+              <tbody>{deliveryLogsQuery.data?.logs.map((log) => <tr key={log.id} className="border-b"><td className="whitespace-nowrap px-3 py-3">{new Date(log.createdAt).toLocaleString()}</td><td className="px-3 py-3">{channelNames.get(log.channelId) ?? `Channel #${log.channelId}`}</td><td className="px-3 py-3"><Badge variant="outline">{log.eventType.replaceAll("_", " ")}</Badge></td><td className="px-3 py-3"><Badge variant={log.success ? "default" : "destructive"}>{log.success ? "Delivered" : "Failed"}</Badge></td><td className="px-3 py-3">{log.statusCode ?? "—"}</td><td className="max-w-[280px] truncate px-3 py-3 text-muted-foreground" title={log.responseSummary ?? undefined}>{log.responseSummary ?? "—"}</td></tr>)}</tbody>
+            </table>
+          )}
         </CardContent>
       </Card>
 

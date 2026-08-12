@@ -1,8 +1,42 @@
 import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
 import AlertService from "../services/alertService";
+import WebhookEventDispatcher from "../services/webhookEventDispatcher";
 
 export const alertRouter = router({
+  triggerPriceAlertAndDeliver: protectedProcedure
+    .input(z.object({
+      ticker: z.string().min(1).max(20),
+      condition: z.enum(["ABOVE", "BELOW", "CHANGE_PERCENT"]),
+      targetValue: z.number().positive(),
+      currentPrice: z.number().positive(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const alert = {
+        id: `webhook-alert-${Date.now()}`,
+        userId: String(ctx.user.id),
+        type: "PRICE" as const,
+        ticker: input.ticker.toUpperCase(),
+        condition: input.condition,
+        targetValue: input.targetValue,
+        isActive: true,
+        createdAt: new Date(),
+        notificationMethods: [] as ("EMAIL" | "PUSH" | "SMS" | "IN_APP")[],
+      };
+      const shouldTrigger = AlertService.shouldTriggerAlert(alert, input.currentPrice);
+      if (!shouldTrigger) return { success: true, triggered: false, summary: null };
+
+      const trigger = AlertService.generateAlertTrigger(alert, input.currentPrice);
+      const summary = await WebhookEventDispatcher.dispatchForUser(ctx.user.id, {
+        type: "price_alert",
+        title: `${trigger.ticker} price alert`,
+        message: trigger.message,
+        data: { ticker: trigger.ticker, currentPrice: trigger.currentPrice, targetPrice: trigger.targetPrice, condition: input.condition },
+        occurredAt: trigger.timestamp,
+      });
+      return { success: true, triggered: true, trigger, summary };
+    }),
+
   /**
    * Create a new alert
    */
