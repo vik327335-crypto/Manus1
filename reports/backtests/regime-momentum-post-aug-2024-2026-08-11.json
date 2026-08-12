@@ -1,0 +1,17 @@
+{
+  "target": {"profitFactor":1.5,"scope":"aggregate equal-capital cross-asset basket","minimumAggregateTrades":12,"minimumPositiveReturnAssets":2},
+  "targetMet":false,
+  "targetCaveat":"Aggregate Profit Factor exceeded 1.5 but the pre-registered minimum of 12 aggregate trades was not reached; only 10 trades were completed. The result is therefore descriptive rather than a confirmed target pass.",
+  "source":"Binance Spot /api/v3/klines",
+  "protocol":"Parameters were selected before the evaluation window and were not changed. The evaluation begins after a two-day separation from the prior historical validation end date of 2024-08-10.",
+  "period":{"start":"2024-08-12","end":"2026-08-11","completedDailyBars":730},
+  "execution":"Entries and signal exits use the next daily open from indicators calculated only from preceding completed daily closes. Stop-loss takes precedence over take-profit when both thresholds are reached intraday.",
+  "assumptions":{"feeRatePerSide":0.001,"slippageBeyondFee":"not modelled","equalInitialCapitalPerAsset":100000},
+  "parameters":{"signalType":"momentum","trendPeriod":100,"rsiMinimum":60,"momentumLookback":10,"momentumThreshold":0.15,"stopLossPct":0.05,"takeProfitPct":null},
+  "assetMetrics":[
+    {"symbol":"BTCUSDT","completedTrades":1,"winningTrades":1,"losingTrades":0,"winRate":1,"grossProfit":9411.372886,"grossLoss":0,"profitFactor":null,"totalReturn":0.094114,"maxDrawdown":0.070044},
+    {"symbol":"ETHUSDT","completedTrades":3,"winningTrades":1,"losingTrades":2,"winRate":0.333333,"grossProfit":24842.517735,"grossLoss":5456.076888,"profitFactor":4.553183,"totalReturn":0.193864,"maxDrawdown":0.141857},
+    {"symbol":"SOLUSDT","completedTrades":6,"winningTrades":2,"losingTrades":4,"winRate":0.333333,"grossProfit":13600.040349,"grossLoss":19890.023209,"profitFactor":0.683762,"totalReturn":-0.0629,"maxDrawdown":0.224677}
+  ],
+  "aggregate":{"completedTrades":10,"grossProfit":47853.93097,"grossLoss":25346.100097,"profitFactor":1.888019,"positiveReturnAssets":2,"targetMet":false}
+}
