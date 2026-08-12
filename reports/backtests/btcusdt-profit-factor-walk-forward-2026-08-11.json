@@ -1,0 +1,35 @@
+{
+  "target": {"profitFactor": 1.5, "minimumOutOfSampleTrades": 3, "requiresPositiveOutOfSampleReturn": true},
+  "targetMet": false,
+  "source": "Binance Spot /api/v3/klines",
+  "execution": "Signals use only completed daily closes before the executable daily open. A live stop-loss or take-profit order may trigger during the current day; when both thresholds are reachable, the stop-loss is used first as the conservative assumption. Gap-through stops exit at the opening price.",
+  "assumptions": {"feeRatePerSide": 0.001, "slippageBeyondFee": "not modelled", "initialCapital": 100000, "minimumPreTestTrades": 8, "minimumOutOfSampleTrades": 3},
+  "periods": {
+    "preTestFolds": [
+      {"name":"training","start":"2022-08-10","end":"2023-08-09"},
+      {"name":"validation","start":"2023-08-11","end":"2024-08-09"},
+      {"name":"selection","start":"2024-08-11","end":"2025-08-10"}
+    ],
+    "censorGaps": ["2023-08-10","2024-08-10","2025-08-11"],
+    "outOfSample": {"start":"2025-08-12","end":"2026-08-11"}
+  },
+  "parameterCombinationsTested": 1520,
+  "selectedOnPreTestFoldsOnly": {
+    "parameters": {"fastPeriod":5,"slowPeriod":100,"trendPeriod":null,"stopLossPct":0.08,"takeProfitPct":null},
+    "metrics": {"completedTrades":8,"positiveFolds":3,"grossProfit":237507.706571,"grossLoss":27392.943626,"profitFactor":8.670397,"totalReturn":2.101148,"maxDrawdown":0.225523},
+    "folds": [
+      {"name":"training","metrics":{"completedTrades":3,"winningTrades":1,"losingTrades":2,"winRate":0.333333,"profitFactor":2.75299,"totalReturn":0.168582,"maxDrawdown":0.188852}},
+      {"name":"validation","metrics":{"completedTrades":3,"winningTrades":2,"losingTrades":1,"winRate":0.666667,"profitFactor":6.593711,"totalReturn":0.994344,"maxDrawdown":0.225523}},
+      {"name":"selection","metrics":{"completedTrades":2,"winningTrades":2,"losingTrades":0,"winRate":1,"profitFactor":null,"totalReturn":0.938221,"maxDrawdown":0.127964}}
+    ]
+  },
+  "outOfSample": {
+    "parameters": {"fastPeriod":5,"slowPeriod":100,"trendPeriod":null,"stopLossPct":0.08,"takeProfitPct":null},
+    "metrics": {"completedTrades":3,"winningTrades":0,"losingTrades":3,"winRate":0,"grossProfit":0,"grossLoss":20593.228499,"profitFactor":0,"totalReturn":-0.205932,"maxDrawdown":0.215154},
+    "trades": [
+      {"entryDate":"2025-09-12","exitDate":"2025-09-26","pnl":-5806.90596,"pnlPercent":-5.806906,"exitReason":"death_cross"},
+      {"entryDate":"2025-10-03","exitDate":"2025-10-10","pnl":-7708.589674,"pnlPercent":-8.183816,"exitReason":"stop_loss"},
+      {"entryDate":"2026-04-18","exitDate":"2026-06-01","pnl":-7077.732865,"pnlPercent":-8.183816,"exitReason":"stop_loss"}
+    ]
+  }
+}
