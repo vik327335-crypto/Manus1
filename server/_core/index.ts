@@ -15,6 +15,7 @@ import {
   updateLeaderboardHandler,
   cleanupDataHandler,
   generateDailySummaryHandler,
+  paperTradingMonitorHandler,
 } from "./scheduledHandlers";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -68,6 +69,7 @@ async function startServer() {
   app.post("/api/scheduled/update-leaderboard", updateLeaderboardHandler);
   app.post("/api/scheduled/cleanup-data", cleanupDataHandler);
   app.post("/api/scheduled/generate-daily-summary", generateDailySummaryHandler);
+  app.post("/api/scheduled/paper-trading-monitor", paperTradingMonitorHandler);
   
   // tRPC API
   app.use(

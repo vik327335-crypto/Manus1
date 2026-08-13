@@ -38,6 +38,7 @@ const NFTPortfolio = lazy(() => import("./pages/NFTPortfolio"));
 const PerformanceMonitoringDashboard = lazy(() => import("./pages/PerformanceMonitoringDashboard"));
 const PortfolioRebalancing = lazy(() => import("./pages/PortfolioRebalancing"));
 const WebhookIntegrations = lazy(() => import("./pages/WebhookIntegrations"));
+const PaperTradingMonitoring = lazy(() => import("./pages/PaperTradingMonitoring"));
 
 function Router() {
   return (
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/traders" component={Traders} />
       <Route path="/learning" component={LearningHub} />
       <Route path="/paper-trading" component={PaperTrading} />
+      <Route path="/paper-trading-monitoring" component={PaperTradingMonitoring} />
       <Route path="/day-trading/chart" component={DayTradingChart} />
       <Route path="/day-trading/positions" component={DayTradingPositions} />
       <Route path="/strategy-comparison" component={StrategyComparison} />

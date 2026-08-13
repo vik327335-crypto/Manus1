@@ -1,4 +1,4 @@
-import { int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { bigint, foreignKey, index, int, json, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -494,6 +494,95 @@ export const paperTrades = mysqlTable("paper_trades", {
 
 export type PaperTrade = typeof paperTrades.$inferSelect;
 export type InsertPaperTrade = typeof paperTrades.$inferInsert;
+
+/**
+ * Daily, user-owned research monitors. They operate only on virtual positions
+ * and never submit exchange orders or use exchange credentials.
+ */
+export const paperTradingMonitors = mysqlTable("paper_trading_monitors", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 120 }).notNull(),
+  strategyKey: varchar("strategyKey", { length: 64 }).notNull().default("technical_composite_v1"),
+  symbols: json("symbols").$type<string[]>().notNull(),
+  initialCapitalCents: int("initialCapitalCents").notNull(),
+  cashCents: int("cashCents").notNull(),
+  feeBps: int("feeBps").notNull().default(10),
+  rollingWindowDays: int("rollingWindowDays").notNull().default(90),
+  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
+  scheduleCron: varchar("scheduleCron", { length: 64 }),
+  enabled: int("enabled").notNull().default(0),
+  lastRunAt: timestamp("lastRunAt"),
+  lastStatus: mysqlEnum("lastStatus", ["idle", "healthy", "watch", "degraded", "error", "paused"]).notNull().default("idle"),
+  baselinePrices: json("baselinePrices").$type<Record<string, number>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  foreignKey({ columns: [table.userId], foreignColumns: [users.id], name: "ptm_user_fk" }),
+  index("paper_trading_monitors_user_idx").on(table.userId),
+  index("paper_trading_monitors_task_uid_idx").on(table.scheduleCronTaskUid),
+]);
+
+export type PaperTradingMonitor = typeof paperTradingMonitors.$inferSelect;
+export type InsertPaperTradingMonitor = typeof paperTradingMonitors.$inferInsert;
+
+/**
+ * An auditable daily snapshot of virtual strategy performance and its benchmark.
+ */
+export const paperTradingMonitorRuns = mysqlTable("paper_trading_monitor_runs", {
+  id: int("id").autoincrement().primaryKey(),
+  monitorId: int("monitorId").notNull(),
+  asOfDate: timestamp("asOfDate").notNull(),
+  executedAt: timestamp("executedAt").defaultNow().notNull(),
+  status: mysqlEnum("status", ["healthy", "watch", "degraded", "error", "skipped"]).notNull(),
+  equityCents: int("equityCents"),
+  benchmarkEquityCents: int("benchmarkEquityCents"),
+  modelReturnBps: int("modelReturnBps"),
+  benchmarkReturnBps: int("benchmarkReturnBps"),
+  rollingProfitFactorMilli: int("rollingProfitFactorMilli"),
+  rollingWinRateBps: int("rollingWinRateBps"),
+  rollingMaxDrawdownBps: int("rollingMaxDrawdownBps"),
+  rollingTrades: int("rollingTrades").notNull().default(0),
+  dataSource: varchar("dataSource", { length: 120 }).notNull().default("Binance Spot /api/v3/klines"),
+  errorSummary: varchar("errorSummary", { length: 500 }),
+}, (table) => [
+  foreignKey({ columns: [table.monitorId], foreignColumns: [paperTradingMonitors.id], name: "ptmr_monitor_fk" }),
+  uniqueIndex("paper_trading_monitor_runs_monitor_date_uq").on(table.monitorId, table.asOfDate),
+]);
+
+export type PaperTradingMonitorRun = typeof paperTradingMonitorRuns.$inferSelect;
+export type InsertPaperTradingMonitorRun = typeof paperTradingMonitorRuns.$inferInsert;
+
+/**
+ * Virtual long-only trades opened and closed by a monitor's fixed strategy.
+ * quantityE8 stores whole tokens scaled by 1e8 to avoid floating persistence.
+ */
+export const paperTradingMonitorTrades = mysqlTable("paper_trading_monitor_trades", {
+  id: int("id").autoincrement().primaryKey(),
+  monitorId: int("monitorId").notNull(),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  direction: mysqlEnum("direction", ["long"]).notNull().default("long"),
+  entryPriceCents: int("entryPriceCents").notNull(),
+  exitPriceCents: int("exitPriceCents"),
+  entryCapitalCents: int("entryCapitalCents").notNull(),
+  quantityE8: bigint("quantityE8", { mode: "number" }).notNull(),
+  entryFeeCents: int("entryFeeCents").notNull(),
+  exitFeeCents: int("exitFeeCents"),
+  pnlCents: int("pnlCents"),
+  pnlBps: int("pnlBps"),
+  status: mysqlEnum("status", ["open", "closed"]).notNull().default("open"),
+  openedAt: timestamp("openedAt").notNull(),
+  closedAt: timestamp("closedAt"),
+  closeReason: varchar("closeReason", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  foreignKey({ columns: [table.monitorId], foreignColumns: [paperTradingMonitors.id], name: "ptmt_monitor_fk" }),
+  index("paper_trading_monitor_trades_monitor_idx").on(table.monitorId),
+  index("paper_trading_monitor_trades_open_idx").on(table.monitorId, table.status),
+]);
+
+export type PaperTradingMonitorTrade = typeof paperTradingMonitorTrades.$inferSelect;
+export type InsertPaperTradingMonitorTrade = typeof paperTradingMonitorTrades.$inferInsert;
 
 /**
  * Quests

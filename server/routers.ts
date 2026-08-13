@@ -72,6 +72,7 @@ import { notificationsManagementRouter } from './routers/notificationsManagement
 import { performanceMonitoringRouter } from './routers/performanceMonitoringRouter';
 import { portfolioRebalancingRouter } from './routers/portfolioRebalancingRouter';
 import { webhookIntegrationRouter } from './routers/webhookIntegrationRouter';
+import { paperTradingMonitorRouter } from './routers/paperTradingMonitorRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -84,6 +85,7 @@ export const appRouter = router({
   socialTrading: socialTradingRouter,
   tutorial: tutorialRouter,
   paperTrading: paperTradingRouter,
+  paperTradingMonitor: paperTradingMonitorRouter,
   strategyData: strategyDataRouter,
   realTime: realTimeRouter,
   historicalData: historicalDataRouter,

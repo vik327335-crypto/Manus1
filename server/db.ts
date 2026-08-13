@@ -1,6 +1,6 @@
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend, alertConditions, alertHistory, AlertCondition, InsertAlertCondition, AlertHistory, InsertAlertHistory, backtests, Backtest, InsertBacktest, traders, Trader, InsertTrader, copiedTrades, CopiedTrade, InsertCopiedTrade, traderFollowers, TraderFollower, InsertTraderFollower, dayTradingSignals, DayTradingSignal, InsertDayTradingSignal, dayTradingPositions, DayTradingPosition, InsertDayTradingPosition, solanaPortfolios, SolanaPortfolio, InsertSolanaPortfolio, solanaCollections, SolanaCollection, InsertSolanaCollection } from "../drizzle/schema";
+import { InsertUser, users, cryptoAssets, canslimScores, watchlist, sentimentAnalysis, marketTrend, alertConditions, alertHistory, AlertCondition, InsertAlertCondition, AlertHistory, InsertAlertHistory, backtests, Backtest, InsertBacktest, traders, Trader, InsertTrader, copiedTrades, CopiedTrade, InsertCopiedTrade, traderFollowers, TraderFollower, InsertTraderFollower, dayTradingSignals, DayTradingSignal, InsertDayTradingSignal, dayTradingPositions, DayTradingPosition, InsertDayTradingPosition, solanaPortfolios, SolanaPortfolio, InsertSolanaPortfolio, solanaCollections, SolanaCollection, InsertSolanaCollection, paperTradingMonitors } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -87,6 +87,23 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Cron callbacks are resolved exclusively through their platform task UID,
+ * never through request body data or a user-provided monitor identifier.
+ */
+export async function getPaperTradingMonitorByTaskUid(taskUid: string) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select()
+    .from(paperTradingMonitors)
+    .where(eq(paperTradingMonitors.scheduleCronTaskUid, taskUid))
+    .limit(1);
+
+  return result[0] ?? null;
 }
 
 /**
