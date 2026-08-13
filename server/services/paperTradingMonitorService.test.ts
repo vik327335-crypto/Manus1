@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateRollingMetrics, classifyMonitorStatus } from "./paperTradingMonitorService";
+import { calculateRollingMetrics, classifyMonitorStatus, shouldNotifyDegradedTransition } from "./paperTradingMonitorService";
 
 describe("paperTradingMonitorService", () => {
   it("calculates profit factor, win rate, and drawdown from closed virtual trades", () => {
@@ -28,5 +28,11 @@ describe("paperTradingMonitorService", () => {
     const metrics = { trades: 8, profitFactorMilli: 1_750, winRateBps: 6_250, maxDrawdownBps: 1_200 };
 
     expect(classifyMonitorStatus(metrics, 650, 100)).toBe("healthy");
+  });
+
+  it("notifies the owner only when status transitions into degraded", () => {
+    expect(shouldNotifyDegradedTransition("watch", "degraded")).toBe(true);
+    expect(shouldNotifyDegradedTransition("degraded", "degraded")).toBe(false);
+    expect(shouldNotifyDegradedTransition("healthy", "watch")).toBe(false);
   });
 });

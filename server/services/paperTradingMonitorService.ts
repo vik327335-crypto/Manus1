@@ -6,6 +6,7 @@ import {
   type PaperTradingMonitor,
 } from "../../drizzle/schema";
 import { getDb } from "../db";
+import { notifyOwner } from "../_core/notification";
 import TradingSignalService from "./tradingSignalService";
 
 const DAILY_INTERVAL = "1d";
@@ -70,6 +71,13 @@ export function classifyMonitorStatus(
     return "watch";
   }
   return "healthy";
+}
+
+export function shouldNotifyDegradedTransition(
+  previousStatus: string | null | undefined,
+  nextStatus: "healthy" | "watch" | "degraded"
+) {
+  return previousStatus !== "degraded" && nextStatus === "degraded";
 }
 
 function toCents(price: number) {
@@ -244,6 +252,7 @@ export async function runPaperTradingMonitor(monitorId: number) {
   const priorRuns = await db.select().from(paperTradingMonitorRuns).where(and(eq(paperTradingMonitorRuns.monitorId, monitor.id), gte(paperTradingMonitorRuns.asOfDate, rollingStart))).orderBy(asc(paperTradingMonitorRuns.asOfDate));
   const rollingMetrics = calculateRollingMetrics(closedTrades, [...priorRuns.map((run) => run.equityCents ?? monitor.initialCapitalCents), equityCents]);
   const status = classifyMonitorStatus(rollingMetrics, modelReturnBps, benchmarkReturnBps);
+  const shouldNotifyOwner = shouldNotifyDegradedTransition(monitor.lastStatus, status);
 
   await db.insert(paperTradingMonitorRuns).values({
     monitorId: monitor.id,
@@ -265,7 +274,20 @@ export async function runPaperTradingMonitor(monitorId: number) {
     lastStatus: status,
   }).where(eq(paperTradingMonitors.id, monitor.id));
 
-  return { status, asOfDate, equityCents, benchmarkEquityCents, modelReturnBps, benchmarkReturnBps, rollingMetrics };
+  const ownerNotificationSent = shouldNotifyOwner
+    ? await notifyOwner({
+        title: `Paper monitor degraded: ${monitor.name}`,
+        content: [
+          "The research-only virtual monitor transitioned to degraded status.",
+          `Rolling trades: ${rollingMetrics.trades}.`,
+          `Rolling profit factor: ${rollingMetrics.profitFactorMilli === null ? "not yet defined" : (rollingMetrics.profitFactorMilli / 1_000).toFixed(2)}.`,
+          `Model return: ${(modelReturnBps / 100).toFixed(2)}%; benchmark return: ${(benchmarkReturnBps / 100).toFixed(2)}%.`,
+          "No real orders were sent. Review the research signal before taking any action.",
+        ].join(" "),
+      })
+    : false;
+
+  return { status, asOfDate, equityCents, benchmarkEquityCents, modelReturnBps, benchmarkReturnBps, rollingMetrics, ownerNotificationSent };
 }
 
 export async function getMonitorDashboard(userId: number, monitorId: number) {
