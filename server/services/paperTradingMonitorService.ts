@@ -3,6 +3,7 @@ import {
   paperTradingMonitorRuns,
   paperTradingMonitors,
   paperTradingMonitorTrades,
+  paperTradingMonitorAlerts,
   type PaperTradingMonitor,
 } from "../../drizzle/schema";
 import { getDb } from "../db";
@@ -63,13 +64,19 @@ export function calculateRollingMetrics(
 export function classifyMonitorStatus(
   metrics: RollingMetrics,
   modelReturnBps: number,
-  benchmarkReturnBps: number
+  benchmarkReturnBps: number,
+  thresholds: Pick<PaperTradingMonitor, "minimumTradeCount" | "watchProfitFactorMilli" | "degradedProfitFactorMilli" | "degradedBenchmarkLagBps"> = {
+    minimumTradeCount: 5,
+    watchProfitFactorMilli: 1_500,
+    degradedProfitFactorMilli: 1_000,
+    degradedBenchmarkLagBps: 500,
+  }
 ): "healthy" | "watch" | "degraded" {
   const relativeReturnBps = modelReturnBps - benchmarkReturnBps;
-  if (metrics.trades >= 5 && ((metrics.profitFactorMilli !== null && metrics.profitFactorMilli < 1_000) || relativeReturnBps <= -500)) {
+  if (metrics.trades >= thresholds.minimumTradeCount && ((metrics.profitFactorMilli !== null && metrics.profitFactorMilli < thresholds.degradedProfitFactorMilli) || relativeReturnBps <= -thresholds.degradedBenchmarkLagBps)) {
     return "degraded";
   }
-  if (metrics.trades < 5 || metrics.profitFactorMilli === null || metrics.profitFactorMilli < 1_500 || relativeReturnBps < 0) {
+  if (metrics.trades < thresholds.minimumTradeCount || metrics.profitFactorMilli === null || metrics.profitFactorMilli < thresholds.watchProfitFactorMilli || relativeReturnBps < 0) {
     return "watch";
   }
   return "healthy";
@@ -201,6 +208,37 @@ function summarizeError(error: unknown) {
   return message.replace(/\s+/g, " ").slice(0, 500);
 }
 
+async function persistMonitorAlert(
+  monitor: PaperTradingMonitor,
+  kind: "degraded" | "data_stale" | "run_error",
+  message: string,
+  shouldAttempt: boolean,
+  title: string
+) {
+  const db = await getDb();
+  if (!db) return false;
+  if (!shouldAttempt) {
+    await db.insert(paperTradingMonitorAlerts).values({
+      monitorId: monitor.id,
+      alertKind: kind,
+      deliveryStatus: "suppressed",
+      message: `Suppressed by alert policy: ${message}`.slice(0, 500),
+    });
+    return false;
+  }
+  const ownerNotificationSent = await notifyOwner({ title, content: message });
+  await db.insert(paperTradingMonitorAlerts).values({
+    monitorId: monitor.id,
+    alertKind: kind,
+    deliveryStatus: ownerNotificationSent ? "sent" : "failed",
+    message: message.slice(0, 500),
+  });
+  if (ownerNotificationSent) {
+    await db.update(paperTradingMonitors).set({ lastAlertAt: new Date(), lastAlertKind: kind }).where(eq(paperTradingMonitors.id, monitor.id));
+  }
+  return ownerNotificationSent;
+}
+
 export async function recordPaperTradingMonitorFailure(monitorId: number, error: unknown) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
@@ -233,17 +271,10 @@ export async function recordPaperTradingMonitorFailure(monitorId: number, error:
   await db.update(paperTradingMonitors).set({ lastStatus: "error", lastRunAt: now }).where(eq(paperTradingMonitors.id, monitorId));
   const kind = stale ? "data_stale" : "run_error";
   const shouldNotify = shouldSendMonitorAlert(monitor.lastAlertKind, monitor.lastAlertAt, kind, now);
-  const ownerNotificationSent = shouldNotify
-    ? await notifyOwner({
-        title: `Paper monitor issue: ${monitor.name}`,
-        content: stale
-          ? `The research-only monitor did not execute because the latest completed daily candle is ${error.ageMinutes} minutes old. No virtual or real order was sent.`
-          : `The research-only monitor daily run failed: ${summary}. No virtual or real order was sent.`,
-      })
-    : false;
-  if (ownerNotificationSent) {
-    await db.update(paperTradingMonitors).set({ lastAlertAt: now, lastAlertKind: kind }).where(eq(paperTradingMonitors.id, monitorId));
-  }
+  const message = stale
+    ? `The research-only monitor did not execute because the latest completed daily candle is ${error.ageMinutes} minutes old. No virtual or real order was sent.`
+    : `The research-only monitor daily run failed: ${summary}. No virtual or real order was sent.`;
+  const ownerNotificationSent = await persistMonitorAlert(monitor, kind, message, shouldNotify, `Paper monitor issue: ${monitor.name}`);
   return { errorSummary: summary, ownerNotificationSent };
 }
 
@@ -333,7 +364,7 @@ export async function runPaperTradingMonitor(monitorId: number) {
   const closedTrades = await db.select().from(paperTradingMonitorTrades).where(and(eq(paperTradingMonitorTrades.monitorId, monitor.id), eq(paperTradingMonitorTrades.status, "closed"), gte(paperTradingMonitorTrades.closedAt, rollingStart)));
   const priorRuns = await db.select().from(paperTradingMonitorRuns).where(and(eq(paperTradingMonitorRuns.monitorId, monitor.id), gte(paperTradingMonitorRuns.asOfDate, rollingStart))).orderBy(asc(paperTradingMonitorRuns.asOfDate));
   const rollingMetrics = calculateRollingMetrics(closedTrades, [...priorRuns.map((run) => run.equityCents ?? monitor.initialCapitalCents), equityCents]);
-  const status = classifyMonitorStatus(rollingMetrics, modelReturnBps, benchmarkReturnBps);
+  const status = classifyMonitorStatus(rollingMetrics, modelReturnBps, benchmarkReturnBps, monitor);
   const shouldNotifyOwner = shouldNotifyDegradedTransition(monitor.lastStatus, status);
 
   await db.insert(paperTradingMonitorRuns).values({
@@ -360,21 +391,19 @@ export async function runPaperTradingMonitor(monitorId: number) {
     lastStatus: status,
   }).where(eq(paperTradingMonitors.id, monitor.id));
 
-  const ownerNotificationSent = shouldNotifyOwner
-    ? await notifyOwner({
-        title: `Paper monitor degraded: ${monitor.name}`,
-        content: [
-          "The research-only virtual monitor transitioned to degraded status.",
-          `Rolling trades: ${rollingMetrics.trades}.`,
-          `Rolling profit factor: ${rollingMetrics.profitFactorMilli === null ? "not yet defined" : (rollingMetrics.profitFactorMilli / 1_000).toFixed(2)}.`,
-          `Model return: ${(modelReturnBps / 100).toFixed(2)}%; benchmark return: ${(benchmarkReturnBps / 100).toFixed(2)}%.`,
-          "No real orders were sent. Review the research signal before taking any action.",
-        ].join(" "),
-      })
-    : false;
-  if (ownerNotificationSent) {
-    await db.update(paperTradingMonitors).set({ lastAlertAt: new Date(), lastAlertKind: "degraded" }).where(eq(paperTradingMonitors.id, monitor.id));
-  }
+  const ownerNotificationSent = await persistMonitorAlert(
+    monitor,
+    "degraded",
+    [
+      "The research-only virtual monitor transitioned to degraded status.",
+      `Rolling trades: ${rollingMetrics.trades}.`,
+      `Rolling profit factor: ${rollingMetrics.profitFactorMilli === null ? "not yet defined" : (rollingMetrics.profitFactorMilli / 1_000).toFixed(2)}.`,
+      `Model return: ${(modelReturnBps / 100).toFixed(2)}%; benchmark return: ${(benchmarkReturnBps / 100).toFixed(2)}%.`,
+      "No real orders were sent. Review the research signal before taking any action.",
+    ].join(" "),
+    shouldNotifyOwner,
+    `Paper monitor degraded: ${monitor.name}`
+  );
 
   return { status, asOfDate, equityCents, benchmarkEquityCents, modelReturnBps, benchmarkReturnBps, rollingMetrics, candleAgeMinutes, equityInvariantDeltaCents, diagnosticFlags, ownerNotificationSent };
 }
@@ -384,10 +413,11 @@ export async function getMonitorDashboard(userId: number, monitorId: number) {
   if (!db) throw new Error("Database unavailable");
   const monitor = (await db.select().from(paperTradingMonitors).where(and(eq(paperTradingMonitors.id, monitorId), eq(paperTradingMonitors.userId, userId))).limit(1))[0];
   if (!monitor) throw new Error("Monitor not found");
-  const [runs, openTrades, recentTrades] = await Promise.all([
+  const [runs, openTrades, recentTrades, alerts] = await Promise.all([
     db.select().from(paperTradingMonitorRuns).where(eq(paperTradingMonitorRuns.monitorId, monitorId)).orderBy(desc(paperTradingMonitorRuns.asOfDate)).limit(90),
     db.select().from(paperTradingMonitorTrades).where(and(eq(paperTradingMonitorTrades.monitorId, monitorId), eq(paperTradingMonitorTrades.status, "open"))),
     db.select().from(paperTradingMonitorTrades).where(eq(paperTradingMonitorTrades.monitorId, monitorId)).orderBy(desc(paperTradingMonitorTrades.createdAt)).limit(50),
+    db.select().from(paperTradingMonitorAlerts).where(eq(paperTradingMonitorAlerts.monitorId, monitorId)).orderBy(desc(paperTradingMonitorAlerts.createdAt)).limit(20),
   ]);
-  return { monitor, runs, openTrades, recentTrades };
+  return { monitor, runs, openTrades, recentTrades, alerts };
 }

@@ -48,4 +48,17 @@ describe("paperTradingMonitorService", () => {
     expect(shouldSendMonitorAlert("data_stale", new Date("2026-08-13T11:00:00.000Z"), "data_stale", now)).toBe(true);
     expect(shouldSendMonitorAlert("run_error", new Date("2026-08-14T11:00:00.000Z"), "data_stale", now)).toBe(true);
   });
+
+  it("uses saved monitor thresholds without changing the underlying trading signal", () => {
+    const metrics = { trades: 4, profitFactorMilli: 1_200, winRateBps: 5_000, maxDrawdownBps: 600 };
+    const customThresholds = {
+      minimumTradeCount: 3,
+      watchProfitFactorMilli: 1_400,
+      degradedProfitFactorMilli: 1_100,
+      degradedBenchmarkLagBps: 700,
+    };
+
+    expect(classifyMonitorStatus(metrics, 100, 200, customThresholds)).toBe("watch");
+    expect(classifyMonitorStatus({ ...metrics, profitFactorMilli: 1_000 }, 100, 200, customThresholds)).toBe("degraded");
+  });
 });

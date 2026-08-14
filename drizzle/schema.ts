@@ -509,6 +509,10 @@ export const paperTradingMonitors = mysqlTable("paper_trading_monitors", {
   cashCents: int("cashCents").notNull(),
   feeBps: int("feeBps").notNull().default(10),
   rollingWindowDays: int("rollingWindowDays").notNull().default(90),
+  minimumTradeCount: int("minimumTradeCount").notNull().default(5),
+  watchProfitFactorMilli: int("watchProfitFactorMilli").notNull().default(1500),
+  degradedProfitFactorMilli: int("degradedProfitFactorMilli").notNull().default(1000),
+  degradedBenchmarkLagBps: int("degradedBenchmarkLagBps").notNull().default(500),
   scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
   scheduleCron: varchar("scheduleCron", { length: 64 }),
   enabled: int("enabled").notNull().default(0),
@@ -558,6 +562,23 @@ export const paperTradingMonitorRuns = mysqlTable("paper_trading_monitor_runs", 
 
 export type PaperTradingMonitorRun = typeof paperTradingMonitorRuns.$inferSelect;
 export type InsertPaperTradingMonitorRun = typeof paperTradingMonitorRuns.$inferInsert;
+
+/**
+ * A durable audit log of owner-alert delivery attempts from research monitors.
+ */
+export const paperTradingMonitorAlerts = mysqlTable("paper_trading_monitor_alerts", {
+  id: int("id").autoincrement().primaryKey(),
+  monitorId: int("monitorId").notNull(),
+  alertKind: varchar("alertKind", { length: 32 }).notNull(),
+  deliveryStatus: mysqlEnum("deliveryStatus", ["sent", "failed", "suppressed"]).notNull(),
+  message: varchar("message", { length: 500 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  foreignKey({ columns: [table.monitorId], foreignColumns: [paperTradingMonitors.id], name: "ptma_monitor_fk" }),
+  index("ptma_monitor_created_idx").on(table.monitorId, table.createdAt),
+]);
+
+export type PaperTradingMonitorAlert = typeof paperTradingMonitorAlerts.$inferSelect;
 
 /**
  * Virtual long-only trades opened and closed by a monitor's fixed strategy.

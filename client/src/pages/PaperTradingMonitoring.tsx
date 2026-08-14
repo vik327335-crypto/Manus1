@@ -39,6 +39,7 @@ export default function PaperTradingMonitoring() {
   const [name, setName] = useState("Daily technical composite");
   const [capital, setCapital] = useState("10000");
   const [symbols, setSymbols] = useState<MonitorSymbol[]>([...DEFAULT_SYMBOLS]);
+  const [thresholds, setThresholds] = useState({ minimumTradeCount: 5, watchProfitFactorMilli: 1_500, degradedProfitFactorMilli: 1_000, degradedBenchmarkLagBps: 500 });
 
   useEffect(() => {
     if (selectedMonitorId === null && monitorsQuery.data?.[0]) setSelectedMonitorId(monitorsQuery.data[0].id);
@@ -87,6 +88,24 @@ export default function PaperTradingMonitoring() {
     model: (run.modelReturnBps ?? 0) / 100,
     benchmark: (run.benchmarkReturnBps ?? 0) / 100,
   })), [dashboard?.runs]);
+
+  useEffect(() => {
+    if (!monitor) return;
+    setThresholds({
+      minimumTradeCount: monitor.minimumTradeCount,
+      watchProfitFactorMilli: monitor.watchProfitFactorMilli,
+      degradedProfitFactorMilli: monitor.degradedProfitFactorMilli,
+      degradedBenchmarkLagBps: monitor.degradedBenchmarkLagBps,
+    });
+  }, [monitor?.id, monitor?.minimumTradeCount, monitor?.watchProfitFactorMilli, monitor?.degradedProfitFactorMilli, monitor?.degradedBenchmarkLagBps]);
+
+  const updateThresholds = trpc.paperTradingMonitor.updateThresholds.useMutation({
+    onSuccess: async () => {
+      await utils.paperTradingMonitor.dashboard.invalidate();
+      toast.success("Monitoring thresholds saved");
+    },
+    onError: (error) => toast.error(error.message),
+  });
 
   const submitCreate = () => {
     const initialCapitalUsd = Number(capital);
@@ -140,12 +159,16 @@ export default function PaperTradingMonitoring() {
 
             <section className="grid gap-6 xl:grid-cols-[1.5fr_0.8fr]">
               <Card><CardHeader><CardTitle>Rolling performance versus benchmark</CardTitle><CardDescription>Returns are calculated from virtual positions and an equal-weight buy-and-hold baseline using the same monitored symbols.</CardDescription></CardHeader><CardContent><div className="h-72">{chartData.length > 1 ? <ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}><XAxis dataKey="date" tickLine={false} axisLine={false} /><YAxis tickFormatter={(value) => `${value}%`} tickLine={false} axisLine={false} /><Tooltip formatter={(value: number) => `${value.toFixed(2)}%`} /><Line type="monotone" dataKey="model" name="Model" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={false} /><Line type="monotone" dataKey="benchmark" name="Buy & hold" stroke="hsl(var(--muted-foreground))" strokeWidth={2} strokeDasharray="4 4" dot={false} /></LineChart></ResponsiveContainer> : <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Daily results will appear after completed candles are processed.</div>}</div></CardContent></Card>
-              <Card><CardHeader><CardTitle>Daily control</CardTitle><CardDescription>Current schedule: {monitor.scheduleCron ?? "not enabled"}</CardDescription></CardHeader><CardContent className="space-y-3"><Button className="w-full" onClick={() => enableDaily.mutate({ monitorId: monitor.id })} disabled={monitor.enabled === 1 || enableDaily.isPending}>{enableDaily.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CirclePlay className="mr-2 h-4 w-4" />}Enable daily updates</Button><Button className="w-full" variant="outline" onClick={() => runNow.mutate({ monitorId: monitor.id })} disabled={monitor.enabled !== 1 || runNow.isPending}>{runNow.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}Run completed-day check</Button><Button className="w-full" variant="ghost" onClick={() => pauseDaily.mutate({ monitorId: monitor.id })} disabled={monitor.enabled !== 1 || pauseDaily.isPending}><CirclePause className="mr-2 h-4 w-4" />Pause daily updates</Button><div className="rounded-lg bg-muted/50 p-3 text-xs leading-5 text-muted-foreground"><ShieldCheck className="mr-1 inline h-3.5 w-3.5 text-primary" />Virtual trades only. Status turns <strong>Degraded</strong> when rolling PF is below 1.00 with enough history or the model trails the benchmark by at least 5 percentage points.</div></CardContent></Card>
+              <Card><CardHeader><CardTitle>Daily control</CardTitle><CardDescription>Schedule: {monitor.scheduleCron ?? "not enabled"} · Alerts: {dashboard.alerts.length}</CardDescription></CardHeader><CardContent className="space-y-3"><Button className="w-full" onClick={() => enableDaily.mutate({ monitorId: monitor.id })} disabled={monitor.enabled === 1 || enableDaily.isPending}>{enableDaily.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CirclePlay className="mr-2 h-4 w-4" />}Enable daily updates</Button><Button className="w-full" variant="outline" onClick={() => runNow.mutate({ monitorId: monitor.id })} disabled={monitor.enabled !== 1 || runNow.isPending}>{runNow.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}Run completed-day check</Button><Button className="w-full" variant="ghost" onClick={() => pauseDaily.mutate({ monitorId: monitor.id })} disabled={monitor.enabled !== 1 || pauseDaily.isPending}><CirclePause className="mr-2 h-4 w-4" />Pause daily updates</Button><div className="rounded-lg bg-muted/50 p-3 text-xs leading-5 text-muted-foreground"><ShieldCheck className="mr-1 inline h-3.5 w-3.5 text-primary" />Virtual trades only. Alert thresholds change monitoring labels, not trade signals or virtual execution.</div></CardContent></Card>
             </section>
 
             <section className="grid gap-6 xl:grid-cols-2">
               <Card><CardHeader><CardTitle>Open virtual positions</CardTitle></CardHeader><CardContent>{dashboard.openTrades.length === 0 ? <p className="text-sm text-muted-foreground">No open virtual positions.</p> : <div className="space-y-3">{dashboard.openTrades.map((trade) => <div key={trade.id} className="flex items-center justify-between border-b pb-3 last:border-0"><div><p className="font-medium">{trade.symbol.replace("USDT", "")}</p><p className="text-xs text-muted-foreground">Opened {new Date(trade.openedAt).toLocaleDateString()}</p></div><p className="text-sm">{formatUsdFromCents(trade.entryCapitalCents)}</p></div>)}</div>}</CardContent></Card>
               <Card><CardHeader><CardTitle>Recent virtual trade decisions</CardTitle></CardHeader><CardContent>{dashboard.recentTrades.length === 0 ? <p className="text-sm text-muted-foreground">No virtual trades have been generated yet.</p> : <div className="space-y-3">{dashboard.recentTrades.slice(0, 8).map((trade) => <div key={trade.id} className="flex items-center justify-between border-b pb-3 last:border-0"><div><p className="font-medium">{trade.symbol.replace("USDT", "")} · {trade.status}</p><p className="text-xs text-muted-foreground">{trade.closeReason ?? "Awaiting signal exit"}</p></div><p className={`text-sm ${trade.pnlCents && trade.pnlCents < 0 ? "text-destructive" : "text-primary"}`}>{trade.pnlCents === null ? "—" : formatUsdFromCents(trade.pnlCents)}</p></div>)}</div>}</CardContent></Card>
+            </section>
+            <section className="grid gap-6 xl:grid-cols-2">
+              <Card><CardHeader><CardTitle>Monitoring thresholds</CardTitle><CardDescription>These settings only govern research status and alerts.</CardDescription></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2"><div><Label>Minimum closed trades</Label><Input type="number" value={thresholds.minimumTradeCount} onChange={(event) => setThresholds((value) => ({ ...value, minimumTradeCount: Number(event.target.value) }))} /></div><div><Label>Watch PF</Label><Input type="number" step="0.01" value={(thresholds.watchProfitFactorMilli / 1000).toFixed(2)} onChange={(event) => setThresholds((value) => ({ ...value, watchProfitFactorMilli: Math.round(Number(event.target.value) * 1000) }))} /></div><div><Label>Degraded PF</Label><Input type="number" step="0.01" value={(thresholds.degradedProfitFactorMilli / 1000).toFixed(2)} onChange={(event) => setThresholds((value) => ({ ...value, degradedProfitFactorMilli: Math.round(Number(event.target.value) * 1000) }))} /></div><div><Label>Benchmark lag (%)</Label><Input type="number" step="0.1" value={(thresholds.degradedBenchmarkLagBps / 100).toFixed(1)} onChange={(event) => setThresholds((value) => ({ ...value, degradedBenchmarkLagBps: Math.round(Number(event.target.value) * 100) }))} /></div><Button className="sm:col-span-2" onClick={() => updateThresholds.mutate({ monitorId: monitor.id, thresholds })} disabled={updateThresholds.isPending}>{updateThresholds.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Save monitoring thresholds</Button></CardContent></Card>
+              <Card><CardHeader><CardTitle>Alert delivery audit</CardTitle><CardDescription>Latest owner-alert attempts for this virtual monitor.</CardDescription></CardHeader><CardContent>{dashboard.alerts.length === 0 ? <p className="text-sm text-muted-foreground">No alert delivery events yet.</p> : <div className="space-y-3">{dashboard.alerts.slice(0, 6).map((alert) => <div key={alert.id} className="flex items-start justify-between gap-3 border-b pb-3 last:border-0"><div><p className="font-medium">{alert.alertKind.replaceAll("_", " ")}</p><p className="text-xs text-muted-foreground">{alert.message}</p></div><Badge variant={alert.deliveryStatus === "sent" ? "default" : "secondary"}>{alert.deliveryStatus}</Badge></div>)}</div>}</CardContent></Card>
             </section>
             {monitor.lastStatus === "degraded" ? <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"><AlertTriangle className="mt-0.5 h-4 w-4 text-destructive" /><p>The monitor has marked the research model as degraded. Treat this as evidence to pause and review the strategy, not as an instruction to trade.</p></div> : null}
           </> : null}

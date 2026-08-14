@@ -35,3 +35,9 @@ Every successful run records the latest completed-candle age and checks the virt
 ## Notification safeguards
 
 A project-owner notification is sent only when the model transitions into `degraded`. Data-stale and operational-error notifications are rate-limited per monitor and alert kind to at most one accepted notification per 24 hours. A failed notification delivery does not block monitor persistence and is eligible to retry on a later run. All messages explicitly state that the monitor is virtual and that no real order was sent.
+
+## Governance controls
+
+Every owner-alert attempt is retained in the monitor's delivery audit with `sent`, `failed`, or `suppressed` status. The monitor owner can review this audit in the dashboard together with schedule and diagnostic status.
+
+The owner may adjust four monitoring-only controls: minimum closed trades, watch PF, degraded PF, and the lag versus the benchmark that triggers degradation. Validation requires a minimum of three trades, a watch PF at or above the degraded PF, and bounded values. These controls change only labels and notifications; they never alter the technical composite signal, the virtual execution rule, or any real-world order flow.

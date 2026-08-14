@@ -14,6 +14,15 @@ const symbolsSchema = z.array(z.enum(["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"
   .min(1)
   .max(6)
   .refine((symbols) => new Set(symbols).size === symbols.length, "Symbols must be unique");
+const monitorThresholdsSchema = z.object({
+  minimumTradeCount: z.number().int().min(3).max(100),
+  watchProfitFactorMilli: z.number().int().min(1_000).max(5_000),
+  degradedProfitFactorMilli: z.number().int().min(100).max(4_999),
+  degradedBenchmarkLagBps: z.number().int().min(100).max(5_000),
+}).refine((value) => value.degradedProfitFactorMilli < value.watchProfitFactorMilli, {
+  message: "Degraded PF threshold must be lower than watch PF threshold",
+  path: ["degradedProfitFactorMilli"],
+});
 
 async function requireOwnedMonitor(userId: number, monitorId: number) {
   const db = await getDb();
@@ -57,6 +66,14 @@ export const paperTradingMonitorRouter = router({
   dashboard: protectedProcedure
     .input(z.object({ monitorId: z.number().int().positive() }))
     .query(({ ctx, input }) => getMonitorDashboard(ctx.user.id, input.monitorId)),
+
+  updateThresholds: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive(), thresholds: monitorThresholdsSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { db, monitor } = await requireOwnedMonitor(ctx.user.id, input.monitorId);
+      await db.update(paperTradingMonitors).set(input.thresholds).where(eq(paperTradingMonitors.id, monitor.id));
+      return { monitorId: monitor.id, thresholds: input.thresholds };
+    }),
 
   enableDaily: protectedProcedure
     .input(z.object({ monitorId: z.number().int().positive(), cron: z.string().default(DEFAULT_DAILY_CRON) }))
