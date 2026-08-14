@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { sdk } from "./sdk";
 import { schedulerService } from "../services/schedulerService";
 import { getPaperTradingMonitorByTaskUid } from "../db";
-import { runPaperTradingMonitor } from "../services/paperTradingMonitorService";
+import { recordPaperTradingMonitorFailure, runPaperTradingMonitor } from "../services/paperTradingMonitorService";
 
 /**
  * Scheduled Handlers
@@ -161,6 +161,7 @@ export async function generateDailySummaryHandler(req: Request, res: Response) {
  * values are intentionally ignored to prevent cross-monitor execution.
  */
 export async function paperTradingMonitorHandler(req: Request, res: Response) {
+  let monitorId: number | undefined;
   try {
     const user = await sdk.authenticateRequest(req);
     const taskUid = (user as any).taskUid as string | undefined;
@@ -170,13 +171,18 @@ export async function paperTradingMonitorHandler(req: Request, res: Response) {
     if (!monitor) return res.json({ ok: true, skipped: "orphan", taskUid });
     if (!monitor.enabled) return res.json({ ok: true, skipped: "monitor_disabled", taskUid, monitorId: monitor.id });
 
+    monitorId = monitor.id;
     const result = await runPaperTradingMonitor(monitor.id);
     res.json({ ok: true, taskUid, monitorId: monitor.id, result, timestamp: new Date().toISOString() });
   } catch (error: any) {
     console.error("Error in paperTradingMonitorHandler:", error);
+    const diagnostic = monitorId ? await recordPaperTradingMonitorFailure(monitorId, error).catch((diagnosticError) => {
+      console.error("Error recording paperTrading monitor failure:", diagnosticError);
+      return null;
+    }) : null;
     res.status(500).json({
       error: error.message,
-      stack: error.stack,
+      diagnostic,
       context: { url: req.url, timestamp: new Date().toISOString() },
     });
   }

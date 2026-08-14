@@ -25,3 +25,13 @@ At the first completed run, the monitor fixes an equal-weight buy-and-hold basel
 ## Security and idempotency
 
 Each schedule is owned by a user and stored with the platform-issued task UID. The cron callback authenticates the task, resolves the monitor only through that verified UID, ignores caller-supplied monitor IDs, and skips an already processed daily candle through a unique `(monitorId, asOfDate)` constraint.
+
+## Data-quality and failure controls
+
+Before any virtual entry or exit, the service validates that the last completed daily candle is no older than 36 hours. An outdated candle blocks the run; it never creates a virtual trade from stale market data. A failed callback is persisted as an idempotent diagnostic run with an error summary, freshness status, candle age when known, and diagnostic flags.
+
+Every successful run records the latest completed-candle age and checks the virtual-account identity `cash + marked open positions = equity`. A non-zero delta is stored as a diagnostic flag for review. The dashboard exposes the most recent freshness and equity-check outcome.
+
+## Notification safeguards
+
+A project-owner notification is sent only when the model transitions into `degraded`. Data-stale and operational-error notifications are rate-limited per monitor and alert kind to at most one accepted notification per 24 hours. A failed notification delivery does not block monitor persistence and is eligible to retry on a later run. All messages explicitly state that the monitor is virtual and that no real order was sent.

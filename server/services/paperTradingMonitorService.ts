@@ -12,6 +12,8 @@ import TradingSignalService from "./tradingSignalService";
 const DAILY_INTERVAL = "1d";
 const LOOKBACK_BARS = 260;
 const QUANTITY_SCALE = 100_000_000;
+const MAX_COMPLETED_CANDLE_AGE_MINUTES = 36 * 60;
+const ALERT_COOLDOWN_MS = 24 * 60 * 60 * 1_000;
 
 type DailyCandle = {
   openTime: number;
@@ -80,6 +82,28 @@ export function shouldNotifyDegradedTransition(
   return previousStatus !== "degraded" && nextStatus === "degraded";
 }
 
+export function isCompletedCandleFresh(closeTime: number, nowMs = Date.now()) {
+  const ageMinutes = Math.max(0, Math.floor((nowMs - closeTime) / 60_000));
+  return { ageMinutes, fresh: ageMinutes <= MAX_COMPLETED_CANDLE_AGE_MINUTES };
+}
+
+export function shouldSendMonitorAlert(
+  previousKind: string | null | undefined,
+  previousAt: Date | null | undefined,
+  nextKind: "degraded" | "data_stale" | "run_error",
+  now = new Date()
+) {
+  if (previousKind !== nextKind || !previousAt) return true;
+  return now.getTime() - previousAt.getTime() >= ALERT_COOLDOWN_MS;
+}
+
+export class MonitorDataStaleError extends Error {
+  constructor(readonly ageMinutes: number) {
+    super(`Latest completed daily candle is stale (${ageMinutes} minutes old)`);
+    this.name = "MonitorDataStaleError";
+  }
+}
+
 function toCents(price: number) {
   return Math.max(1, Math.round(price * 100));
 }
@@ -132,11 +156,14 @@ async function fetchDailyCandles(symbol: string): Promise<DailyCandle[]> {
   });
 }
 
-async function evaluateSymbol(symbol: string): Promise<{ asOfDate: Date; evaluation: SymbolEvaluation }> {
+async function evaluateSymbol(symbol: string): Promise<{ asOfDate: Date; candleAgeMinutes: number; evaluation: SymbolEvaluation }> {
   const candles = await fetchDailyCandles(symbol);
   if (candles.length < 52) throw new Error(`${symbol} has insufficient daily history`);
   const executionCandle = candles.at(-1)!;
   const completed = candles.slice(0, -1);
+  const completedLatest = completed.at(-1)!;
+  const freshness = isCompletedCandleFresh(completedLatest.closeTime);
+  if (!freshness.fresh) throw new MonitorDataStaleError(freshness.ageMinutes);
   const closes = completed.map((candle) => candle.close);
   const currentPrice = closes.at(-1)!;
   const ema12 = ema(closes.slice(-60), 12);
@@ -159,6 +186,7 @@ async function evaluateSymbol(symbol: string): Promise<{ asOfDate: Date; evaluat
 
   return {
     asOfDate: new Date(executionCandle.openTime),
+    candleAgeMinutes: freshness.ageMinutes,
     evaluation: {
       symbol,
       executionPriceCents: toCents(executionCandle.open),
@@ -166,6 +194,57 @@ async function evaluateSymbol(symbol: string): Promise<{ asOfDate: Date; evaluat
       confidence: signal.confidence,
     },
   };
+}
+
+function summarizeError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.replace(/\s+/g, " ").slice(0, 500);
+}
+
+export async function recordPaperTradingMonitorFailure(monitorId: number, error: unknown) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const now = new Date();
+  const asOfDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const summary = summarizeError(error);
+  const stale = error instanceof MonitorDataStaleError;
+  const flags = stale ? ["stale_completed_candle"] : ["daily_run_error"];
+
+  await db.insert(paperTradingMonitorRuns).values({
+    monitorId,
+    asOfDate,
+    status: "error",
+    dataFreshness: stale ? "stale" : null,
+    candleAgeMinutes: stale ? error.ageMinutes : null,
+    diagnosticFlags: flags,
+    errorSummary: summary,
+  }).onDuplicateKeyUpdate({
+    set: {
+      status: "error",
+      dataFreshness: stale ? "stale" : null,
+      candleAgeMinutes: stale ? error.ageMinutes : null,
+      diagnosticFlags: flags,
+      errorSummary: summary,
+    },
+  });
+  const monitor = (await db.select().from(paperTradingMonitors).where(eq(paperTradingMonitors.id, monitorId)).limit(1))[0];
+  if (!monitor) return { errorSummary: summary, ownerNotificationSent: false };
+
+  await db.update(paperTradingMonitors).set({ lastStatus: "error", lastRunAt: now }).where(eq(paperTradingMonitors.id, monitorId));
+  const kind = stale ? "data_stale" : "run_error";
+  const shouldNotify = shouldSendMonitorAlert(monitor.lastAlertKind, monitor.lastAlertAt, kind, now);
+  const ownerNotificationSent = shouldNotify
+    ? await notifyOwner({
+        title: `Paper monitor issue: ${monitor.name}`,
+        content: stale
+          ? `The research-only monitor did not execute because the latest completed daily candle is ${error.ageMinutes} minutes old. No virtual or real order was sent.`
+          : `The research-only monitor daily run failed: ${summary}. No virtual or real order was sent.`,
+      })
+    : false;
+  if (ownerNotificationSent) {
+    await db.update(paperTradingMonitors).set({ lastAlertAt: now, lastAlertKind: kind }).where(eq(paperTradingMonitors.id, monitorId));
+  }
+  return { errorSummary: summary, ownerNotificationSent };
 }
 
 function calculateBuyAllocation(cashCents: number, count: number) {
@@ -192,6 +271,7 @@ export async function runPaperTradingMonitor(monitorId: number) {
   if (existingRun) return { status: "skipped" as const, reason: "already_processed", asOfDate };
 
   const evaluations = evaluationsWithDate.map((item) => item.evaluation);
+  const candleAgeMinutes = Math.max(...evaluationsWithDate.map((item) => item.candleAgeMinutes));
   const priceBySymbol = Object.fromEntries(evaluations.map((item) => [item.symbol, item.executionPriceCents]));
   const openTrades = await db.select().from(paperTradingMonitorTrades).where(and(eq(paperTradingMonitorTrades.monitorId, monitor.id), eq(paperTradingMonitorTrades.status, "open")));
   let cashCents = monitor.cashCents;
@@ -240,8 +320,10 @@ export async function runPaperTradingMonitor(monitorId: number) {
   }
 
   const finalOpenTrades = await db.select().from(paperTradingMonitorTrades).where(and(eq(paperTradingMonitorTrades.monitorId, monitor.id), eq(paperTradingMonitorTrades.status, "open")));
-  const openPositionValue = finalOpenTrades.reduce((sum, trade) => sum + ((trade.quantityE8 / QUANTITY_SCALE) * (priceBySymbol[trade.symbol] ?? trade.entryPriceCents)), 0);
-  const equityCents = clampInt(cashCents + openPositionValue);
+  const openPositionCents = clampInt(finalOpenTrades.reduce((sum, trade) => sum + ((trade.quantityE8 / QUANTITY_SCALE) * (priceBySymbol[trade.symbol] ?? trade.entryPriceCents)), 0));
+  const equityCents = clampInt(cashCents + openPositionCents);
+  const equityInvariantDeltaCents = cashCents + openPositionCents - equityCents;
+  const diagnosticFlags = equityInvariantDeltaCents === 0 ? [] : ["equity_invariant_delta"];
   const baselinePrices = monitor.baselinePrices ?? Object.fromEntries(evaluations.map((item) => [item.symbol, item.executionPriceCents]));
   const capitalPerSymbol = monitor.initialCapitalCents / symbols.length;
   const benchmarkEquityCents = clampInt(symbols.reduce((sum, symbol) => sum + (capitalPerSymbol / (baselinePrices[symbol] ?? priceBySymbol[symbol])) * priceBySymbol[symbol], 0));
@@ -266,6 +348,10 @@ export async function runPaperTradingMonitor(monitorId: number) {
     rollingWinRateBps: rollingMetrics.winRateBps,
     rollingMaxDrawdownBps: rollingMetrics.maxDrawdownBps,
     rollingTrades: rollingMetrics.trades,
+    dataFreshness: "fresh",
+    candleAgeMinutes,
+    equityInvariantDeltaCents,
+    diagnosticFlags,
   });
   await db.update(paperTradingMonitors).set({
     cashCents,
@@ -286,8 +372,11 @@ export async function runPaperTradingMonitor(monitorId: number) {
         ].join(" "),
       })
     : false;
+  if (ownerNotificationSent) {
+    await db.update(paperTradingMonitors).set({ lastAlertAt: new Date(), lastAlertKind: "degraded" }).where(eq(paperTradingMonitors.id, monitor.id));
+  }
 
-  return { status, asOfDate, equityCents, benchmarkEquityCents, modelReturnBps, benchmarkReturnBps, rollingMetrics, ownerNotificationSent };
+  return { status, asOfDate, equityCents, benchmarkEquityCents, modelReturnBps, benchmarkReturnBps, rollingMetrics, candleAgeMinutes, equityInvariantDeltaCents, diagnosticFlags, ownerNotificationSent };
 }
 
 export async function getMonitorDashboard(userId: number, monitorId: number) {

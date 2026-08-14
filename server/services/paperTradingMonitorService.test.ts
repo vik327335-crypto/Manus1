@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateRollingMetrics, classifyMonitorStatus, shouldNotifyDegradedTransition } from "./paperTradingMonitorService";
+import { calculateRollingMetrics, classifyMonitorStatus, isCompletedCandleFresh, shouldNotifyDegradedTransition, shouldSendMonitorAlert } from "./paperTradingMonitorService";
 
 describe("paperTradingMonitorService", () => {
   it("calculates profit factor, win rate, and drawdown from closed virtual trades", () => {
@@ -34,5 +34,18 @@ describe("paperTradingMonitorService", () => {
     expect(shouldNotifyDegradedTransition("watch", "degraded")).toBe(true);
     expect(shouldNotifyDegradedTransition("degraded", "degraded")).toBe(false);
     expect(shouldNotifyDegradedTransition("healthy", "watch")).toBe(false);
+  });
+
+  it("rejects stale completed daily data before a virtual trade is evaluated", () => {
+    const now = Date.UTC(2026, 7, 14, 12, 0, 0);
+    expect(isCompletedCandleFresh(now - 35 * 60 * 60 * 1_000, now)).toEqual({ ageMinutes: 2_100, fresh: true });
+    expect(isCompletedCandleFresh(now - 37 * 60 * 60 * 1_000, now)).toEqual({ ageMinutes: 2_220, fresh: false });
+  });
+
+  it("rate-limits repeated operational alerts of the same kind", () => {
+    const now = new Date("2026-08-14T12:00:00.000Z");
+    expect(shouldSendMonitorAlert("data_stale", new Date("2026-08-14T01:00:00.000Z"), "data_stale", now)).toBe(false);
+    expect(shouldSendMonitorAlert("data_stale", new Date("2026-08-13T11:00:00.000Z"), "data_stale", now)).toBe(true);
+    expect(shouldSendMonitorAlert("run_error", new Date("2026-08-14T11:00:00.000Z"), "data_stale", now)).toBe(true);
   });
 });
