@@ -1,8 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { parse as parseCookie } from "cookie";
+import { desc } from "drizzle-orm";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { paperTradingMonitors } from "../../drizzle/schema";
+import { paperTradingMonitors, paperTradingMonitorRuns } from "../../drizzle/schema";
 import { COOKIE_NAME } from "@shared/const";
 import { getDb } from "../db";
 import { createHeartbeatJob, updateHeartbeatJob } from "../_core/heartbeat";
@@ -78,6 +79,55 @@ export const paperTradingMonitorRouter = router({
       ].join("\n");
       return { filename: `paper-monitor-${input.monitorId}-alert-audit.csv`, csv };
     }),
+
+  weeklyDigest: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const dashboard = await getMonitorDashboard(ctx.user.id, input.monitorId);
+      return { monitor: { id: dashboard.monitor.id, name: dashboard.monitor.name, symbols: dashboard.monitor.symbols }, digest: dashboard.weeklyDigest, integrity: dashboard.reportIntegrity };
+    }),
+
+  exportRollingMetricsCsv: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const dashboard = await getMonitorDashboard(ctx.user.id, input.monitorId);
+      const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+      const csv = [
+        ["as_of_date", "status", "model_return_pct", "benchmark_return_pct", "gap_pct", "rolling_pf", "rolling_trades", "max_drawdown_pct", "data_freshness"].map(escape).join(","),
+        ...dashboard.runs.map((run) => [
+          run.asOfDate.toISOString(),
+          run.status,
+          (run.modelReturnBps ?? 0) / 100,
+          (run.benchmarkReturnBps ?? 0) / 100,
+          ((run.modelReturnBps ?? 0) - (run.benchmarkReturnBps ?? 0)) / 100,
+          run.rollingProfitFactorMilli === null ? "" : (run.rollingProfitFactorMilli / 1_000).toFixed(3),
+          run.rollingTrades ?? "",
+          (run.rollingMaxDrawdownBps ?? 0) / 100,
+          run.dataFreshness ?? "",
+        ].map(escape).join(",")),
+      ].join("\n");
+      return { filename: `paper-monitor-${input.monitorId}-rolling-metrics.csv`, csv };
+    }),
+
+  compareAll: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+    const monitors = await db.select().from(paperTradingMonitors).where(eq(paperTradingMonitors.userId, ctx.user.id));
+    return Promise.all(monitors.map(async (monitor) => {
+      const latestRun = (await db.select().from(paperTradingMonitorRuns).where(eq(paperTradingMonitorRuns.monitorId, monitor.id)).orderBy(desc(paperTradingMonitorRuns.asOfDate)).limit(1))[0] ?? null;
+      return {
+        id: monitor.id,
+        name: monitor.name,
+        symbols: monitor.symbols,
+        enabled: monitor.enabled === 1,
+        status: monitor.lastStatus,
+        modelReturnBps: latestRun?.modelReturnBps ?? null,
+        benchmarkReturnBps: latestRun?.benchmarkReturnBps ?? null,
+        profitFactorMilli: latestRun?.rollingProfitFactorMilli ?? null,
+        rollingTrades: latestRun?.rollingTrades ?? 0,
+      };
+    }));
+  }),
 
   updateThresholds: protectedProcedure
     .input(z.object({ monitorId: z.number().int().positive(), thresholds: monitorThresholdsSchema }))

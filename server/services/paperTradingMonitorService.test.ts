@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateRollingMetrics, classifyMonitorStatus, isCompletedCandleFresh, shouldNotifyDegradedTransition, shouldSendMonitorAlert, validateMonitorConfiguration } from "./paperTradingMonitorService";
+import { calculateRollingMetrics, classifyMonitorStatus, isCompletedCandleFresh, shouldNotifyDegradedTransition, shouldSendMonitorAlert, validateMonitorConfiguration, validateMonitorReportIntegrity } from "./paperTradingMonitorService";
 
 describe("paperTradingMonitorService", () => {
   it("calculates profit factor, win rate, and drawdown from closed virtual trades", () => {
@@ -76,5 +76,18 @@ describe("paperTradingMonitorService", () => {
 
     expect(invalid.valid).toBe(false);
     expect(invalid.issues).toHaveLength(5);
+  });
+
+  it("flags invalid weekly report counts without changing virtual trades", () => {
+    const integrity = validateMonitorReportIntegrity({
+      weeklyRuns: 4,
+      availableRuns: 2,
+      weeklyAlerts: -1,
+      latestProfitFactorMilli: -20,
+      latestTrades: -1,
+    });
+
+    expect(integrity.valid).toBe(false);
+    expect(integrity.issues).toHaveLength(4);
   });
 });

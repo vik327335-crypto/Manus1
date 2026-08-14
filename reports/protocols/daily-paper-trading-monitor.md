@@ -47,3 +47,9 @@ The owner may adjust four monitoring-only controls: minimum closed trades, watch
 The monitor dashboard provides a CSV export of owner-alert delivery records. Each row includes the timestamp, alert kind, delivery outcome, and retained message, enabling external review of notification behavior without exposing exchange credentials or order data.
 
 The weekly digest is a read-only summary of processed runs, alert events, latest rolling PF, and the model's current gap versus the equal-weight benchmark. Configuration health is checked on every dashboard retrieval: the monitor requires a non-empty asset basket, valid threshold ordering, and a linked cron task whenever it is marked enabled.
+
+## Reporting and comparison controls
+
+The monitor can export a rolling-metrics CSV with one row per daily run, including virtual model return, benchmark return, performance gap, rolling PF, closed-trade count, drawdown, and data-freshness state. The dashboard also provides a read-only comparison across every monitor owned by the user. It is descriptive only: it does not rank strategies for execution, modify any configuration, or trigger an order.
+
+Before a weekly report is rendered, the service validates run counts, alert counts, PF, and closed-trade counts for impossible negative or internally inconsistent values. A failed report-integrity check is shown as a diagnostic condition rather than being silently exported.

@@ -114,6 +114,21 @@ export function validateMonitorConfiguration(monitor: Pick<PaperTradingMonitor, 
   return { valid: issues.length === 0, issues };
 }
 
+export function validateMonitorReportIntegrity(input: {
+  weeklyRuns: number;
+  availableRuns: number;
+  weeklyAlerts: number;
+  latestProfitFactorMilli: number | null;
+  latestTrades: number | null;
+}) {
+  const issues: string[] = [];
+  if (input.weeklyRuns < 0 || input.weeklyRuns > input.availableRuns) issues.push("Weekly run count is inconsistent with available history.");
+  if (input.weeklyAlerts < 0) issues.push("Weekly alert count cannot be negative.");
+  if (input.latestProfitFactorMilli !== null && input.latestProfitFactorMilli < 0) issues.push("Profit factor cannot be negative.");
+  if (input.latestTrades !== null && input.latestTrades < 0) issues.push("Closed trade count cannot be negative.");
+  return { valid: issues.length === 0, issues };
+}
+
 export class MonitorDataStaleError extends Error {
   constructor(readonly ageMinutes: number) {
     super(`Latest completed daily candle is stale (${ageMinutes} minutes old)`);
@@ -439,5 +454,12 @@ export async function getMonitorDashboard(userId: number, monitorId: number) {
     latestProfitFactorMilli: runs[0]?.rollingProfitFactorMilli ?? null,
     alerts: alerts.filter((alert) => alert.createdAt.getTime() >= Date.now() - 7 * 86_400_000).length,
   };
-  return { monitor, runs, openTrades, recentTrades, alerts, configuration, weeklyDigest };
+  const reportIntegrity = validateMonitorReportIntegrity({
+    weeklyRuns: weeklyDigest.runs,
+    availableRuns: runs.length,
+    weeklyAlerts: weeklyDigest.alerts,
+    latestProfitFactorMilli: weeklyDigest.latestProfitFactorMilli,
+    latestTrades: runs[0]?.rollingTrades ?? null,
+  });
+  return { monitor, runs, openTrades, recentTrades, alerts, configuration, weeklyDigest, reportIntegrity };
 }
