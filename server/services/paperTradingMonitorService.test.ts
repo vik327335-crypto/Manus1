@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateRollingMetrics, classifyMonitorStatus, isCompletedCandleFresh, shouldNotifyDegradedTransition, shouldSendMonitorAlert } from "./paperTradingMonitorService";
+import { calculateRollingMetrics, classifyMonitorStatus, isCompletedCandleFresh, shouldNotifyDegradedTransition, shouldSendMonitorAlert, validateMonitorConfiguration } from "./paperTradingMonitorService";
 
 describe("paperTradingMonitorService", () => {
   it("calculates profit factor, win rate, and drawdown from closed virtual trades", () => {
@@ -60,5 +60,21 @@ describe("paperTradingMonitorService", () => {
 
     expect(classifyMonitorStatus(metrics, 100, 200, customThresholds)).toBe("watch");
     expect(classifyMonitorStatus({ ...metrics, profitFactorMilli: 1_000 }, 100, 200, customThresholds)).toBe("degraded");
+  });
+
+  it("flags inconsistent schedule and threshold configuration before a daily run", () => {
+    const invalid = validateMonitorConfiguration({
+      enabled: 1,
+      scheduleCronTaskUid: null,
+      scheduleCron: null,
+      symbols: [],
+      minimumTradeCount: 2,
+      watchProfitFactorMilli: 1_000,
+      degradedProfitFactorMilli: 1_000,
+      degradedBenchmarkLagBps: 50,
+    });
+
+    expect(invalid.valid).toBe(false);
+    expect(invalid.issues).toHaveLength(5);
   });
 });

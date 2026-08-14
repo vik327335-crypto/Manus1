@@ -104,6 +104,16 @@ export function shouldSendMonitorAlert(
   return now.getTime() - previousAt.getTime() >= ALERT_COOLDOWN_MS;
 }
 
+export function validateMonitorConfiguration(monitor: Pick<PaperTradingMonitor, "enabled" | "scheduleCronTaskUid" | "scheduleCron" | "symbols" | "minimumTradeCount" | "watchProfitFactorMilli" | "degradedProfitFactorMilli" | "degradedBenchmarkLagBps">) {
+  const issues: string[] = [];
+  if (monitor.enabled && (!monitor.scheduleCronTaskUid || !monitor.scheduleCron)) issues.push("Daily monitoring is enabled without a linked schedule.");
+  if (!monitor.symbols || monitor.symbols.length === 0) issues.push("No symbols are configured.");
+  if (monitor.minimumTradeCount < 3) issues.push("Minimum trade count must be at least three.");
+  if (monitor.degradedProfitFactorMilli >= monitor.watchProfitFactorMilli) issues.push("Degraded PF must be lower than Watch PF.");
+  if (monitor.degradedBenchmarkLagBps < 100) issues.push("Benchmark lag threshold is too small.");
+  return { valid: issues.length === 0, issues };
+}
+
 export class MonitorDataStaleError extends Error {
   constructor(readonly ageMinutes: number) {
     super(`Latest completed daily candle is stale (${ageMinutes} minutes old)`);
@@ -419,5 +429,15 @@ export async function getMonitorDashboard(userId: number, monitorId: number) {
     db.select().from(paperTradingMonitorTrades).where(eq(paperTradingMonitorTrades.monitorId, monitorId)).orderBy(desc(paperTradingMonitorTrades.createdAt)).limit(50),
     db.select().from(paperTradingMonitorAlerts).where(eq(paperTradingMonitorAlerts.monitorId, monitorId)).orderBy(desc(paperTradingMonitorAlerts.createdAt)).limit(20),
   ]);
-  return { monitor, runs, openTrades, recentTrades, alerts };
+  const configuration = validateMonitorConfiguration(monitor);
+  const weeklyRuns = runs.filter((run) => run.asOfDate.getTime() >= Date.now() - 7 * 86_400_000);
+  const weeklyDigest = {
+    runs: weeklyRuns.length,
+    latestStatus: runs[0]?.status ?? "idle",
+    latestModelReturnBps: runs[0]?.modelReturnBps ?? null,
+    latestBenchmarkReturnBps: runs[0]?.benchmarkReturnBps ?? null,
+    latestProfitFactorMilli: runs[0]?.rollingProfitFactorMilli ?? null,
+    alerts: alerts.filter((alert) => alert.createdAt.getTime() >= Date.now() - 7 * 86_400_000).length,
+  };
+  return { monitor, runs, openTrades, recentTrades, alerts, configuration, weeklyDigest };
 }

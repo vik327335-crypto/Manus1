@@ -67,6 +67,18 @@ export const paperTradingMonitorRouter = router({
     .input(z.object({ monitorId: z.number().int().positive() }))
     .query(({ ctx, input }) => getMonitorDashboard(ctx.user.id, input.monitorId)),
 
+  exportAlertAuditCsv: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const dashboard = await getMonitorDashboard(ctx.user.id, input.monitorId);
+      const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+      const csv = [
+        ["created_at", "alert_kind", "delivery_status", "message"].map(escape).join(","),
+        ...dashboard.alerts.map((alert) => [alert.createdAt.toISOString(), alert.alertKind, alert.deliveryStatus, alert.message].map(escape).join(",")),
+      ].join("\n");
+      return { filename: `paper-monitor-${input.monitorId}-alert-audit.csv`, csv };
+    }),
+
   updateThresholds: protectedProcedure
     .input(z.object({ monitorId: z.number().int().positive(), thresholds: monitorThresholdsSchema }))
     .mutation(async ({ ctx, input }) => {

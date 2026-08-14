@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { Activity, AlertTriangle, Bot, CirclePause, CirclePlay, Loader2, Plus, RefreshCw, ShieldCheck } from "lucide-react";
+import { Activity, AlertTriangle, Bot, CirclePause, CirclePlay, Download, Loader2, Plus, RefreshCw, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
@@ -49,6 +49,10 @@ export default function PaperTradingMonitoring() {
     { monitorId: selectedMonitorId ?? 0 },
     { enabled: selectedMonitorId !== null, refetchInterval: 30_000 }
   );
+  const auditExportQuery = trpc.paperTradingMonitor.exportAlertAuditCsv.useQuery(
+    { monitorId: selectedMonitorId ?? 0 },
+    { enabled: false }
+  );
   const createMonitor = trpc.paperTradingMonitor.create.useMutation({
     onSuccess: async ({ monitorId }) => {
       await utils.paperTradingMonitor.list.invalidate();
@@ -87,6 +91,7 @@ export default function PaperTradingMonitoring() {
     date: new Date(run.asOfDate).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
     model: (run.modelReturnBps ?? 0) / 100,
     benchmark: (run.benchmarkReturnBps ?? 0) / 100,
+    gap: ((run.modelReturnBps ?? 0) - (run.benchmarkReturnBps ?? 0)) / 100,
   })), [dashboard?.runs]);
 
   useEffect(() => {
@@ -114,6 +119,20 @@ export default function PaperTradingMonitoring() {
       return;
     }
     createMonitor.mutate({ name, symbols, initialCapitalUsd, rollingWindowDays: 90 });
+  };
+
+  const downloadAudit = async () => {
+    const result = await auditExportQuery.refetch();
+    if (!result.data) {
+      toast.error("Audit export is not available yet");
+      return;
+    }
+    const url = URL.createObjectURL(new Blob([result.data.csv], { type: "text/csv;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = result.data.filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -169,6 +188,10 @@ export default function PaperTradingMonitoring() {
             <section className="grid gap-6 xl:grid-cols-2">
               <Card><CardHeader><CardTitle>Monitoring thresholds</CardTitle><CardDescription>These settings only govern research status and alerts.</CardDescription></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2"><div><Label>Minimum closed trades</Label><Input type="number" value={thresholds.minimumTradeCount} onChange={(event) => setThresholds((value) => ({ ...value, minimumTradeCount: Number(event.target.value) }))} /></div><div><Label>Watch PF</Label><Input type="number" step="0.01" value={(thresholds.watchProfitFactorMilli / 1000).toFixed(2)} onChange={(event) => setThresholds((value) => ({ ...value, watchProfitFactorMilli: Math.round(Number(event.target.value) * 1000) }))} /></div><div><Label>Degraded PF</Label><Input type="number" step="0.01" value={(thresholds.degradedProfitFactorMilli / 1000).toFixed(2)} onChange={(event) => setThresholds((value) => ({ ...value, degradedProfitFactorMilli: Math.round(Number(event.target.value) * 1000) }))} /></div><div><Label>Benchmark lag (%)</Label><Input type="number" step="0.1" value={(thresholds.degradedBenchmarkLagBps / 100).toFixed(1)} onChange={(event) => setThresholds((value) => ({ ...value, degradedBenchmarkLagBps: Math.round(Number(event.target.value) * 100) }))} /></div><Button className="sm:col-span-2" onClick={() => updateThresholds.mutate({ monitorId: monitor.id, thresholds })} disabled={updateThresholds.isPending}>{updateThresholds.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Save monitoring thresholds</Button></CardContent></Card>
               <Card><CardHeader><CardTitle>Alert delivery audit</CardTitle><CardDescription>Latest owner-alert attempts for this virtual monitor.</CardDescription></CardHeader><CardContent>{dashboard.alerts.length === 0 ? <p className="text-sm text-muted-foreground">No alert delivery events yet.</p> : <div className="space-y-3">{dashboard.alerts.slice(0, 6).map((alert) => <div key={alert.id} className="flex items-start justify-between gap-3 border-b pb-3 last:border-0"><div><p className="font-medium">{alert.alertKind.replaceAll("_", " ")}</p><p className="text-xs text-muted-foreground">{alert.message}</p></div><Badge variant={alert.deliveryStatus === "sent" ? "default" : "secondary"}>{alert.deliveryStatus}</Badge></div>)}</div>}</CardContent></Card>
+            </section>
+            <section className="grid gap-6 xl:grid-cols-2">
+              <Card><CardHeader><CardTitle>Weekly research digest</CardTitle><CardDescription>Read-only evidence from the last seven days.</CardDescription></CardHeader><CardContent className="grid grid-cols-2 gap-4 text-sm"><div><p className="text-muted-foreground">Processed runs</p><p className="text-xl font-semibold">{dashboard.weeklyDigest.runs}</p></div><div><p className="text-muted-foreground">Alert events</p><p className="text-xl font-semibold">{dashboard.weeklyDigest.alerts}</p></div><div><p className="text-muted-foreground">Latest PF</p><p className="text-xl font-semibold">{dashboard.weeklyDigest.latestProfitFactorMilli === null ? "—" : (dashboard.weeklyDigest.latestProfitFactorMilli / 1000).toFixed(2)}</p></div><div><p className="text-muted-foreground">Model gap</p><p className="text-xl font-semibold">{dashboard.weeklyDigest.latestModelReturnBps === null || dashboard.weeklyDigest.latestBenchmarkReturnBps === null ? "—" : formatBps(dashboard.weeklyDigest.latestModelReturnBps - dashboard.weeklyDigest.latestBenchmarkReturnBps)}</p></div></CardContent></Card>
+              <Card><CardHeader><CardTitle>Governance controls</CardTitle><CardDescription>Configuration validation and durable alert audit.</CardDescription></CardHeader><CardContent className="space-y-4">{dashboard.configuration.valid ? <p className="text-sm text-primary">Configuration is consistent.</p> : <ul className="space-y-2 text-sm text-destructive">{dashboard.configuration.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>}<Button size="sm" variant="outline" onClick={downloadAudit} disabled={auditExportQuery.isFetching}><Download className="mr-2 h-4 w-4" />Export alert audit CSV</Button></CardContent></Card>
             </section>
             {monitor.lastStatus === "degraded" ? <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"><AlertTriangle className="mt-0.5 h-4 w-4 text-destructive" /><p>The monitor has marked the research model as degraded. Treat this as evidence to pause and review the strategy, not as an instruction to trade.</p></div> : null}
           </> : null}

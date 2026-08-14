@@ -41,3 +41,9 @@ A project-owner notification is sent only when the model transitions into `degra
 Every owner-alert attempt is retained in the monitor's delivery audit with `sent`, `failed`, or `suppressed` status. The monitor owner can review this audit in the dashboard together with schedule and diagnostic status.
 
 The owner may adjust four monitoring-only controls: minimum closed trades, watch PF, degraded PF, and the lag versus the benchmark that triggers degradation. Validation requires a minimum of three trades, a watch PF at or above the degraded PF, and bounded values. These controls change only labels and notifications; they never alter the technical composite signal, the virtual execution rule, or any real-world order flow.
+
+## Audit export and weekly evidence
+
+The monitor dashboard provides a CSV export of owner-alert delivery records. Each row includes the timestamp, alert kind, delivery outcome, and retained message, enabling external review of notification behavior without exposing exchange credentials or order data.
+
+The weekly digest is a read-only summary of processed runs, alert events, latest rolling PF, and the model's current gap versus the equal-weight benchmark. Configuration health is checked on every dashboard retrieval: the monitor requires a non-empty asset basket, valid threshold ordering, and a linked cron task whenever it is marked enabled.
