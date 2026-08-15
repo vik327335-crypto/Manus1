@@ -1255,7 +1255,7 @@
 - [x] Цикл 12: добавить consistency validation protocol/result/evidence статусов.
 - [ ] Цикл 13: добавить сводку ограничений стратегии.
 - [ ] Цикл 14: добавить read-only comparison validated studies.
-- [ ] Цикл 15: добавить фильтр confidence и sample adequacy.
+- [x] Цикл 15: добавить status и sample-adequacy filtering с evidence labels.
 - [ ] Цикл 16: добавить benchmark методологический disclosure.
 - [ ] Цикл 17: добавить coverage отчёт научных протоколов.
 - [ ] Цикл 18: добавить regression tests research status helpers.
