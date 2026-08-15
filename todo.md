@@ -1253,8 +1253,8 @@
 - [x] Цикл 10: добавить контроль неполных научных доказательств через incomplete-evidence summary.
 - [x] Цикл 11: добавить evidence-completeness indicator для validation outcomes.
 - [x] Цикл 12: добавить consistency validation protocol/result/evidence статусов.
-- [ ] Цикл 13: добавить сводку ограничений стратегии.
-- [ ] Цикл 14: добавить read-only comparison validated studies.
+- [x] Цикл 13: добавить research limitations summary без торговых рекомендаций.
+- [x] Цикл 14: добавить read-only comparison validated, rejected и inconclusive studies.
 - [x] Цикл 15: добавить status и sample-adequacy filtering с evidence labels.
 - [ ] Цикл 16: добавить benchmark методологический disclosure.
 - [ ] Цикл 17: добавить coverage отчёт научных протоколов.

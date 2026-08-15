@@ -24,7 +24,7 @@ export const researchRegistryRouter = router({
       ...(["preregistered", "validated", "rejected", "inconclusive"].includes(record.status) && !record.protocolPath ? [`${record.id}: protocol reference missing`] : []),
       ...(record.status === "validated" && (!record.resultPath || record.sampleAdequacy !== "adequate") ? [`${record.id}: validated status lacks adequate recorded evidence`] : []),
     ]);
-    return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length, consistency: { valid: consistencyIssues.length === 0, issues: consistencyIssues } };
+    return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length, consistency: { valid: consistencyIssues.length === 0, issues: consistencyIssues }, limitations: ["Registry records describe research evidence only; they are not trading recommendations.", "Validated status requires documented protocol, result reference, and adequate sample label.", "Virtual monitor outcomes do not represent live execution, liquidity, or personal suitability."] };
   }),
   exportCsv: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
@@ -42,6 +42,12 @@ export const researchRegistryRouter = router({
     const counts = statuses.map((status) => [status, records.filter((record) => record.status === status).length]);
     const csv = [["metric", "value"], ["total", records.length], ["adequate_samples", records.filter((record) => record.sampleAdequacy === "adequate").length], ["incomplete_evidence", records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length], ...counts].map((row) => row.map((value) => `"${String(value)}"`).join(",")).join("\n");
     return { filename: "research-status-summary.csv", csv };
+  }),
+  compareOutcomes: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id));
+    return records.filter((record) => record.status === "validated" || record.status === "rejected" || record.status === "inconclusive").map((record) => ({ id: record.id, title: record.title, status: record.status, sampleAdequacy: record.sampleAdequacy, evidenceComplete: Boolean(record.protocolPath && record.resultPath && record.sampleAdequacy === "adequate"), updatedAt: record.updatedAt }));
   }),
   create: protectedProcedure.input(z.object({
     title: z.string().trim().min(5).max(160),
