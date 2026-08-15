@@ -81,3 +81,13 @@ Historical comparison points select the nearest persisted run at or before 30-, 
 Historical quality checks flag future dates, duplicate completed-candle dates, stale runs not marked as errors, and missing benchmark data for completed runs. Cadence diagnostics count gaps above 36 hours between persisted daily runs; alert summaries separately count suppressed and failed notifications. These controls expose data and delivery conditions only and do not change the fixed signal or virtual execution.
 
 Lifecycle archive/restore and monitoring-threshold updates write a durable configuration audit record with a timestamp, action, and non-secret change details. The owner can inspect recent records and export the complete audit in CSV. The audit concerns governance controls only; it does not record exchange credentials, send orders, or alter virtual trade history.
+
+## Research registry roadmap without email delivery
+
+The next development cycles focus on a durable registry of research hypotheses, protocol/result traceability, evidence sufficiency, and research-status reporting. SMTP configuration, email delivery, and delivery logs are explicitly deferred at the owner's request. Read-only digest previews remain available but do not send mail or create delivery events. All registry content remains research-only and cannot mutate trading signals, virtual execution, or historical results.
+
+The research registry persists only owner-entered hypotheses, scientific status, falsification criteria, optional protocol/result references, and sample-adequacy labels. It contains no live-trading approval state and is separate from virtual monitor execution.
+
+Registry states are limited to draft, preregistered, validated, rejected, and inconclusive. A falsification criterion is required for every record, and protocol/result references are optional traceability fields rather than claims of validation. No registry label converts research into a trading instruction.
+
+Registry discovery supports a case-insensitive title/hypothesis search and optional scientific-status or sample-adequacy filters. Filtering changes only the returned view for the owner; it neither edits registry records nor alters monitored strategy behavior.

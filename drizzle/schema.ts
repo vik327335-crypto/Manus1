@@ -597,6 +597,22 @@ export const paperTradingMonitorConfigAudits = mysqlTable("paper_trading_monitor
 
 export type PaperTradingMonitorConfigAudit = typeof paperTradingMonitorConfigAudits.$inferSelect;
 
+export const researchHypotheses = mysqlTable("research_hypotheses", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 160 }).notNull(),
+  hypothesis: text("hypothesis").notNull(),
+  status: mysqlEnum("status", ["draft", "preregistered", "validated", "rejected", "inconclusive"]).notNull().default("draft"),
+  falsificationCriteria: text("falsificationCriteria").notNull(),
+  protocolPath: varchar("protocolPath", { length: 320 }),
+  resultPath: varchar("resultPath", { length: 320 }),
+  sampleAdequacy: mysqlEnum("sampleAdequacy", ["not_assessed", "insufficient", "adequate"]).notNull().default("not_assessed"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [index("research_hypotheses_user_status_idx").on(table.userId, table.status)]);
+
+export type ResearchHypothesis = typeof researchHypotheses.$inferSelect;
+
 /**
  * Virtual long-only trades opened and closed by a monitor's fixed strategy.
  * quantityE8 stores whole tokens scaled by 1e8 to avoid floating persistence.

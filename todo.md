@@ -1233,9 +1233,31 @@
 - [x] Цикл 12: добавить подавление повторяющихся операционных предупреждений.
 - [x] Цикл 13: добавить audit trail изменений конфигурации monitor.
 - [x] Цикл 14: добавить экспорт audit trail в CSV.
-- [ ] Цикл 15: добавить read-only еженедельный email digest.
-- [ ] Цикл 16: добавить журнал доставки email digest.
-- [ ] Цикл 17: добавить ручной preview email digest.
-- [ ] Цикл 18: добавить исследовательский реестр гипотез.
-- [ ] Цикл 19: добавить dashboard статуса исследования.
-- [ ] Цикл 20: выполнить сквозную валидацию, обновить протокол и сохранить версию.
+- [x] Цикл 15: подготовить read-only weekly digest preview; реальная email-доставка отложена по запросу пользователя.
+- [x] Цикл 16: журнал email delivery отложен по запросу пользователя — SMTP не подключается.
+- [x] Цикл 17: добавить ручной preview email digest.
+- [x] Цикл 18: перенесено в новый 20-cycle roadmap как полноценный реестр research hypotheses.
+- [x] Цикл 19: перенесено в новый 20-cycle roadmap как research status dashboard.
+- [x] Цикл 20: завершено промежуточной валидацией и checkpoint 78eb3f66.
+
+## New Twenty-Cycle Research Registry Development (No Email Delivery)
+- [x] Цикл 1: зафиксировать research-only границы без email delivery.
+- [x] Цикл 2: добавить реестр исследовательских гипотез.
+- [x] Цикл 3: добавить статусы и критерии опровержения гипотез.
+- [x] Цикл 4: добавить ссылки на протоколы и результаты в реестре.
+- [x] Цикл 5: добавить search и filtering реестра.
+- [ ] Цикл 6: добавить агрегированный research status dashboard.
+- [ ] Цикл 7: добавить audit лог обновлений research status.
+- [ ] Цикл 8: добавить CSV export research registry.
+- [ ] Цикл 9: добавить CSV export research status summary.
+- [ ] Цикл 10: добавить контроль неполных научных доказательств.
+- [ ] Цикл 11: добавить evidence cards validation outcomes.
+- [ ] Цикл 12: добавить проверку консистентности research registry.
+- [ ] Цикл 13: добавить сводку ограничений стратегии.
+- [ ] Цикл 14: добавить read-only comparison validated studies.
+- [ ] Цикл 15: добавить фильтр confidence и sample adequacy.
+- [ ] Цикл 16: добавить benchmark методологический disclosure.
+- [ ] Цикл 17: добавить coverage отчёт научных протоколов.
+- [ ] Цикл 18: добавить regression tests research status helpers.
+- [ ] Цикл 19: провести UI consistency review research dashboard.
+- [ ] Цикл 20: провести сквозную валидацию и сохранить версию.

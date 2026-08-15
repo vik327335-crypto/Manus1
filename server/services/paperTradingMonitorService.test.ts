@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMonitorHistoricalMilestones, calculateMonitorBenchmarkDrift, calculateMonitorPeriodComparisons, calculateRollingMetrics, canRestorePaperTradingMonitor, canRunPaperTradingMonitor, classifyMonitorStatus, diagnoseMonitorRunCadence, isCompletedCandleFresh, matchesMonitorListFilter, shouldNotifyDegradedTransition, shouldSendMonitorAlert, summarizeMonitorAlerts, validateMonitorConfiguration, validateMonitorReportIntegrity, validateMonitorRunHistory } from "./paperTradingMonitorService";
+import { buildMonitorHistoricalMilestones, buildMonitorWeeklyDigestPreview, calculateMonitorBenchmarkDrift, calculateMonitorPeriodComparisons, calculateRollingMetrics, canRestorePaperTradingMonitor, canRunPaperTradingMonitor, classifyMonitorStatus, diagnoseMonitorRunCadence, isCompletedCandleFresh, matchesMonitorListFilter, shouldNotifyDegradedTransition, shouldSendMonitorAlert, summarizeMonitorAlerts, validateMonitorConfiguration, validateMonitorReportIntegrity, validateMonitorRunHistory } from "./paperTradingMonitorService";
 
 describe("paperTradingMonitorService", () => {
   it("calculates profit factor, win rate, and drawdown from closed virtual trades", () => {
@@ -147,5 +147,11 @@ describe("paperTradingMonitorService", () => {
   it("surfaces missed daily intervals and operational alert suppression without changing the monitor", () => {
     expect(diagnoseMonitorRunCadence([{ asOfDate: new Date("2026-08-10T00:00:00.000Z") }, { asOfDate: new Date("2026-08-13T00:00:00.000Z") }], 1, new Date("2026-08-14T00:00:00.000Z"))).toMatchObject({ missedIntervals: 1, current: true });
     expect(summarizeMonitorAlerts([{ alertKind: "run_error", deliveryStatus: "suppressed" }, { alertKind: "data_stale", deliveryStatus: "failed" }])).toEqual({ total: 2, suppressed: 1, failed: 1 });
+  });
+
+  it("builds a research-only weekly email preview without creating a delivery", () => {
+    const preview = buildMonitorWeeklyDigestPreview({ name: "BTC monitor", symbols: ["BTCUSDT"], runs: 5, alerts: 1, profitFactorMilli: 1_600, modelReturnBps: 200, benchmarkReturnBps: 100, status: "healthy" });
+    expect(preview.subject).toContain("BTC monitor");
+    expect(preview.text).toContain("No real order was sent");
   });
 });

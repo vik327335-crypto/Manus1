@@ -222,6 +222,20 @@ export function summarizeMonitorAlerts(alerts: Array<Pick<typeof paperTradingMon
   return { total: alerts.length, suppressed: alerts.filter((alert) => alert.deliveryStatus === "suppressed").length, failed: alerts.filter((alert) => alert.deliveryStatus === "failed").length };
 }
 
+export function buildMonitorWeeklyDigestPreview(input: { name: string; symbols: string[]; runs: number; alerts: number; profitFactorMilli: number | null; modelReturnBps: number | null; benchmarkReturnBps: number | null; status: string }) {
+  const gapBps = input.modelReturnBps === null || input.benchmarkReturnBps === null ? null : input.modelReturnBps - input.benchmarkReturnBps;
+  return {
+    subject: `Research-only weekly monitor digest: ${input.name}`,
+    text: [
+      `Monitor: ${input.name} (${input.symbols.join(", ")})`,
+      `Weekly processed runs: ${input.runs}; alert events: ${input.alerts}.`,
+      `Latest status: ${input.status}; rolling PF: ${input.profitFactorMilli === null ? "not yet defined" : (input.profitFactorMilli / 1_000).toFixed(2)}.`,
+      `Model return: ${input.modelReturnBps === null ? "not available" : `${(input.modelReturnBps / 100).toFixed(2)}%`}; benchmark gap: ${gapBps === null ? "not available" : `${(gapBps / 100).toFixed(2)}%`}.`,
+      "Research-only virtual monitoring. No real order was sent. This is not personalized financial advice.",
+    ].join("\n"),
+  };
+}
+
 export function validateMonitorConfiguration(monitor: Pick<PaperTradingMonitor, "enabled" | "scheduleCronTaskUid" | "scheduleCron" | "symbols" | "minimumTradeCount" | "watchProfitFactorMilli" | "degradedProfitFactorMilli" | "degradedBenchmarkLagBps">) {
   const issues: string[] = [];
   if (monitor.enabled && (!monitor.scheduleCronTaskUid || !monitor.scheduleCron)) issues.push("Daily monitoring is enabled without a linked schedule.");
@@ -583,7 +597,8 @@ export async function getMonitorDashboard(userId: number, monitorId: number) {
   const historyQuality = validateMonitorRunHistory(runs);
   const runCadence = diagnoseMonitorRunCadence(runs, monitor.enabled);
   const alertSummary = summarizeMonitorAlerts(alerts);
-  return { monitor, runs, openTrades, recentTrades, alerts, configuration, weeklyDigest, reportIntegrity, historyQuality, runCadence, alertSummary };
+  const emailDigestPreview = buildMonitorWeeklyDigestPreview({ name: monitor.name, symbols: monitor.symbols, runs: weeklyDigest.runs, alerts: weeklyDigest.alerts, profitFactorMilli: weeklyDigest.latestProfitFactorMilli, modelReturnBps: weeklyDigest.latestModelReturnBps, benchmarkReturnBps: weeklyDigest.latestBenchmarkReturnBps, status: weeklyDigest.latestStatus });
+  return { monitor, runs, openTrades, recentTrades, alerts, configuration, weeklyDigest, reportIntegrity, historyQuality, runCadence, alertSummary, emailDigestPreview };
 }
 
 export async function getMonitorPeriodComparison(userId: number, monitorId: number) {

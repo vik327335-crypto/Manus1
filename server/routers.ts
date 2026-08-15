@@ -73,6 +73,7 @@ import { performanceMonitoringRouter } from './routers/performanceMonitoringRout
 import { portfolioRebalancingRouter } from './routers/portfolioRebalancingRouter';
 import { webhookIntegrationRouter } from './routers/webhookIntegrationRouter';
 import { paperTradingMonitorRouter } from './routers/paperTradingMonitorRouter';
+import { researchRegistryRouter } from './routers/researchRegistryRouter';
 
 export const appRouter = router({
   system: systemRouter,
@@ -86,6 +87,7 @@ export const appRouter = router({
   tutorial: tutorialRouter,
   paperTrading: paperTradingRouter,
   paperTradingMonitor: paperTradingMonitorRouter,
+  researchRegistry: researchRegistryRouter,
   strategyData: strategyDataRouter,
   realTime: realTimeRouter,
   historicalData: historicalDataRouter,
