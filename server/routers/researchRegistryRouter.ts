@@ -20,7 +20,11 @@ export const researchRegistryRouter = router({
     const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id));
     const statuses = ["draft", "preregistered", "validated", "rejected", "inconclusive"] as const;
     const byStatus = Object.fromEntries(statuses.map((status) => [status, records.filter((record) => record.status === status).length]));
-    return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length };
+    const consistencyIssues = records.flatMap((record) => [
+      ...(["preregistered", "validated", "rejected", "inconclusive"].includes(record.status) && !record.protocolPath ? [`${record.id}: protocol reference missing`] : []),
+      ...(record.status === "validated" && (!record.resultPath || record.sampleAdequacy !== "adequate") ? [`${record.id}: validated status lacks adequate recorded evidence`] : []),
+    ]);
+    return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length, consistency: { valid: consistencyIssues.length === 0, issues: consistencyIssues } };
   }),
   exportCsv: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
