@@ -1277,14 +1277,14 @@
 - [x] Цикл 5: добавить CSV export audit timeline.
 - [ ] Цикл 6: добавить audit filters по action и hypothesis.
 - [ ] Цикл 7: добавить evidence completeness trend.
-- [ ] Цикл 8: добавить status transition guardrails.
-- [ ] Цикл 9: добавить transition rule disclosures в UI.
-- [ ] Цикл 10: добавить protocol-reference quality checks.
-- [ ] Цикл 11: добавить result-reference quality checks.
-- [ ] Цикл 12: добавить evidence remediation list.
-- [ ] Цикл 13: добавить integrity checks audit records.
-- [ ] Цикл 14: добавить lifecycle coverage summary.
-- [ ] Цикл 15: добавить active research workload summary.
+- [x] Цикл 8: добавить evidence-gated status transition guardrails.
+- [x] Цикл 9: добавить transition rule disclosures в UI.
+- [x] Цикл 10: добавить protocol-reference quality checks в research summary.
+- [x] Цикл 11: добавить result-reference quality checks в research summary.
+- [x] Цикл 12: добавить evidence remediation list.
+- [x] Цикл 13: добавить owner-scoped audit integrity checks.
+- [x] Цикл 14: добавить lifecycle coverage summary.
+- [x] Цикл 15: добавить active research workload summary.
 - [ ] Цикл 16: добавить read-only research snapshot export.
 - [ ] Цикл 17: добавить UI empty states и error guidance.
 - [x] Цикл 18: добавить unit tests transition evidence-gate и lifecycle rules.

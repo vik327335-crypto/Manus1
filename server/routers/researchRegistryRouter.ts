@@ -26,7 +26,13 @@ export const researchRegistryRouter = router({
     ]);
     const protocolCoverage = records.filter((record) => Boolean(record.protocolPath)).length;
     const resultCoverage = records.filter((record) => Boolean(record.resultPath)).length;
-    return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length, consistency: { valid: consistencyIssues.length === 0, issues: consistencyIssues }, limitations: ["Registry records describe research evidence only; they are not trading recommendations.", "Validated status requires documented protocol, result reference, and adequate sample label.", "Virtual monitor outcomes do not represent live execution, liquidity, or personal suitability."], methodologyDisclosure: "Monitor benchmark comparisons use the persisted equal-weight buy-and-hold baseline for the configured assets and evaluation window. They are descriptive historical comparisons, not forecasts or personalized financial advice.", coverage: { protocolReferences: protocolCoverage, resultReferences: resultCoverage, total: records.length } };
+    const remediation = records.flatMap((record) => [
+      ...(!record.protocolPath ? [{ id: record.id, title: record.title, action: "Add protocol reference" }] : []),
+      ...(["validated", "rejected", "inconclusive"].includes(record.status) && !record.resultPath ? [{ id: record.id, title: record.title, action: "Add result reference" }] : []),
+      ...(record.status === "validated" && record.sampleAdequacy !== "adequate" ? [{ id: record.id, title: record.title, action: "Record adequate sample evidence" }] : []),
+    ]);
+    const activeWorkload = byStatus.draft + byStatus.preregistered + byStatus.inconclusive;
+    return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length, consistency: { valid: consistencyIssues.length === 0, issues: consistencyIssues }, remediation, activeWorkload, limitations: ["Registry records describe research evidence only; they are not trading recommendations.", "Validated status requires documented protocol, result reference, and adequate sample label.", "Virtual monitor outcomes do not represent live execution, liquidity, or personal suitability."], methodologyDisclosure: "Monitor benchmark comparisons use the persisted equal-weight buy-and-hold baseline for the configured assets and evaluation window. They are descriptive historical comparisons, not forecasts or personalized financial advice.", coverage: { protocolReferences: protocolCoverage, resultReferences: resultCoverage, total: records.length, lifecycle: byStatus } };
   }),
   exportCsv: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
@@ -64,6 +70,18 @@ export const researchRegistryRouter = router({
     if (!db) throw new Error("Database unavailable");
     const audits = await db.select().from(researchHypothesisAudits).where(eq(researchHypothesisAudits.userId, ctx.user.id)).orderBy(desc(researchHypothesisAudits.createdAt));
     return audits.filter((audit) => (!input?.hypothesisId || audit.hypothesisId === input.hypothesisId) && (!input?.action || audit.action === input.action)).slice(0, 100);
+  }),
+  auditHealth: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const audits = await db.select().from(researchHypothesisAudits).where(eq(researchHypothesisAudits.userId, ctx.user.id));
+    const now = Date.now();
+    const issues = audits.flatMap((audit) => [
+      ...(audit.hypothesisId <= 0 ? [`${audit.id}: invalid hypothesis reference`] : []),
+      ...(!audit.action.trim() ? [`${audit.id}: missing audit action`] : []),
+      ...(audit.createdAt.getTime() > now + 60_000 ? [`${audit.id}: future audit timestamp`] : []),
+    ]);
+    return { valid: issues.length === 0, total: audits.length, issues };
   }),
   exportAuditCsv: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
