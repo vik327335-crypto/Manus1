@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { researchHypotheses } from "../../drizzle/schema";
+import { researchHypothesisAudits, researchHypotheses } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
 
@@ -12,7 +12,7 @@ export const researchRegistryRouter = router({
     if (!db) throw new Error("Database unavailable");
     const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id)).orderBy(desc(researchHypotheses.updatedAt));
     const query = input?.query.toLowerCase() ?? "";
-    return records.filter((record) => (!query || `${record.title} ${record.hypothesis}`.toLowerCase().includes(query)) && (!input?.status || record.status === input.status) && (!input?.sampleAdequacy || record.sampleAdequacy === input.sampleAdequacy));
+    return records.filter((record) => (!query || `${record.title} ${record.hypothesis}`.toLowerCase().includes(query)) && (!input?.status || record.status === input.status) && (!input?.sampleAdequacy || record.sampleAdequacy === input.sampleAdequacy)).map((record) => ({ ...record, evidenceComplete: Boolean(record.protocolPath && record.resultPath && record.sampleAdequacy === "adequate") }));
   }),
   summary: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
@@ -51,6 +51,8 @@ export const researchRegistryRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database unavailable");
     const result = await db.insert(researchHypotheses).values({ ...input, userId: ctx.user.id });
-    return { id: Number(result[0].insertId) };
+    const id = Number(result[0].insertId);
+    await db.insert(researchHypothesisAudits).values({ hypothesisId: id, userId: ctx.user.id, action: "created", details: { status: input.status, sampleAdequacy: input.sampleAdequacy, hasProtocolReference: Boolean(input.protocolPath), hasResultReference: Boolean(input.resultPath) } });
+    return { id };
   }),
 });

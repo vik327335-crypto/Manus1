@@ -613,6 +613,17 @@ export const researchHypotheses = mysqlTable("research_hypotheses", {
 
 export type ResearchHypothesis = typeof researchHypotheses.$inferSelect;
 
+export const researchHypothesisAudits = mysqlTable("research_hypothesis_audits", {
+  id: int("id").autoincrement().primaryKey(),
+  hypothesisId: int("hypothesisId").notNull(),
+  userId: int("userId").notNull(),
+  action: varchar("action", { length: 40 }).notNull(),
+  details: json("details").$type<Record<string, unknown>>().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [index("research_hypothesis_audits_hypothesis_created_idx").on(table.hypothesisId, table.createdAt)]);
+
+export type ResearchHypothesisAudit = typeof researchHypothesisAudits.$inferSelect;
+
 /**
  * Virtual long-only trades opened and closed by a monitor's fixed strategy.
  * quantityE8 stores whole tokens scaled by 1e8 to avoid floating persistence.
