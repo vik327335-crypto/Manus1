@@ -516,6 +516,7 @@ export const paperTradingMonitors = mysqlTable("paper_trading_monitors", {
   scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
   scheduleCron: varchar("scheduleCron", { length: 64 }),
   enabled: int("enabled").notNull().default(0),
+  archivedAt: timestamp("archivedAt"),
   lastRunAt: timestamp("lastRunAt"),
   lastStatus: mysqlEnum("lastStatus", ["idle", "healthy", "watch", "degraded", "error", "paused"]).notNull().default("idle"),
   lastAlertAt: timestamp("lastAlertAt"),
@@ -526,6 +527,7 @@ export const paperTradingMonitors = mysqlTable("paper_trading_monitors", {
 }, (table) => [
   foreignKey({ columns: [table.userId], foreignColumns: [users.id], name: "ptm_user_fk" }),
   index("paper_trading_monitors_user_idx").on(table.userId),
+  index("paper_trading_monitors_user_archived_idx").on(table.userId, table.archivedAt),
   index("paper_trading_monitors_task_uid_idx").on(table.scheduleCronTaskUid),
 ]);
 
@@ -579,6 +581,21 @@ export const paperTradingMonitorAlerts = mysqlTable("paper_trading_monitor_alert
 ]);
 
 export type PaperTradingMonitorAlert = typeof paperTradingMonitorAlerts.$inferSelect;
+
+/** Durable audit records for lifecycle and monitoring-threshold changes only. */
+export const paperTradingMonitorConfigAudits = mysqlTable("paper_trading_monitor_config_audits", {
+  id: int("id").autoincrement().primaryKey(),
+  monitorId: int("monitorId").notNull(),
+  userId: int("userId").notNull(),
+  action: varchar("action", { length: 32 }).notNull(),
+  details: json("details").$type<Record<string, unknown>>().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  foreignKey({ columns: [table.monitorId], foreignColumns: [paperTradingMonitors.id], name: "ptmca_monitor_fk" }),
+  index("ptmca_monitor_created_idx").on(table.monitorId, table.createdAt),
+]);
+
+export type PaperTradingMonitorConfigAudit = typeof paperTradingMonitorConfigAudits.$inferSelect;
 
 /**
  * Virtual long-only trades opened and closed by a monitor's fixed strategy.

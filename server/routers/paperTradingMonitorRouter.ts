@@ -3,12 +3,12 @@ import { parse as parseCookie } from "cookie";
 import { desc } from "drizzle-orm";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { paperTradingMonitors, paperTradingMonitorRuns } from "../../drizzle/schema";
+import { paperTradingMonitorConfigAudits, paperTradingMonitors, paperTradingMonitorRuns } from "../../drizzle/schema";
 import { COOKIE_NAME } from "@shared/const";
 import { getDb } from "../db";
 import { createHeartbeatJob, updateHeartbeatJob } from "../_core/heartbeat";
 import { protectedProcedure, router } from "../_core/trpc";
-import { getMonitorDashboard, runPaperTradingMonitor } from "../services/paperTradingMonitorService";
+import { canRestorePaperTradingMonitor, canRunPaperTradingMonitor, getMonitorDashboard, getMonitorPeriodComparison, matchesMonitorListFilter, runPaperTradingMonitor, type MonitorLifecycleFilter } from "../services/paperTradingMonitorService";
 
 const DEFAULT_DAILY_CRON = "0 10 0 * * *";
 const symbolsSchema = z.array(z.enum(["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "ADAUSDT"]))
@@ -23,6 +23,10 @@ const monitorThresholdsSchema = z.object({
 }).refine((value) => value.degradedProfitFactorMilli < value.watchProfitFactorMilli, {
   message: "Degraded PF threshold must be lower than watch PF threshold",
   path: ["degradedProfitFactorMilli"],
+});
+const monitorListFilterSchema = z.object({
+  query: z.string().trim().max(120).default(""),
+  lifecycle: z.enum(["all", "active", "paused", "archived"]).default("all"),
 });
 
 async function requireOwnedMonitor(userId: number, monitorId: number) {
@@ -58,15 +62,35 @@ export const paperTradingMonitorRouter = router({
       return { monitorId: Number(result[0].insertId), enabled: false };
     }),
 
-  list: protectedProcedure.query(async ({ ctx }) => {
+  list: protectedProcedure.input(monitorListFilterSchema.optional()).query(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
-    return db.select().from(paperTradingMonitors).where(eq(paperTradingMonitors.userId, ctx.user.id));
+    const filters = input ?? { query: "", lifecycle: "all" as MonitorLifecycleFilter };
+    const monitors = await db.select().from(paperTradingMonitors).where(eq(paperTradingMonitors.userId, ctx.user.id)).orderBy(desc(paperTradingMonitors.updatedAt));
+    return monitors.filter((monitor) => matchesMonitorListFilter(monitor, filters.query, filters.lifecycle));
   }),
 
   dashboard: protectedProcedure
     .input(z.object({ monitorId: z.number().int().positive() }))
     .query(({ ctx, input }) => getMonitorDashboard(ctx.user.id, input.monitorId)),
+
+  periodComparison: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .query(({ ctx, input }) => getMonitorPeriodComparison(ctx.user.id, input.monitorId)),
+
+  exportPeriodComparisonCsv: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const comparison = await getMonitorPeriodComparison(ctx.user.id, input.monitorId);
+      const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+      const rows = [
+        ["record_type", "window_days", "as_of_date", "model_return_pct", "benchmark_return_pct", "gap_pct", "profit_factor", "closed_trades", "max_drawdown_pct"],
+        ...comparison.periods.map((period) => ["observed_period", period.windowDays, "", period.modelReturnBps === null ? "" : period.modelReturnBps / 100, period.benchmarkReturnBps === null ? "" : period.benchmarkReturnBps / 100, period.benchmarkGapBps === null ? "" : period.benchmarkGapBps / 100, period.profitFactorMilli === null ? "" : period.profitFactorMilli / 1_000, period.closedTrades, period.maxDrawdownBps === null ? "" : period.maxDrawdownBps / 100]),
+        ...comparison.milestones.map((milestone) => ["historical_milestone", milestone.windowDays, milestone.asOfDate.toISOString(), milestone.modelReturnBps === null ? "" : milestone.modelReturnBps / 100, milestone.benchmarkReturnBps === null ? "" : milestone.benchmarkReturnBps / 100, milestone.gapBps === null ? "" : milestone.gapBps / 100, "", "", ""]),
+        ["benchmark_drift", 30, "", "", "", comparison.drift.driftBps === null ? "" : comparison.drift.driftBps / 100, "", comparison.drift.observations, ""],
+      ];
+      return { filename: `paper-monitor-${input.monitorId}-period-comparison.csv`, csv: rows.map((row) => row.map(escape).join(",")).join("\n") };
+    }),
 
   exportAlertAuditCsv: protectedProcedure
     .input(z.object({ monitorId: z.number().int().positive() }))
@@ -78,6 +102,23 @@ export const paperTradingMonitorRouter = router({
         ...dashboard.alerts.map((alert) => [alert.createdAt.toISOString(), alert.alertKind, alert.deliveryStatus, alert.message].map(escape).join(",")),
       ].join("\n");
       return { filename: `paper-monitor-${input.monitorId}-alert-audit.csv`, csv };
+    }),
+
+  configAudit: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const { db, monitor } = await requireOwnedMonitor(ctx.user.id, input.monitorId);
+      return db.select().from(paperTradingMonitorConfigAudits).where(eq(paperTradingMonitorConfigAudits.monitorId, monitor.id)).orderBy(desc(paperTradingMonitorConfigAudits.createdAt)).limit(50);
+    }),
+
+  exportConfigAuditCsv: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const { db, monitor } = await requireOwnedMonitor(ctx.user.id, input.monitorId);
+      const records = await db.select().from(paperTradingMonitorConfigAudits).where(eq(paperTradingMonitorConfigAudits.monitorId, monitor.id)).orderBy(desc(paperTradingMonitorConfigAudits.createdAt));
+      const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+      const csv = [["created_at", "action", "details"], ...records.map((record) => [record.createdAt.toISOString(), record.action, JSON.stringify(record.details)])].map((row) => row.map(escape).join(",")).join("\n");
+      return { filename: `paper-monitor-${input.monitorId}-config-audit.csv`, csv };
     }),
 
   weeklyDigest: protectedProcedure
@@ -120,6 +161,7 @@ export const paperTradingMonitorRouter = router({
         name: monitor.name,
         symbols: monitor.symbols,
         enabled: monitor.enabled === 1,
+        archived: monitor.archivedAt !== null,
         status: monitor.lastStatus,
         modelReturnBps: latestRun?.modelReturnBps ?? null,
         benchmarkReturnBps: latestRun?.benchmarkReturnBps ?? null,
@@ -134,6 +176,7 @@ export const paperTradingMonitorRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { db, monitor } = await requireOwnedMonitor(ctx.user.id, input.monitorId);
       await db.update(paperTradingMonitors).set(input.thresholds).where(eq(paperTradingMonitors.id, monitor.id));
+      await db.insert(paperTradingMonitorConfigAudits).values({ monitorId: monitor.id, userId: ctx.user.id, action: "thresholds_updated", details: { before: { minimumTradeCount: monitor.minimumTradeCount, watchProfitFactorMilli: monitor.watchProfitFactorMilli, degradedProfitFactorMilli: monitor.degradedProfitFactorMilli, degradedBenchmarkLagBps: monitor.degradedBenchmarkLagBps }, after: input.thresholds } });
       return { monitorId: monitor.id, thresholds: input.thresholds };
     }),
 
@@ -147,6 +190,7 @@ export const paperTradingMonitorRouter = router({
         });
       }
       const { db, monitor } = await requireOwnedMonitor(ctx.user.id, input.monitorId);
+      if (monitor.archivedAt) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Restore the archived monitor before enabling it." });
       const sessionToken = parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
       if (!sessionToken) throw new TRPCError({ code: "UNAUTHORIZED", message: "Missing active session" });
 
@@ -182,11 +226,52 @@ export const paperTradingMonitorRouter = router({
       return { enabled: false };
     }),
 
+  archive: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const { db, monitor } = await requireOwnedMonitor(ctx.user.id, input.monitorId);
+      if (monitor.archivedAt) return { archived: true, alreadyArchived: true };
+
+      const sessionToken = parseCookie(ctx.req.headers.cookie ?? "")[COOKIE_NAME] ?? "";
+      if (monitor.scheduleCronTaskUid) {
+        if (!sessionToken) throw new TRPCError({ code: "UNAUTHORIZED", message: "Missing active session required to pause the linked schedule." });
+        await updateHeartbeatJob(monitor.scheduleCronTaskUid, { enable: false }, sessionToken);
+      }
+
+      const archivedAt = new Date();
+      await db.update(paperTradingMonitors).set({
+        enabled: 0,
+        archivedAt,
+        lastStatus: "paused",
+      }).where(eq(paperTradingMonitors.id, monitor.id));
+      await db.insert(paperTradingMonitorConfigAudits).values({ monitorId: monitor.id, userId: ctx.user.id, action: "archived", details: { archivedAt: archivedAt.toISOString(), hadSchedule: Boolean(monitor.scheduleCronTaskUid) } });
+      return { archived: true, archivedAt };
+    }),
+
+  restore: protectedProcedure
+    .input(z.object({ monitorId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const { db, monitor } = await requireOwnedMonitor(ctx.user.id, input.monitorId);
+      if (!canRestorePaperTradingMonitor(monitor)) return { restored: false, alreadyActive: true, enabled: false };
+      await db.update(paperTradingMonitors).set({
+        archivedAt: null,
+        enabled: 0,
+        lastStatus: "paused",
+      }).where(eq(paperTradingMonitors.id, monitor.id));
+      await db.insert(paperTradingMonitorConfigAudits).values({ monitorId: monitor.id, userId: ctx.user.id, action: "restored_paused", details: { scheduleRemainsPaused: true } });
+      return { restored: true, enabled: false };
+    }),
+
   runNow: protectedProcedure
     .input(z.object({ monitorId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
       const { monitor } = await requireOwnedMonitor(ctx.user.id, input.monitorId);
-      if (!monitor.enabled) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Enable daily monitoring before running it" });
+      if (!canRunPaperTradingMonitor(monitor)) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: monitor.archivedAt ? "Restore the archived monitor before running it." : "Enable daily monitoring before running it.",
+        });
+      }
       return runPaperTradingMonitor(monitor.id);
     }),
 });

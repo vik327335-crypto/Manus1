@@ -53,3 +53,31 @@ The weekly digest is a read-only summary of processed runs, alert events, latest
 The monitor can export a rolling-metrics CSV with one row per daily run, including virtual model return, benchmark return, performance gap, rolling PF, closed-trade count, drawdown, and data-freshness state. The dashboard also provides a read-only comparison across every monitor owned by the user. It is descriptive only: it does not rank strategies for execution, modify any configuration, or trigger an order.
 
 Before a weekly report is rendered, the service validates run counts, alert counts, PF, and closed-trade counts for impossible negative or internally inconsistent values. A failed report-integrity check is shown as a diagnostic condition rather than being silently exported.
+
+## Twenty-cycle development guardrails
+
+The next development cycles may add lifecycle controls, historical comparisons, operational diagnostics, audit artifacts, and read-only digest delivery. They must retain the following non-negotiable boundaries: no exchange credentials, no order submission, no mutation of an evaluated signal by monitoring thresholds, no future-price leakage, and no automatic promotion of a research result into an investment recommendation. Any new historical analytics remain descriptive until separately preregistered and independently validated.
+
+## Archive lifecycle
+
+Archiving is non-destructive. It pauses the linked schedule when one exists, disables new virtual runs, preserves every prior run, alert, and virtual trade, and exposes the preserved record as read-only evidence. An archived monitor cannot be enabled or run until it is explicitly restored in a later lifecycle action.
+
+Restoring removes only the archive marker and always returns the monitor to a paused state. It does not reactivate a Heartbeat job, execute a catch-up virtual trade, or otherwise change signal, capital, historical records, or configured thresholds. The owner must explicitly re-enable daily updates after restoration.
+
+## List discovery controls
+
+The dashboard can filter user-owned monitors by active, paused, or archived lifecycle state and search their names or configured symbols. These controls only narrow what is displayed; they do not alter persisted monitor configuration, schedule state, virtual positions, evidence, or research results.
+
+## Observed-period comparison
+
+The dashboard reports read-only 30, 60, and 90-day comparisons from persisted virtual run snapshots. Each comparison uses a snapshot no later than the window cutoff when available; it otherwise labels the result as partial history. It presents virtual model return, equal-weight benchmark return, their gap, latest rolling PF, closed-trade count, and latest rolling drawdown. These descriptive measurements do not select a strategy, revise a signal, or imply an expected return.
+
+## Stability visualisation
+
+The rolling-stability graph visualises persisted rolling PF snapshots and displays PF 1.50 as a dashed monitoring reference. It shows no line until at least two defined PF observations exist, avoiding an implied trend from a single point. The reference is descriptive and does not cause a trade, parameter update, or any forecast.
+
+Historical comparison points select the nearest persisted run at or before 30-, 60-, and 90-day reference dates. Benchmark-gap drift is the arithmetic change between the current gap and the 30-day historical gap; it is reported only as a change in past virtual outcomes. The comparative CSV includes observed periods, milestone values, and drift evidence without adding non-persisted records.
+
+Historical quality checks flag future dates, duplicate completed-candle dates, stale runs not marked as errors, and missing benchmark data for completed runs. Cadence diagnostics count gaps above 36 hours between persisted daily runs; alert summaries separately count suppressed and failed notifications. These controls expose data and delivery conditions only and do not change the fixed signal or virtual execution.
+
+Lifecycle archive/restore and monitoring-threshold updates write a durable configuration audit record with a timestamp, action, and non-secret change details. The owner can inspect recent records and export the complete audit in CSV. The audit concerns governance controls only; it does not record exchange credentials, send orders, or alter virtual trade history.

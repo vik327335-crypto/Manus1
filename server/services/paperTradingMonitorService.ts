@@ -5,6 +5,7 @@ import {
   paperTradingMonitorTrades,
   paperTradingMonitorAlerts,
   type PaperTradingMonitor,
+  type PaperTradingMonitorRun,
 } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { notifyOwner } from "../_core/notification";
@@ -102,6 +103,123 @@ export function shouldSendMonitorAlert(
 ) {
   if (previousKind !== nextKind || !previousAt) return true;
   return now.getTime() - previousAt.getTime() >= ALERT_COOLDOWN_MS;
+}
+
+export function canRunPaperTradingMonitor(monitor: Pick<PaperTradingMonitor, "enabled" | "archivedAt">) {
+  return monitor.enabled === 1 && monitor.archivedAt === null;
+}
+
+export function canRestorePaperTradingMonitor(monitor: Pick<PaperTradingMonitor, "archivedAt">) {
+  return monitor.archivedAt !== null;
+}
+
+export type MonitorLifecycleFilter = "all" | "active" | "paused" | "archived";
+
+export function matchesMonitorListFilter(
+  monitor: Pick<PaperTradingMonitor, "name" | "symbols" | "enabled" | "archivedAt">,
+  query: string,
+  lifecycle: MonitorLifecycleFilter
+) {
+  const normalizedQuery = query.trim().toLowerCase();
+  const matchesQuery = !normalizedQuery || `${monitor.name} ${(monitor.symbols ?? []).join(" ")}`.toLowerCase().includes(normalizedQuery);
+  if (!matchesQuery) return false;
+  if (lifecycle === "archived") return monitor.archivedAt !== null;
+  if (lifecycle === "active") return monitor.archivedAt === null && monitor.enabled === 1;
+  if (lifecycle === "paused") return monitor.archivedAt === null && monitor.enabled === 0;
+  return true;
+}
+
+export type MonitorPeriodComparison = {
+  windowDays: number;
+  observationCount: number;
+  hasFullWindow: boolean;
+  modelReturnBps: number | null;
+  benchmarkReturnBps: number | null;
+  benchmarkGapBps: number | null;
+  profitFactorMilli: number | null;
+  closedTrades: number;
+  maxDrawdownBps: number | null;
+};
+
+export function calculateMonitorPeriodComparisons(
+  runs: Array<Pick<PaperTradingMonitorRun, "asOfDate" | "equityCents" | "benchmarkEquityCents" | "rollingProfitFactorMilli" | "rollingTrades" | "rollingMaxDrawdownBps">>,
+  windows = [30, 60, 90]
+): MonitorPeriodComparison[] {
+  const chronological = [...runs].sort((left, right) => left.asOfDate.getTime() - right.asOfDate.getTime());
+  const latest = chronological.at(-1);
+  if (!latest) return windows.map((windowDays) => ({ windowDays, observationCount: 0, hasFullWindow: false, modelReturnBps: null, benchmarkReturnBps: null, benchmarkGapBps: null, profitFactorMilli: null, closedTrades: 0, maxDrawdownBps: null }));
+
+  return windows.map((windowDays) => {
+    const cutoff = new Date(latest.asOfDate.getTime() - windowDays * 86_400_000);
+    const baseline = chronological.filter((run) => run.asOfDate.getTime() <= cutoff.getTime()).at(-1) ?? null;
+    const observations = chronological.filter((run) => run.asOfDate.getTime() > cutoff.getTime());
+    const firstObserved = observations[0] ?? latest;
+    const modelStart = baseline?.equityCents ?? firstObserved.equityCents;
+    const benchmarkStart = baseline?.benchmarkEquityCents ?? firstObserved.benchmarkEquityCents;
+    const modelReturnBps = modelStart && latest.equityCents ? Math.round(((latest.equityCents / modelStart) - 1) * 10_000) : null;
+    const benchmarkReturnBps = benchmarkStart && latest.benchmarkEquityCents ? Math.round(((latest.benchmarkEquityCents / benchmarkStart) - 1) * 10_000) : null;
+    return {
+      windowDays,
+      observationCount: observations.length,
+      hasFullWindow: baseline !== null,
+      modelReturnBps,
+      benchmarkReturnBps,
+      benchmarkGapBps: modelReturnBps === null || benchmarkReturnBps === null ? null : modelReturnBps - benchmarkReturnBps,
+      profitFactorMilli: latest.rollingProfitFactorMilli,
+      closedTrades: latest.rollingTrades,
+      maxDrawdownBps: latest.rollingMaxDrawdownBps,
+    };
+  });
+}
+
+export function buildMonitorHistoricalMilestones(
+  runs: Array<Pick<PaperTradingMonitorRun, "asOfDate" | "modelReturnBps" | "benchmarkReturnBps">>,
+  windows = [30, 60, 90]
+) {
+  const chronological = [...runs].sort((left, right) => left.asOfDate.getTime() - right.asOfDate.getTime());
+  const latest = chronological.at(-1);
+  if (!latest) return [];
+  return windows.map((windowDays) => {
+    const target = latest.asOfDate.getTime() - windowDays * 86_400_000;
+    const snapshot = chronological.filter((run) => run.asOfDate.getTime() <= target).at(-1) ?? chronological[0];
+    const modelReturnBps = snapshot.modelReturnBps ?? null;
+    const benchmarkReturnBps = snapshot.benchmarkReturnBps ?? null;
+    return { windowDays, asOfDate: snapshot.asOfDate, modelReturnBps, benchmarkReturnBps, gapBps: modelReturnBps === null || benchmarkReturnBps === null ? null : modelReturnBps - benchmarkReturnBps };
+  });
+}
+
+export function calculateMonitorBenchmarkDrift(runs: Array<Pick<PaperTradingMonitorRun, "asOfDate" | "modelReturnBps" | "benchmarkReturnBps">>) {
+  const milestones = buildMonitorHistoricalMilestones(runs, [30]);
+  const latest = [...runs].sort((left, right) => left.asOfDate.getTime() - right.asOfDate.getTime()).at(-1);
+  const currentGapBps = latest?.modelReturnBps === null || latest?.modelReturnBps === undefined || latest?.benchmarkReturnBps === null || latest?.benchmarkReturnBps === undefined ? null : latest.modelReturnBps - latest.benchmarkReturnBps;
+  const priorGapBps = milestones[0]?.gapBps ?? null;
+  return { currentGapBps, priorGapBps, driftBps: currentGapBps === null || priorGapBps === null ? null : currentGapBps - priorGapBps, observations: runs.length };
+}
+
+export function validateMonitorRunHistory(runs: Array<Pick<PaperTradingMonitorRun, "asOfDate" | "status" | "dataFreshness" | "modelReturnBps" | "benchmarkReturnBps">>, now = new Date()) {
+  const issues: string[] = [];
+  const seen = new Set<number>();
+  for (const run of runs) {
+    const timestamp = run.asOfDate.getTime();
+    if (timestamp > now.getTime()) issues.push("A run is dated in the future.");
+    if (seen.has(timestamp)) issues.push("Duplicate completed-candle dates exist.");
+    seen.add(timestamp);
+    if (run.status !== "error" && run.status !== "skipped" && (run.modelReturnBps === null || run.benchmarkReturnBps === null)) issues.push("A completed run is missing benchmark comparison data.");
+    if (run.dataFreshness === "stale" && run.status !== "error") issues.push("A stale-data run was not marked as an error.");
+  }
+  return { valid: issues.length === 0, issues: Array.from(new Set(issues)) };
+}
+
+export function diagnoseMonitorRunCadence(runs: Array<Pick<PaperTradingMonitorRun, "asOfDate">>, enabled: number, now = new Date()) {
+  if (!enabled || runs.length === 0) return { monitored: enabled === 1, missedIntervals: 0, latestAgeHours: null, current: enabled === 0 };
+  const chronological = [...runs].sort((left, right) => left.asOfDate.getTime() - right.asOfDate.getTime());
+  const missedIntervals = chronological.slice(1).reduce((count, run, index) => count + (run.asOfDate.getTime() - chronological[index].asOfDate.getTime() > 36 * 3_600_000 ? 1 : 0), 0);
+  const latestAgeHours = Math.max(0, Math.floor((now.getTime() - chronological.at(-1)!.asOfDate.getTime()) / 3_600_000));
+  return { monitored: true, missedIntervals, latestAgeHours, current: latestAgeHours <= 36 };
+}
+
+export function summarizeMonitorAlerts(alerts: Array<Pick<typeof paperTradingMonitorAlerts.$inferSelect, "alertKind" | "deliveryStatus">>) {
+  return { total: alerts.length, suppressed: alerts.filter((alert) => alert.deliveryStatus === "suppressed").length, failed: alerts.filter((alert) => alert.deliveryStatus === "failed").length };
 }
 
 export function validateMonitorConfiguration(monitor: Pick<PaperTradingMonitor, "enabled" | "scheduleCronTaskUid" | "scheduleCron" | "symbols" | "minimumTradeCount" | "watchProfitFactorMilli" | "degradedProfitFactorMilli" | "degradedBenchmarkLagBps">) {
@@ -313,6 +431,7 @@ export async function runPaperTradingMonitor(monitorId: number) {
 
   const monitor = (await db.select().from(paperTradingMonitors).where(eq(paperTradingMonitors.id, monitorId)).limit(1))[0];
   if (!monitor) throw new Error("Monitor not found");
+  if (monitor.archivedAt) return { status: "skipped" as const, reason: "monitor_archived" };
   if (!monitor.enabled) return { status: "skipped" as const, reason: "monitor_disabled" };
 
   const symbols = monitor.symbols ?? [];
@@ -461,5 +580,22 @@ export async function getMonitorDashboard(userId: number, monitorId: number) {
     latestProfitFactorMilli: weeklyDigest.latestProfitFactorMilli,
     latestTrades: runs[0]?.rollingTrades ?? null,
   });
-  return { monitor, runs, openTrades, recentTrades, alerts, configuration, weeklyDigest, reportIntegrity };
+  const historyQuality = validateMonitorRunHistory(runs);
+  const runCadence = diagnoseMonitorRunCadence(runs, monitor.enabled);
+  const alertSummary = summarizeMonitorAlerts(alerts);
+  return { monitor, runs, openTrades, recentTrades, alerts, configuration, weeklyDigest, reportIntegrity, historyQuality, runCadence, alertSummary };
+}
+
+export async function getMonitorPeriodComparison(userId: number, monitorId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const monitor = (await db.select().from(paperTradingMonitors).where(and(eq(paperTradingMonitors.id, monitorId), eq(paperTradingMonitors.userId, userId))).limit(1))[0];
+  if (!monitor) throw new Error("Monitor not found");
+  const runs = await db.select().from(paperTradingMonitorRuns).where(eq(paperTradingMonitorRuns.monitorId, monitorId)).orderBy(desc(paperTradingMonitorRuns.asOfDate)).limit(366);
+  return {
+    monitorId,
+    periods: calculateMonitorPeriodComparisons(runs),
+    milestones: buildMonitorHistoricalMilestones(runs),
+    drift: calculateMonitorBenchmarkDrift(runs),
+  };
 }
