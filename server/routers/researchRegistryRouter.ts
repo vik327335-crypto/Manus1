@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { researchHypothesisAudits, researchHypotheses } from "../../drizzle/schema";
 import { getDb } from "../db";
@@ -50,6 +50,22 @@ export const researchRegistryRouter = router({
     if (!db) throw new Error("Database unavailable");
     const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id));
     return records.filter((record) => record.status === "validated" || record.status === "rejected" || record.status === "inconclusive").map((record) => ({ id: record.id, title: record.title, status: record.status, sampleAdequacy: record.sampleAdequacy, evidenceComplete: Boolean(record.protocolPath && record.resultPath && record.sampleAdequacy === "adequate"), updatedAt: record.updatedAt }));
+  }),
+  update: protectedProcedure.input(z.object({
+    id: z.number().int().positive(),
+    status: statusSchema.optional(),
+    protocolPath: z.string().trim().max(320).nullable().optional(),
+    resultPath: z.string().trim().max(320).nullable().optional(),
+    sampleAdequacy: z.enum(["not_assessed", "insufficient", "adequate"]).optional(),
+  })).mutation(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const [existing] = await db.select().from(researchHypotheses).where(and(eq(researchHypotheses.id, input.id), eq(researchHypotheses.userId, ctx.user.id))).limit(1);
+    if (!existing) throw new Error("Research hypothesis not found");
+    const { id, ...changes } = input;
+    await db.update(researchHypotheses).set({ ...changes, updatedAt: new Date() }).where(eq(researchHypotheses.id, id));
+    await db.insert(researchHypothesisAudits).values({ hypothesisId: id, userId: ctx.user.id, action: "updated", details: { changedFields: Object.keys(changes), previousStatus: existing.status, nextStatus: changes.status ?? existing.status } });
+    return { id };
   }),
   create: protectedProcedure.input(z.object({
     title: z.string().trim().min(5).max(160),

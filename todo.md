@@ -1261,3 +1261,10 @@
 - [x] Цикл 18: добавить regression tests lifecycle и evidence-completeness research registry.
 - [x] Цикл 19: провести UI consistency review research dashboard и filters.
 - [x] Цикл 20: провести сквозную валидацию: 19 unit tests и TypeScript без ошибок.
+
+## Five-Cycle Research Registry UI Development
+- [x] Цикл 1: добавить форму создания research hypothesis в UI.
+- [x] Цикл 2: добавить owner-guarded lifecycle и evidence editing hypothesis.
+- [x] Цикл 3: вывести read-only comparison outcomes в research dashboard.
+- [x] Цикл 4: добавить coverage и consistency panels в UI.
+- [x] Цикл 5: провести регрессионную проверку и сохранить версию.
