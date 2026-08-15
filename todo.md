@@ -1258,6 +1258,6 @@
 - [x] Цикл 15: добавить status и sample-adequacy filtering с evidence labels.
 - [x] Цикл 16: добавить benchmark методологический disclosure в research summary.
 - [x] Цикл 17: добавить coverage отчёт protocol/result references в research summary.
-- [ ] Цикл 18: добавить regression tests research status helpers.
-- [ ] Цикл 19: провести UI consistency review research dashboard.
-- [ ] Цикл 20: провести сквозную валидацию и сохранить версию.
+- [x] Цикл 18: добавить regression tests lifecycle и evidence-completeness research registry.
+- [x] Цикл 19: провести UI consistency review research dashboard и filters.
+- [x] Цикл 20: провести сквозную валидацию: 19 unit tests и TypeScript без ошибок.
