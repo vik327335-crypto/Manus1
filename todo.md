@@ -1251,7 +1251,7 @@
 - [x] Цикл 8: добавить CSV export research registry.
 - [x] Цикл 9: добавить CSV export research status summary.
 - [x] Цикл 10: добавить контроль неполных научных доказательств через incomplete-evidence summary.
-- [ ] Цикл 11: добавить evidence cards validation outcomes.
+- [x] Цикл 11: добавить evidence-completeness indicator для validation outcomes.
 - [ ] Цикл 12: добавить проверку консистентности research registry.
 - [ ] Цикл 13: добавить сводку ограничений стратегии.
 - [ ] Цикл 14: добавить read-only comparison validated studies.
