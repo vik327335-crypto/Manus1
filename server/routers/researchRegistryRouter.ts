@@ -32,7 +32,13 @@ export const researchRegistryRouter = router({
       ...(record.status === "validated" && record.sampleAdequacy !== "adequate" ? [{ id: record.id, title: record.title, action: "Record adequate sample evidence" }] : []),
     ]);
     const activeWorkload = byStatus.draft + byStatus.preregistered + byStatus.inconclusive;
-    return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length, consistency: { valid: consistencyIssues.length === 0, issues: consistencyIssues }, remediation, activeWorkload, limitations: ["Registry records describe research evidence only; they are not trading recommendations.", "Validated status requires documented protocol, result reference, and adequate sample label.", "Virtual monitor outcomes do not represent live execution, liquidity, or personal suitability."], methodologyDisclosure: "Monitor benchmark comparisons use the persisted equal-weight buy-and-hold baseline for the configured assets and evaluation window. They are descriptive historical comparisons, not forecasts or personalized financial advice.", coverage: { protocolReferences: protocolCoverage, resultReferences: resultCoverage, total: records.length, lifecycle: byStatus } };
+    let completeCount = 0;
+    const evidenceTrend = [...records].sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime()).map((record, index) => {
+      const complete = Boolean(record.protocolPath && record.resultPath && record.sampleAdequacy === "adequate");
+      if (complete) completeCount += 1;
+      return { asOf: record.updatedAt, recordId: record.id, complete, observedCompletionRateBps: Math.round((completeCount / (index + 1)) * 10_000) };
+    });
+    return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length, consistency: { valid: consistencyIssues.length === 0, issues: consistencyIssues }, remediation, activeWorkload, evidenceTrend, limitations: ["Registry records describe research evidence only; they are not trading recommendations.", "Validated status requires documented protocol, result reference, and adequate sample label.", "Virtual monitor outcomes do not represent live execution, liquidity, or personal suitability."], methodologyDisclosure: "Monitor benchmark comparisons use the persisted equal-weight buy-and-hold baseline for the configured assets and evaluation window. They are descriptive historical comparisons, not forecasts or personalized financial advice.", coverage: { protocolReferences: protocolCoverage, resultReferences: resultCoverage, total: records.length, lifecycle: byStatus } };
   }),
   exportCsv: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
@@ -50,6 +56,16 @@ export const researchRegistryRouter = router({
     const counts = statuses.map((status) => [status, records.filter((record) => record.status === status).length]);
     const csv = [["metric", "value"], ["total", records.length], ["adequate_samples", records.filter((record) => record.sampleAdequacy === "adequate").length], ["incomplete_evidence", records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length], ...counts].map((row) => row.map((value) => `"${String(value)}"`).join(",")).join("\n");
     return { filename: "research-status-summary.csv", csv };
+  }),
+  exportSnapshotCsv: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id));
+    const statuses = ["draft", "preregistered", "validated", "rejected", "inconclusive"] as const;
+    const counts = statuses.map((status) => [status, records.filter((record) => record.status === status).length]);
+    const snapshotAt = new Date().toISOString();
+    const rows = [["snapshot_at", "metric", "value"], [snapshotAt, "total", records.length], [snapshotAt, "protocol_coverage", records.filter((record) => Boolean(record.protocolPath)).length], [snapshotAt, "result_coverage", records.filter((record) => Boolean(record.resultPath)).length], [snapshotAt, "adequate_samples", records.filter((record) => record.sampleAdequacy === "adequate").length], ...counts.map(([status, count]) => [snapshotAt, `status_${status}`, count])];
+    return { filename: "research-registry-snapshot.csv", csv: rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\n") };
   }),
   compareOutcomes: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();

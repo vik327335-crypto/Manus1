@@ -1275,8 +1275,8 @@
 - [x] Цикл 3: добавить owner-scoped audit timeline research hypothesis API.
 - [x] Цикл 4: добавить CSV export outcome comparison.
 - [x] Цикл 5: добавить CSV export audit timeline.
-- [ ] Цикл 6: добавить audit filters по action и hypothesis.
-- [ ] Цикл 7: добавить evidence completeness trend.
+- [x] Цикл 6: добавить owner-scoped audit filters по action и hypothesis.
+- [x] Цикл 7: добавить descriptive evidence-completeness series.
 - [x] Цикл 8: добавить evidence-gated status transition guardrails.
 - [x] Цикл 9: добавить transition rule disclosures в UI.
 - [x] Цикл 10: добавить protocol-reference quality checks в research summary.
@@ -1285,8 +1285,8 @@
 - [x] Цикл 13: добавить owner-scoped audit integrity checks.
 - [x] Цикл 14: добавить lifecycle coverage summary.
 - [x] Цикл 15: добавить active research workload summary.
-- [ ] Цикл 16: добавить read-only research snapshot export.
-- [ ] Цикл 17: добавить UI empty states и error guidance.
+- [x] Цикл 16: добавить read-only research snapshot CSV export.
+- [x] Цикл 17: добавить UI empty states и error guidance.
 - [x] Цикл 18: добавить unit tests transition evidence-gate и lifecycle rules.
-- [ ] Цикл 19: провести UI consistency review governance workflow.
-- [ ] Цикл 20: провести сквозную валидацию и сохранить версию.
+- [x] Цикл 19: провести UI consistency review governance workflow.
+- [x] Цикл 20: провести сквозную валидацию: 20 unit tests и TypeScript без ошибок.
