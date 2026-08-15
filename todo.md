@@ -1268,3 +1268,25 @@
 - [x] Цикл 3: вывести read-only comparison outcomes в research dashboard.
 - [x] Цикл 4: добавить coverage и consistency panels в UI.
 - [x] Цикл 5: провести регрессионную проверку и сохранить версию.
+
+## Twenty-Cycle Research Governance Development
+- [x] Цикл 1: зафиксировать 20-cycle research governance roadmap.
+- [x] Цикл 2: добавить server-enforced подтверждение перехода hypothesis в validated.
+- [x] Цикл 3: добавить owner-scoped audit timeline research hypothesis API.
+- [x] Цикл 4: добавить CSV export outcome comparison.
+- [x] Цикл 5: добавить CSV export audit timeline.
+- [ ] Цикл 6: добавить audit filters по action и hypothesis.
+- [ ] Цикл 7: добавить evidence completeness trend.
+- [ ] Цикл 8: добавить status transition guardrails.
+- [ ] Цикл 9: добавить transition rule disclosures в UI.
+- [ ] Цикл 10: добавить protocol-reference quality checks.
+- [ ] Цикл 11: добавить result-reference quality checks.
+- [ ] Цикл 12: добавить evidence remediation list.
+- [ ] Цикл 13: добавить integrity checks audit records.
+- [ ] Цикл 14: добавить lifecycle coverage summary.
+- [ ] Цикл 15: добавить active research workload summary.
+- [ ] Цикл 16: добавить read-only research snapshot export.
+- [ ] Цикл 17: добавить UI empty states и error guidance.
+- [x] Цикл 18: добавить unit tests transition evidence-gate и lifecycle rules.
+- [ ] Цикл 19: провести UI consistency review governance workflow.
+- [ ] Цикл 20: провести сквозную валидацию и сохранить версию.

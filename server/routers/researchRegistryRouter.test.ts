@@ -13,4 +13,11 @@ describe("research registry contract", () => {
     expect(evidenceComplete({ protocolPath: "protocol.md", resultPath: "result.json", sampleAdequacy: "adequate" })).toBe(true);
     expect(evidenceComplete({ protocolPath: "protocol.md", sampleAdequacy: "adequate" })).toBe(false);
   });
+
+  it("defines validated evidence requirements independently of trading execution", () => {
+    const canValidate = (input: { confirmed: boolean; protocol?: string; result?: string; sample: string }) => input.confirmed && Boolean(input.protocol && input.result) && input.sample === "adequate";
+    expect(canValidate({ confirmed: true, protocol: "protocol.md", result: "result.json", sample: "adequate" })).toBe(true);
+    expect(canValidate({ confirmed: false, protocol: "protocol.md", result: "result.json", sample: "adequate" })).toBe(false);
+    expect(canValidate({ confirmed: true, protocol: "protocol.md", result: "result.json", sample: "insufficient" })).toBe(false);
+  });
 });

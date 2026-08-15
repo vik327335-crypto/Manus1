@@ -51,18 +51,48 @@ export const researchRegistryRouter = router({
     const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id));
     return records.filter((record) => record.status === "validated" || record.status === "rejected" || record.status === "inconclusive").map((record) => ({ id: record.id, title: record.title, status: record.status, sampleAdequacy: record.sampleAdequacy, evidenceComplete: Boolean(record.protocolPath && record.resultPath && record.sampleAdequacy === "adequate"), updatedAt: record.updatedAt }));
   }),
+  exportOutcomeCsv: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id));
+    const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+    const rows = [["id", "title", "status", "sample_adequacy", "evidence_complete", "updated_at"], ...records.filter((record) => record.status !== "draft" && record.status !== "preregistered").map((record) => [record.id, record.title, record.status, record.sampleAdequacy, Boolean(record.protocolPath && record.resultPath && record.sampleAdequacy === "adequate"), record.updatedAt.toISOString()])];
+    return { filename: "research-outcome-comparison.csv", csv: rows.map((row) => row.map(escape).join(",")).join("\n") };
+  }),
+  auditTimeline: protectedProcedure.input(z.object({ hypothesisId: z.number().int().positive().optional(), action: z.string().trim().max(40).optional() }).optional()).query(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const audits = await db.select().from(researchHypothesisAudits).where(eq(researchHypothesisAudits.userId, ctx.user.id)).orderBy(desc(researchHypothesisAudits.createdAt));
+    return audits.filter((audit) => (!input?.hypothesisId || audit.hypothesisId === input.hypothesisId) && (!input?.action || audit.action === input.action)).slice(0, 100);
+  }),
+  exportAuditCsv: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const audits = await db.select().from(researchHypothesisAudits).where(eq(researchHypothesisAudits.userId, ctx.user.id)).orderBy(desc(researchHypothesisAudits.createdAt));
+    const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+    const rows = [["id", "hypothesis_id", "action", "details", "created_at"], ...audits.map((audit) => [audit.id, audit.hypothesisId, audit.action, JSON.stringify(audit.details), audit.createdAt.toISOString()])];
+    return { filename: "research-hypothesis-audit.csv", csv: rows.map((row) => row.map(escape).join(",")).join("\n") };
+  }),
   update: protectedProcedure.input(z.object({
     id: z.number().int().positive(),
     status: statusSchema.optional(),
     protocolPath: z.string().trim().max(320).nullable().optional(),
     resultPath: z.string().trim().max(320).nullable().optional(),
     sampleAdequacy: z.enum(["not_assessed", "insufficient", "adequate"]).optional(),
+    confirmValidated: z.literal(true).optional(),
   })).mutation(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw new Error("Database unavailable");
     const [existing] = await db.select().from(researchHypotheses).where(and(eq(researchHypotheses.id, input.id), eq(researchHypotheses.userId, ctx.user.id))).limit(1);
     if (!existing) throw new Error("Research hypothesis not found");
-    const { id, ...changes } = input;
+    if (input.status === "validated" && existing.status !== "validated") {
+      const protocolPath = input.protocolPath === undefined ? existing.protocolPath : input.protocolPath;
+      const resultPath = input.resultPath === undefined ? existing.resultPath : input.resultPath;
+      const sampleAdequacy = input.sampleAdequacy ?? existing.sampleAdequacy;
+      if (input.confirmValidated !== true) throw new Error("Validated status requires explicit owner confirmation");
+      if (!protocolPath || !resultPath || sampleAdequacy !== "adequate") throw new Error("Validated status requires protocol, result reference, and adequate sample evidence");
+    }
+    const { id, confirmValidated, ...changes } = input;
     await db.update(researchHypotheses).set({ ...changes, updatedAt: new Date() }).where(eq(researchHypotheses.id, id));
     await db.insert(researchHypothesisAudits).values({ hypothesisId: id, userId: ctx.user.id, action: "updated", details: { changedFields: Object.keys(changes), previousStatus: existing.status, nextStatus: changes.status ?? existing.status } });
     return { id };

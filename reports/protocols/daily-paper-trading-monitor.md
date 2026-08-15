@@ -91,3 +91,7 @@ The research registry persists only owner-entered hypotheses, scientific status,
 Registry states are limited to draft, preregistered, validated, rejected, and inconclusive. A falsification criterion is required for every record, and protocol/result references are optional traceability fields rather than claims of validation. No registry label converts research into a trading instruction.
 
 Registry discovery supports a case-insensitive title/hypothesis search and optional scientific-status or sample-adequacy filters. Filtering changes only the returned view for the owner; it neither edits registry records nor alters monitored strategy behavior.
+
+## Research governance development guardrails
+
+The next governance cycles may strengthen evidence traceability, lifecycle validation, audit review, descriptive exports, and remediation guidance. A change to a registry status must remain attributable to the owner, auditable, and separate from monitor execution. In particular, `validated` remains a documentation label, not an approval to trade; it requires explicit owner confirmation and complete recorded evidence. No planned control may introduce SMTP delivery, exchange credentials, real orders, or a modification of virtual execution logic.
