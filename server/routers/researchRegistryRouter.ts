@@ -22,6 +22,23 @@ export const researchRegistryRouter = router({
     const byStatus = Object.fromEntries(statuses.map((status) => [status, records.filter((record) => record.status === status).length]));
     return { total: records.length, byStatus, adequateSamples: records.filter((record) => record.sampleAdequacy === "adequate").length, incompleteEvidence: records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length };
   }),
+  exportCsv: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id)).orderBy(desc(researchHypotheses.updatedAt));
+    const escape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+    const rows = [["title", "status", "sample_adequacy", "hypothesis", "falsification_criteria", "protocol_path", "result_path", "updated_at"], ...records.map((record) => [record.title, record.status, record.sampleAdequacy, record.hypothesis, record.falsificationCriteria, record.protocolPath, record.resultPath, record.updatedAt.toISOString()])];
+    return { filename: "research-registry.csv", csv: rows.map((row) => row.map(escape).join(",")).join("\n") };
+  }),
+  exportSummaryCsv: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const records = await db.select().from(researchHypotheses).where(eq(researchHypotheses.userId, ctx.user.id));
+    const statuses = ["draft", "preregistered", "validated", "rejected", "inconclusive"] as const;
+    const counts = statuses.map((status) => [status, records.filter((record) => record.status === status).length]);
+    const csv = [["metric", "value"], ["total", records.length], ["adequate_samples", records.filter((record) => record.sampleAdequacy === "adequate").length], ["incomplete_evidence", records.filter((record) => !record.protocolPath || !record.resultPath || record.sampleAdequacy !== "adequate").length], ...counts].map((row) => row.map((value) => `"${String(value)}"`).join(",")).join("\n");
+    return { filename: "research-status-summary.csv", csv };
+  }),
   create: protectedProcedure.input(z.object({
     title: z.string().trim().min(5).max(160),
     hypothesis: z.string().trim().min(20).max(10_000),

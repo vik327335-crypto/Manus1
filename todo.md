@@ -1246,11 +1246,11 @@
 - [x] Цикл 3: добавить статусы и критерии опровержения гипотез.
 - [x] Цикл 4: добавить ссылки на протоколы и результаты в реестре.
 - [x] Цикл 5: добавить search и filtering реестра.
-- [ ] Цикл 6: добавить агрегированный research status dashboard.
+- [x] Цикл 6: добавить агрегированный research status summary API.
 - [ ] Цикл 7: добавить audit лог обновлений research status.
-- [ ] Цикл 8: добавить CSV export research registry.
-- [ ] Цикл 9: добавить CSV export research status summary.
-- [ ] Цикл 10: добавить контроль неполных научных доказательств.
+- [x] Цикл 8: добавить CSV export research registry.
+- [x] Цикл 9: добавить CSV export research status summary.
+- [x] Цикл 10: добавить контроль неполных научных доказательств через incomplete-evidence summary.
 - [ ] Цикл 11: добавить evidence cards validation outcomes.
 - [ ] Цикл 12: добавить проверку консистентности research registry.
 - [ ] Цикл 13: добавить сводку ограничений стратегии.
