@@ -1305,3 +1305,11 @@
 - [x] Цикл 4: добавить owner-scoped защищённый balance summary API.
 - [x] Цикл 5: вывести manual-refresh balance widget на dashboard.
 - [x] Цикл 6: проверить read-only security boundaries, parsers и TypeScript.
+
+## Read-Only Exchange Security Readiness
+- [x] Цикл 1: зафиксировать security readiness roadmap.
+- [x] Цикл 2: добавить журнал lifecycle security-событий ключей.
+- [x] Цикл 3: добавить read-only diagnostics разрешений connection.
+- [x] Цикл 4: добавить rotation workflow для ключей.
+- [x] Цикл 5: добавить security posture dashboard.
+- [x] Цикл 6: провести security regression checks и сохранить версию. Целевой security/research набор: 25 тестов пройдены, TypeScript без ошибок; полный legacy suite выявил 12 ранее несвязанных failures в scanner/day-trading/risk modules.

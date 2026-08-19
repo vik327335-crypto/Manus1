@@ -103,3 +103,7 @@ Exchange connections are optional owner-scoped integrations for Binance, Coinbas
 ## Read-only connected balance dashboard
 
 Balances are retrieved only on explicit dashboard refresh from active owner-scoped connections. The balance service may call provider account-read endpoints and return currency, available amount, held amount when supplied, provider, and retrieval timestamp. It must not invoke any order, cancellation, transfer, deposit, or withdrawal endpoint. Responses must never contain decrypted credentials, signatures, passphrases, raw HTTP authorization headers, or unmasked account identifiers. A retrieval failure is displayed as a provider-specific read-only diagnostic, not a reason to alter a monitor or submit any action.
+
+## Read-only exchange security readiness
+
+Security readiness controls record connection creation, disabling, deletion, rotation, and read-only permission diagnostics as owner-scoped audit evidence. They may identify whether a provider account-read endpoint succeeded or failed, but must never infer, request, or exercise trade, transfer, funding, or withdrawal permissions. Credential rotation replaces encrypted material only after a new read-only key is supplied; it never exposes the prior secret. Any provider response is reduced to safe status metadata before it reaches the UI.

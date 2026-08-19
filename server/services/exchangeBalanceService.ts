@@ -3,6 +3,14 @@ import { generateJwt } from "@coinbase/cdp-sdk/auth";
 import { decryptExchangeCredential } from "./exchangeConnectionCrypto";
 
 export type ReadOnlyBalance = { asset: string; available: string; held: string; provider: "binance" | "coinbase" | "kraken" };
+export type ReadOnlyPermissionDiagnostic = {
+  provider: ReadOnlyBalance["provider"];
+  verdict: "verified_read_only" | "unsafe_permissions_detected" | "manual_review_required";
+  canView: boolean | null;
+  canTrade: boolean | null;
+  canTransferOrWithdraw: boolean | null;
+  message: string;
+};
 type Provider = ReadOnlyBalance["provider"];
 type EncryptedConnection = { provider: Provider; apiKeyCiphertext: string; apiSecretCiphertext: string; apiPassphraseCiphertext: string | null };
 
@@ -28,6 +36,32 @@ export function parseCoinbaseBalances(payload: { accounts?: Array<{ currency?: s
 
 export function parseKrakenBalances(payload: { result?: Record<string, string> }) {
   return Object.entries(payload.result ?? {}).filter(([, amount]) => Number(amount) !== 0).map(([asset, amount]) => ({ asset, available: amount, held: "0", provider: "kraken" as const }));
+}
+
+export function diagnoseBinancePermissions(payload: { canTrade?: boolean; canWithdraw?: boolean }): ReadOnlyPermissionDiagnostic {
+  const canTrade = payload.canTrade ?? null;
+  const canTransferOrWithdraw = payload.canWithdraw ?? null;
+  if (canTrade === true || canTransferOrWithdraw === true) {
+    return { provider: "binance", verdict: "unsafe_permissions_detected", canView: true, canTrade, canTransferOrWithdraw, message: "The account response reported trading or withdrawal capability. Treat this connection as not verified read-only and confirm the API key restrictions in the Binance portal." };
+  }
+  return { provider: "binance", verdict: "manual_review_required", canView: true, canTrade, canTransferOrWithdraw, message: "The account-read endpoint succeeded, but it does not provide authoritative per-key scope attestation. Confirm that the API key has no trade or withdrawal scope in the Binance portal." };
+}
+
+export function diagnoseCoinbasePermissions(payload: { can_view?: boolean; can_trade?: boolean; can_transfer?: boolean }): ReadOnlyPermissionDiagnostic {
+  const canView = payload.can_view ?? false;
+  const canTrade = payload.can_trade ?? false;
+  const canTransferOrWithdraw = payload.can_transfer ?? false;
+  if (canTrade || canTransferOrWithdraw) {
+    return { provider: "coinbase", verdict: "unsafe_permissions_detected", canView, canTrade, canTransferOrWithdraw, message: "Coinbase reported trade or transfer permission. Reconfigure the API key to view-only before using it here." };
+  }
+  if (canView) {
+    return { provider: "coinbase", verdict: "verified_read_only", canView, canTrade, canTransferOrWithdraw, message: "Coinbase reported view permission with no trade or transfer permission." };
+  }
+  return { provider: "coinbase", verdict: "manual_review_required", canView, canTrade, canTransferOrWithdraw, message: "Coinbase did not report usable view permission. Verify the API key in the Coinbase portal." };
+}
+
+export function diagnoseKrakenPermissions(): ReadOnlyPermissionDiagnostic {
+  return { provider: "kraken", verdict: "manual_review_required", canView: true, canTrade: null, canTransferOrWithdraw: null, message: "The Kraken balance endpoint succeeded with a funds-query request, but it does not return per-key permission metadata. Confirm that only Query Funds is enabled in the Kraken portal." };
 }
 
 async function getBinanceBalances(apiKey: string, apiSecret: string) {
@@ -56,10 +90,37 @@ async function getKrakenBalances(apiKey: string, apiSecret: string) {
   return parseKrakenBalances(response);
 }
 
+async function getBinancePermissionDiagnostic(apiKey: string, apiSecret: string) {
+  const query = new URLSearchParams({ timestamp: String(Date.now()), recvWindow: "5000", omitZeroBalances: "true" }).toString();
+  const signature = createHmac("sha256", apiSecret).update(query).digest("hex");
+  const payload = await readOnlyFetch(`https://api.binance.com/api/v3/account?${query}&signature=${signature}`, { headers: { "X-MBX-APIKEY": apiKey } });
+  return diagnoseBinancePermissions(payload as { canTrade?: boolean; canWithdraw?: boolean });
+}
+
+async function getCoinbasePermissionDiagnostic(apiKey: string, apiSecret: string) {
+  const requestPath = "/api/v3/brokerage/key_permissions";
+  const token = await generateJwt({ apiKeyId: apiKey, apiKeySecret: apiSecret, requestMethod: "GET", requestHost: "api.coinbase.com", requestPath, expiresIn: 120 });
+  const payload = await readOnlyFetch(`https://api.coinbase.com${requestPath}`, { headers: { Authorization: `Bearer ${token}` } });
+  return diagnoseCoinbasePermissions(payload as { can_view?: boolean; can_trade?: boolean; can_transfer?: boolean });
+}
+
+async function getKrakenPermissionDiagnostic(apiKey: string, apiSecret: string) {
+  await getKrakenBalances(apiKey, apiSecret);
+  return diagnoseKrakenPermissions();
+}
+
 export async function retrieveReadOnlyBalances(connection: EncryptedConnection) {
   const apiKey = decryptExchangeCredential(connection.apiKeyCiphertext);
   const apiSecret = decryptExchangeCredential(connection.apiSecretCiphertext);
   if (connection.provider === "binance") return getBinanceBalances(apiKey, apiSecret);
   if (connection.provider === "coinbase") return getCoinbaseBalances(apiKey, apiSecret);
   return getKrakenBalances(apiKey, apiSecret);
+}
+
+export async function checkReadOnlyPermissions(connection: EncryptedConnection) {
+  const apiKey = decryptExchangeCredential(connection.apiKeyCiphertext);
+  const apiSecret = decryptExchangeCredential(connection.apiSecretCiphertext);
+  if (connection.provider === "binance") return getBinancePermissionDiagnostic(apiKey, apiSecret);
+  if (connection.provider === "coinbase") return getCoinbasePermissionDiagnostic(apiKey, apiSecret);
+  return getKrakenPermissionDiagnostic(apiKey, apiSecret);
 }

@@ -640,6 +640,17 @@ export const exchangeConnections = mysqlTable("exchange_connections", {
 
 export type ExchangeConnection = typeof exchangeConnections.$inferSelect;
 
+export const exchangeConnectionAudits = mysqlTable("exchange_connection_audits", {
+  id: int("id").autoincrement().primaryKey(),
+  connectionId: int("connectionId").notNull(),
+  userId: int("userId").notNull(),
+  action: mysqlEnum("action", ["created", "disabled", "enabled", "rotated", "deleted", "permission_check", "balance_check"]).notNull(),
+  details: json("details").$type<Record<string, string | number | boolean>>().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [index("exchange_connection_audits_connection_created_idx").on(table.connectionId, table.createdAt), index("exchange_connection_audits_user_created_idx").on(table.userId, table.createdAt)]);
+
+export type ExchangeConnectionAudit = typeof exchangeConnectionAudits.$inferSelect;
+
 /**
  * Virtual long-only trades opened and closed by a monitor's fixed strategy.
  * quantityE8 stores whole tokens scaled by 1e8 to avoid floating persistence.
