@@ -1313,3 +1313,10 @@
 - [x] Цикл 4: добавить rotation workflow для ключей.
 - [x] Цикл 5: добавить security posture dashboard.
 - [x] Цикл 6: провести security regression checks и сохранить версию. Целевой security/research набор: 25 тестов пройдены, TypeScript без ошибок; полный legacy suite выявил 12 ранее несвязанных failures в scanner/day-trading/risk modules.
+
+## Read-Only Exchange Balance USD Valuation
+- [x] Зафиксировать источник, freshness metadata и ограничения USD-оценки без торговых действий.
+- [x] Добавить server-side сервис получения market price для поддерживаемых asset identifiers.
+- [x] Расширить owner-scoped balance summary USD-стоимостью, unpriced assets и временем котировки.
+- [x] Показать стоимость по connection и aggregate total на Dashboard с явным research-only disclosure.
+- [x] Добавить unit tests valuation и провести TypeScript/regression validation: 28 целевых research/security/valuation тестов пройдены, TypeScript без ошибок.

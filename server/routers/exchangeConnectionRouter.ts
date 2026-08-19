@@ -4,7 +4,8 @@ import { exchangeConnectionAudits, exchangeConnections } from "../../drizzle/sch
 import { getDb } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
 import { encryptExchangeCredential, fingerprintExchangeKey, maskExchangeKey } from "../services/exchangeConnectionCrypto";
-import { checkReadOnlyPermissions, retrieveReadOnlyBalances } from "../services/exchangeBalanceService";
+import { checkReadOnlyPermissions, retrieveReadOnlyBalances, type ReadOnlyBalance } from "../services/exchangeBalanceService";
+import { getUsdPriceQuotes, normalizeExchangeAsset, valueBalancesInUsd } from "../services/exchangeBalanceValuationService";
 
 const providerSchema = z.enum(["binance", "coinbase", "kraken"]);
 
@@ -55,7 +56,7 @@ export const exchangeConnectionRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database unavailable");
     const rows = await db.select().from(exchangeConnections).where(and(eq(exchangeConnections.userId, ctx.user.id), eq(exchangeConnections.status, "active")));
-    const connections = await Promise.all(rows.map(async (connection) => {
+    const connectionResults = await Promise.all(rows.map(async (connection) => {
       try {
         const balances = await retrieveReadOnlyBalances(connection);
         await recordAudit(db, connection.id, ctx.user.id, "balance_check", { success: true, assetCount: balances.length });
@@ -65,7 +66,28 @@ export const exchangeConnectionRouter = router({
         return { id: connection.id, provider: connection.provider, keyMasked: maskExchangeKey(connection.keyFingerprint), status: "error" as const, balances: [], message: "Read-only balance retrieval failed. Verify the key is active and has only the documented account-read permission." };
       }
     }));
-    return { retrievedAt: new Date(), connections };
+    const successfulBalances = connectionResults.reduce<ReadOnlyBalance[]>((all, connection) => connection.status === "ok" ? [...all, ...connection.balances] : all, []);
+    const quoteResult = await getUsdPriceQuotes(successfulBalances.map((balance) => balance.asset));
+    const connections = connectionResults.map((connection) => {
+      if (connection.status === "error") return connection;
+      const balances = valueBalancesInUsd<ReadOnlyBalance>(connection.balances as ReadOnlyBalance[], quoteResult.quotes);
+      const unpricedAssets = Array.from(new Set(balances.filter((balance) => balance.usdValue === null).map((balance) => balance.normalizedAsset))).sort();
+      const valuedTotalUsd = balances.reduce((total, balance) => total + (balance.usdValue ?? 0), 0);
+      return { ...connection, balances, valuedTotalUsd, unpricedAssets, pricedBalanceCount: balances.filter((balance) => balance.usdValue !== null).length };
+    });
+    const valuedConnections = connections.filter((connection) => connection.status === "ok");
+    const unpricedAssets = Array.from(new Set(valuedConnections.flatMap((connection) => connection.unpricedAssets))).sort();
+    return {
+      retrievedAt: new Date(),
+      connections,
+      valuation: {
+        totalUsd: valuedConnections.reduce((total, connection) => total + connection.valuedTotalUsd, 0),
+        pricedBalanceCount: valuedConnections.reduce((total, connection) => total + connection.pricedBalanceCount, 0),
+        unpricedAssets,
+        priceSource: "CoinGecko Simple Price with explicit USD stablecoin parity mapping",
+        priceRetrievedAt: quoteResult.retrievedAt,
+      },
+    };
   }),
   permissionCheck: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const db = await getDb();
