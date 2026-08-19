@@ -4,6 +4,7 @@ import { exchangeConnections } from "../../drizzle/schema";
 import { getDb } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
 import { encryptExchangeCredential, fingerprintExchangeKey, maskExchangeKey } from "../services/exchangeConnectionCrypto";
+import { retrieveReadOnlyBalances } from "../services/exchangeBalanceService";
 
 const providerSchema = z.enum(["binance", "coinbase", "kraken"]);
 
@@ -13,6 +14,20 @@ export const exchangeConnectionRouter = router({
     if (!db) throw new Error("Database unavailable");
     const rows = await db.select().from(exchangeConnections).where(eq(exchangeConnections.userId, ctx.user.id)).orderBy(desc(exchangeConnections.updatedAt));
     return rows.map((connection) => ({ id: connection.id, provider: connection.provider, keyMasked: maskExchangeKey(connection.keyFingerprint), permissionMode: connection.permissionMode, status: connection.status, createdAt: connection.createdAt, updatedAt: connection.updatedAt }));
+  }),
+  balances: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database unavailable");
+    const rows = await db.select().from(exchangeConnections).where(and(eq(exchangeConnections.userId, ctx.user.id), eq(exchangeConnections.status, "active")));
+    const connections = await Promise.all(rows.map(async (connection) => {
+      try {
+        const balances = await retrieveReadOnlyBalances(connection);
+        return { id: connection.id, provider: connection.provider, keyMasked: maskExchangeKey(connection.keyFingerprint), status: "ok" as const, balances };
+      } catch {
+        return { id: connection.id, provider: connection.provider, keyMasked: maskExchangeKey(connection.keyFingerprint), status: "error" as const, balances: [], message: "Read-only balance retrieval failed. Verify the key is active and has only the documented account-read permission." };
+      }
+    }));
+    return { retrievedAt: new Date(), connections };
   }),
   create: protectedProcedure.input(z.object({ provider: providerSchema, apiKey: z.string().trim().min(8).max(1024), apiSecret: z.string().trim().min(8).max(2048), apiPassphrase: z.string().trim().max(1024).optional() })).mutation(async ({ ctx, input }) => {
     const db = await getDb();

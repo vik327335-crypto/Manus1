@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Loader2, Search, Star, Bookmark } from "lucide-react";
+import { Loader2, Search, Star, Bookmark, RefreshCw, Wallet } from "lucide-react";
 import { useLocation } from "wouter";
 import { MarketTrendIndicator } from "@/components/MarketTrendIndicator";
 import { ScoreIndicator } from "@/components/ScoreIndicator";
@@ -31,6 +31,7 @@ export default function Dashboard() {
   // Fetch assets and market trend
   const { data: assets, isLoading: assetsLoading } = trpc.assets.list.useQuery();
   const { data: marketTrend, isLoading: trendLoading } = trpc.market.trend.useQuery();
+  const balanceSummary = trpc.exchangeConnections.balances.useQuery(undefined, { enabled: false, refetchOnWindowFocus: false });
 
   // Mock data for development
   const mockAssets = [
@@ -240,6 +241,12 @@ export default function Dashboard() {
           <h2 className="mb-4 text-lg font-semibold">Live Price Ticker</h2>
           <PriceTicker tickers={["BTC", "ETH", "ADA"]} />
         </div>
+
+        {user && <div className="mb-8">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-semibold">Connected exchange balances</h2><p className="text-sm text-muted-foreground">Read-only account data. Refreshing does not submit trades, transfers, or withdrawals.</p></div><Button variant="outline" size="sm" disabled={balanceSummary.isFetching} onClick={() => balanceSummary.refetch()}><RefreshCw className="mr-2 h-4 w-4" />{balanceSummary.isFetching ? "Refreshing…" : "Refresh balances"}</Button></div>
+          {balanceSummary.error ? <Card className="p-4 text-sm text-destructive">Balances could not be retrieved. Verify that an active connection has the required account-read permission.</Card> : !balanceSummary.data ? <Card className="p-4 text-sm text-muted-foreground">Select “Refresh balances” to retrieve current data from active read-only connections.</Card> : balanceSummary.data.connections.length ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{balanceSummary.data.connections.map((connection) => <Card key={connection.id} className="p-4"><div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2"><Wallet className="h-4 w-4" /><span className="font-medium capitalize">{connection.provider}</span></div><span className="text-xs text-muted-foreground">{connection.keyMasked}</span></div>{connection.status === "error" ? <p className="text-sm text-destructive">{connection.message}</p> : connection.balances.length ? <div className="space-y-2">{connection.balances.map((balance) => <div key={`${balance.provider}-${balance.asset}`} className="flex justify-between text-sm"><span>{balance.asset}</span><span className="font-medium">{Number(balance.available).toLocaleString(undefined, { maximumFractionDigits: 8 })}{Number(balance.held) ? ` + ${Number(balance.held).toLocaleString(undefined, { maximumFractionDigits: 8 })} held` : ""}</span></div>)}</div> : <p className="text-sm text-muted-foreground">No non-zero balances returned.</p>}</Card>)}</div> : <Card className="p-4 text-sm text-muted-foreground">No active read-only exchange connections are available. Add one at Exchange Connections.</Card>}
+          {balanceSummary.data && <p className="mt-3 text-xs text-muted-foreground">Retrieved {new Date(balanceSummary.data.retrievedAt).toLocaleString()}. Values are reported by providers in native asset units and are not portfolio valuation advice.</p>}
+        </div>}
 
         {/* Market Trend Section */}
         <div className="mb-8">

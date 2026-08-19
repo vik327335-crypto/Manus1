@@ -99,3 +99,7 @@ The next governance cycles may strengthen evidence traceability, lifecycle valid
 ## Read-only exchange connection security model
 
 Exchange connections are optional owner-scoped integrations for Binance, Coinbase, and Kraken. Their purpose is account-data retrieval only; they must not submit orders, cancel orders, move funds, or request withdrawal permissions. Connection records retain a provider, masked key identifier, non-secret status metadata, and encrypted credential material only. Secrets are never returned by list or audit APIs, never included in CSV exports, and are shown in the dashboard only as a masked identifier. A connection must be explicitly disabled before it can be deleted, and no connection modifies the research monitor's virtual positions, signals, schedules, or execution rules.
+
+## Read-only connected balance dashboard
+
+Balances are retrieved only on explicit dashboard refresh from active owner-scoped connections. The balance service may call provider account-read endpoints and return currency, available amount, held amount when supplied, provider, and retrieval timestamp. It must not invoke any order, cancellation, transfer, deposit, or withdrawal endpoint. Responses must never contain decrypted credentials, signatures, passphrases, raw HTTP authorization headers, or unmasked account identifiers. A retrieval failure is displayed as a provider-specific read-only diagnostic, not a reason to alter a monitor or submit any action.

@@ -1297,3 +1297,11 @@
 - [x] Цикл 3: добавить owner-scoped API create/list/disable/delete подключений.
 - [x] Цикл 4: добавить интерфейс подключения и masked display.
 - [x] Цикл 5: проверить security guards: 22 unit tests и TypeScript без ошибок.
+
+## Read-Only Exchange Balance Dashboard
+- [x] Цикл 1: зафиксировать read-only балансный security model.
+- [x] Цикл 2: проверить официальные balance API и права доступа.
+- [x] Цикл 3: добавить provider-specific read-only balance retrieval service.
+- [x] Цикл 4: добавить owner-scoped защищённый balance summary API.
+- [x] Цикл 5: вывести manual-refresh balance widget на dashboard.
+- [x] Цикл 6: проверить read-only security boundaries, parsers и TypeScript.
