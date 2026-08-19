@@ -40,6 +40,7 @@ const PortfolioRebalancing = lazy(() => import("./pages/PortfolioRebalancing"));
 const WebhookIntegrations = lazy(() => import("./pages/WebhookIntegrations"));
 const PaperTradingMonitoring = lazy(() => import("./pages/PaperTradingMonitoring"));
 const ResearchRegistry = lazy(() => import("./pages/ResearchRegistry"));
+const ExchangeConnections = lazy(() => import("./pages/ExchangeConnections"));
 
 function Router() {
   return (
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/paper-trading" component={PaperTrading} />
       <Route path="/paper-trading-monitoring" component={PaperTradingMonitoring} />
       <Route path="/research-registry" component={ResearchRegistry} />
+      <Route path="/exchange-connections" component={ExchangeConnections} />
       <Route path="/day-trading/chart" component={DayTradingChart} />
       <Route path="/day-trading/positions" component={DayTradingPositions} />
       <Route path="/strategy-comparison" component={StrategyComparison} />

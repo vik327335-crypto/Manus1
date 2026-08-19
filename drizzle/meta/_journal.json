@@ -127,6 +127,13 @@
       "when": 1786790532987,
       "tag": "0017_lyrical_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1787158671419,
+      "tag": "0018_tranquil_madrox",
+      "breakpoints": true
     }
   ]
 }

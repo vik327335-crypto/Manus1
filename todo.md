@@ -1290,3 +1290,10 @@
 - [x] Цикл 18: добавить unit tests transition evidence-gate и lifecycle rules.
 - [x] Цикл 19: провести UI consistency review governance workflow.
 - [x] Цикл 20: провести сквозную валидацию: 20 unit tests и TypeScript без ошибок.
+
+## Read-Only Exchange Connection Security
+- [x] Цикл 1: зафиксировать security model read-only exchange connections.
+- [x] Цикл 2: создать encrypted owner-scoped схему хранения подключений.
+- [x] Цикл 3: добавить owner-scoped API create/list/disable/delete подключений.
+- [x] Цикл 4: добавить интерфейс подключения и masked display.
+- [x] Цикл 5: проверить security guards: 22 unit tests и TypeScript без ошибок.

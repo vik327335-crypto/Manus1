@@ -95,3 +95,7 @@ Registry discovery supports a case-insensitive title/hypothesis search and optio
 ## Research governance development guardrails
 
 The next governance cycles may strengthen evidence traceability, lifecycle validation, audit review, descriptive exports, and remediation guidance. A change to a registry status must remain attributable to the owner, auditable, and separate from monitor execution. In particular, `validated` remains a documentation label, not an approval to trade; it requires explicit owner confirmation and complete recorded evidence. No planned control may introduce SMTP delivery, exchange credentials, real orders, or a modification of virtual execution logic.
+
+## Read-only exchange connection security model
+
+Exchange connections are optional owner-scoped integrations for Binance, Coinbase, and Kraken. Their purpose is account-data retrieval only; they must not submit orders, cancel orders, move funds, or request withdrawal permissions. Connection records retain a provider, masked key identifier, non-secret status metadata, and encrypted credential material only. Secrets are never returned by list or audit APIs, never included in CSV exports, and are shown in the dashboard only as a masked identifier. A connection must be explicitly disabled before it can be deleted, and no connection modifies the research monitor's virtual positions, signals, schedules, or execution rules.

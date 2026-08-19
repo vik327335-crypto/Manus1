@@ -624,6 +624,22 @@ export const researchHypothesisAudits = mysqlTable("research_hypothesis_audits",
 
 export type ResearchHypothesisAudit = typeof researchHypothesisAudits.$inferSelect;
 
+export const exchangeConnections = mysqlTable("exchange_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  provider: mysqlEnum("provider", ["binance", "coinbase", "kraken"]).notNull(),
+  apiKeyCiphertext: text("apiKeyCiphertext").notNull(),
+  apiSecretCiphertext: text("apiSecretCiphertext").notNull(),
+  apiPassphraseCiphertext: text("apiPassphraseCiphertext"),
+  keyFingerprint: varchar("keyFingerprint", { length: 24 }).notNull(),
+  permissionMode: mysqlEnum("permissionMode", ["read_only"]).notNull().default("read_only"),
+  status: mysqlEnum("status", ["active", "disabled"]).notNull().default("active"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [index("exchange_connections_user_provider_idx").on(table.userId, table.provider)]);
+
+export type ExchangeConnection = typeof exchangeConnections.$inferSelect;
+
 /**
  * Virtual long-only trades opened and closed by a monitor's fixed strategy.
  * quantityE8 stores whole tokens scaled by 1e8 to avoid floating persistence.
