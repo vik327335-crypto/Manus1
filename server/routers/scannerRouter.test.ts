@@ -24,6 +24,14 @@ vi.mock("../services/coingecko", () => ({
   }))),
 }));
 
+vi.mock("../db", () => ({
+  getAssetsWithScores: vi.fn(async () => []),
+  searchAssets: vi.fn(async (query: string) => [
+    { id: 1, ticker: query.toUpperCase(), name: `${query.toUpperCase()} Test Asset` },
+  ]),
+  getAssetById: vi.fn(async () => null),
+}));
+
 import { scannerRouter } from "./scannerRouter";
 
 describe("Scanner Router", () => {

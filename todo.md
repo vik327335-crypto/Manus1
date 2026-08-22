@@ -1410,3 +1410,14 @@
 - [x] Устранить наиболее рискованные pseudo-live positions и pseudo-backtest performance claims: positions/P&L теперь unavailable без verified source; Backtesting больше не показывает, не экспортирует и не симулирует показатели без воспроизводимого historical run.
 - [x] Добавить explicit unavailable/research-only disclosure и regression safeguards: два экрана содержат explicit unavailable policy и source-level Vitest guard против возврата mock/random данных.
 - [x] Выполнить full quality validation и сохранить checkpoint: lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.16% statements/lines, 19.82% functions, 58.73% branches; build и HTTP 200 успешны.
+
+## Backtesting Dashboard Accuracy Hardening
+- [x] Проаудировать mock performance, drawdown, equity and Monte Carlo outputs в BacktestingDashboard: dashboard содержал фиксированные performance/trade series и случайный Monte Carlo generator, выдаваемые за strategy analysis.
+- [x] Убрать synthetic performance claims и случайные quantitative scenarios без verified run: dashboard больше не отображает backtest metrics, curves, trades, simulation results или export action без auditable historical run.
+- [x] Добавить explicit unavailable disclosure и regression safeguard: PositionsBacktesting guard запрещает возврат mockBacktestResults, Math.random и Monte Carlo generator; scanner tests дополнительно изолированы от database latency.
+- [x] Выполнить full quality validation и сохранить checkpoint: lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.27% statements/lines, 19.82% functions, 58.83% branches; build и HTTP 200 успешны.
+
+## Routed Backtesting Engine Accuracy Hardening
+- [x] Убрать random historical candles из `/backtesting` и запретить выполнение стратегии на synthetic data: routed UI больше не создаёт OHLCV candles через Math.random и не вызывает strategy mutation на synthetic input.
+- [x] Заменить pseudo-backtest metrics на explicit unavailable state без verified historical data and run metadata: параметры, расчёт и metric cards объявлены недоступными до auditable source/timeframe/assumptions/run metadata.
+- [x] Расширить regression guard для routed backtesting engine и выполнить full quality validation: guard блокирует возврат Math.random и SMA/RSI mutation calls; visual review, lint, TypeScript, 290 tests, coverage, build и HTTP 200 проходят.
