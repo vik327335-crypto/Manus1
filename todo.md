@@ -1500,3 +1500,10 @@
 - [x] Заменить social strategy sharing explicit unavailable/research-only state без social proof или execution/copy implications: UI требует creator consent, identity, attribution, moderation, provenance, freshness и explicit no-execution boundary.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует public strategy queries/mutations и rating rendering; screenshot подтверждает unavailable policy; lint/TypeScript clean; 50 files / 308 tests проходят; coverage 15.98% statements/lines, 19.82% functions, 58.71% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## NFTPortfolio Accuracy Hardening
+- [x] Проаудировать routed NFTPortfolio на wallet holdings, values, P&L, floor prices, rarity, trends и recommendation claims: route показывал values and recommendations from source-ambiguous portfolio contracts without valuation metadata.
+- [x] Убрать source-ambiguous NFT metrics, item valuation, market trend и recommendation presentation без declared source, timestamp, freshness, valuation methodology и owner-scoped proof: wallet query UI, value/P&L/floor/rarity metrics, trends и recommendations удалены.
+- [x] Заменить NFT portfolio UI explicit unavailable/research-only state без valuation, performance или recommendation claims: UI требует owner-scoped holdings, chain/token scope, pricing venue, currency policy, timestamp и liquidity assumptions.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует NFT portfolio/metrics/trends/recommendation queries and price fields; screenshot подтверждает unavailable policy; lint/TypeScript clean; 51 files / 309 tests проходят; coverage 16.03% statements/lines, 19.82% functions, 58.73% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
