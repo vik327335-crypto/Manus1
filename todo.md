@@ -1351,3 +1351,9 @@
 - [x] Подтвердить источник отсутствия Tailwind styling в dev runtime: в client/src/index.css отсутствует обязательный Tailwind 4 import.
 - [x] Исправить pipeline подключения frontend CSS и проверить визуальный результат: Tailwind utilities снова применяются на главной странице.
 - [x] Повторно выполнить TypeScript, regression suite и production build: validation проходит успешно.
+
+## ESLint Quality Gate
+- [x] Проверить текущие lint-зависимости, конфигурацию и scope исходных файлов: ESLint/config отсутствуют; lint должен охватывать client, server, shared и drizzle TypeScript/TSX files.
+- [x] Добавить ESLint-конфигурацию, правила и npm lint script: source lint проходит; legacy test fixtures с JSX в .test.ts остаются под Vitest coverage.
+- [x] Добавить lint step в GitHub Actions CI workflow.
+- [x] Запустить локально lint, TypeScript, regression suite и build; сохранить checkpoint: pnpm install --frozen-lockfile, lint, TypeScript, 285 regression tests и production build проходят.
