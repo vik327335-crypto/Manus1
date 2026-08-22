@@ -1320,3 +1320,10 @@
 - [x] Расширить owner-scoped balance summary USD-стоимостью, unpriced assets и временем котировки.
 - [x] Показать стоимость по connection и aggregate total на Dashboard с явным research-only disclosure.
 - [x] Добавить unit tests valuation и провести TypeScript/regression validation: 28 целевых research/security/valuation тестов пройдены, TypeScript без ошибок.
+
+## Legacy Regression Repair: Scanner, Day Trading, Risk Management
+- [x] Локализовать legacy failures и задокументировать причину по модулю: текущий полный suite содержит 40 failures — 11 scanner (live CoinGecko timeout/rate-limit), 6 day-trading (signal contract/caching), 1 risk-management (risk/reward expectation), и 22 независимых provider/strategy failures вне запрошенного scope.
+- [x] Исправить scanner module failures и подтвердить его тесты: 16 scanner tests проходят с детерминированными provider mocks; TypeScript без ошибок.
+- [x] Исправить day-trading module failures и подтвердить его тесты: legacy aliases bb/vp снова поддерживаются generateSignal; stream memory включает buffer; 31 indicator/integration tests проходят.
+- [x] Исправить risk-management module failures и подтвердить его тесты: некорректный R:R expectation исправлен на 0.5/invalid; 18 risk-management tests проходят.
+- [x] Запустить полный test suite, TypeScript check и сохранить checkpoint с исправлениями: 280 тестов проходят; остаются 5 независимых failures в CoinGecko/Polygon/XT.com/strategy routers, не относящиеся к запрошенным scanner/day-trading/risk modules; TypeScript без ошибок.

@@ -60,8 +60,8 @@ describe('Risk Management', () => {
     it('should mark invalid ratio when less than 1.5', () => {
       const rrr = calculateRiskRewardRatio(45000, 44800, 45100);
 
-      expect(rrr.ratio).toBe(1.5);
-      expect(rrr.isValid).toBe(true);
+      expect(rrr.ratio).toBe(0.5);
+      expect(rrr.isValid).toBe(false);
     });
 
     it('should mark invalid ratio when less than 1.5', () => {

@@ -102,6 +102,8 @@ describe('Day Trading Integration Tests', () => {
       positions.forEach((pos, index) => {
         pos.currentPrice = pos.entryPrice + (index + 1) * 50;
         const pnl = calculatePnL(pos);
+        pos.pnl = pnl.pnl;
+        pos.pnlPercentage = pnl.pnlPercentage;
         expect(pnl.pnl).toBeGreaterThan(0);
       });
 

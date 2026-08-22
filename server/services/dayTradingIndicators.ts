@@ -306,10 +306,24 @@ export interface Signal {
   timestamp: number;
 }
 
+type LegacySignalIndicators = Partial<Indicators> & {
+  rsi: RSIValue[];
+  macd: MACDValue[];
+  bb?: BollingerBandsValue[];
+  vp?: VolumeProfileValue[];
+};
+
 export function generateSignal(
   candles: Candle[],
-  indicators: Indicators
+  sourceIndicators: Indicators | LegacySignalIndicators
 ): Signal {
+  const legacyIndicators = sourceIndicators as LegacySignalIndicators;
+  const indicators: Indicators = {
+    rsi: sourceIndicators.rsi ?? [],
+    macd: sourceIndicators.macd ?? [],
+    bollingerBands: sourceIndicators.bollingerBands ?? legacyIndicators.bb ?? [],
+    volumeProfile: sourceIndicators.volumeProfile ?? legacyIndicators.vp ?? [],
+  };
   if (
     candles.length === 0 ||
     indicators.rsi.length === 0 ||

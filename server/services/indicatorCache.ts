@@ -423,7 +423,7 @@ export class StreamingIndicatorProcessor {
       processedPrices: this.processedCount,
       bufferSize: this.buffer.length,
       cacheStats: this.calculator.getCacheStats(),
-      memoryUsage: this.calculator.getMemoryUsage(),
+      memoryUsage: this.calculator.getMemoryUsage() + this.buffer.length * 8,
     };
   }
 

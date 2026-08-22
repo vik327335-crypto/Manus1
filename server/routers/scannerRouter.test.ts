@@ -1,4 +1,29 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+
+vi.mock("../services/glassnode", () => ({
+  getNetworkActivity: vi.fn(async () => ({ activeAddresses: 12_000_000, transactionCount: 120_000, totalVolume: 600_000 })),
+  getMarketMetrics: vi.fn(async () => ({ marketCap: 750_000, difficulty: 1_100_000_000_000, supply: 21_000_000 })),
+}));
+
+vi.mock("../services/coingecko", () => ({
+  getCurrentPrice: vi.fn(async (ticker: string) => ({
+    price: ticker === "BTC" ? 65_000 : 100,
+    marketCap: 750_000,
+    volume24h: 500_000,
+    priceChange24h: ticker === "BTC" ? 5 : 1,
+    priceChangePercent24h: ticker === "BTC" ? 5 : 1,
+  })),
+  get24hTrend: vi.fn(async () => ({ momentum: "up", volatility: 2, trend: 1 })),
+  getPriceHistory: vi.fn(async () => [{ date: "2026-01-01", price: 100 }]),
+  getMarketData: vi.fn(async (tickers: string[]) => tickers.map((ticker, index) => ({
+    ticker,
+    price: 100 + index,
+    marketCap: 1_000_000 - index * 1_000,
+    volume24h: 1_000_000 - index * 10_000,
+    priceChange24h: 10 - index,
+  }))),
+}));
+
 import { scannerRouter } from "./scannerRouter";
 
 describe("Scanner Router", () => {
