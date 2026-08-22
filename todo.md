@@ -1427,3 +1427,9 @@
 - [x] Определить, какие portfolio значения имеют verified owner-scoped источник, а какие требуют unavailable/research-only state: локальные portfolio names, descriptions, quantities и cost basis — user-entered research data; current value, gain/loss, return и Glassnode-derived overview требуют explicit unavailable state без verified price source.
 - [x] Устранить наиболее рискованные misleading portfolio отображения и добавить regression safeguard: `/portfolio` больше не отображает placeholder valuation/P&L/current price/Glassnode overview, содержит data-quality disclosure и защищён source-level Vitest guard.
 - [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает valuation-unavailable policy; lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.31% statements/lines, 19.82% functions, 58.72% branches; build и HTTP 200 успешны.
+
+## PortfolioTracker Accuracy Hardening
+- [x] Проаудировать routed PortfolioTracker и upstream calculations на предмет seeded/local currentPrice и synthetic risk outputs: экран имел seeded BTC/ETH/SOL data и отправлял ручные currentPrice в backend для derived value/risk analytics.
+- [x] Убрать pseudo-live valuation, P&L, Sharpe, drawdown, VaR и rebalancing recommendations без verified source metadata: tracker больше не использует seeded prices, portfolio-management queries, charts или derived risk metrics.
+- [x] Добавить manual-research/unavailable disclosure и regression safeguard: manual research records явно отделены от live holdings; guard запрещает currentPrice и synthetic analytics; Vitest include расширен на client/**/*.accuracy.test.ts и 3 client accuracy files проходят.
+- [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает manual-research policy; lint и TypeScript clean; 40 files / 298 tests проходят; coverage 15.37% statements/lines, 19.82% functions, 58.69% branches; build и HTTP 200 успешны.
