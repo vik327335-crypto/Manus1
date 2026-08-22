@@ -1493,3 +1493,10 @@
 - [x] Заменить community discovery explicit unavailable/research-only state без synthetic social proof или copy-trading implications: UI требует creator consent, owner-scoped identity, moderation and engagement methodology, provenance и freshness.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует community queries, rating/copy rendering; screenshot подтверждает unavailable policy; lint/TypeScript clean; 49 files / 307 tests проходят; coverage 15.95% statements/lines, 19.82% functions, 58.85% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## StrategySharing Accuracy Hardening
+- [x] Проаудировать routed StrategySharing на source-ambiguous public strategy content, ratings, views, copies и sharing/copy actions: route поддерживал public publication/discovery и social engagement signals без auditability safeguards.
+- [x] Убрать public discovery, ratings, engagement counters, sharing, liking и copying без consent-backed creator record, moderation, provenance, timestamp и freshness metadata: strategy queries, public cards, rating/view/copy counters и mutation actions удалены.
+- [x] Заменить social strategy sharing explicit unavailable/research-only state без social proof или execution/copy implications: UI требует creator consent, identity, attribution, moderation, provenance, freshness и explicit no-execution boundary.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует public strategy queries/mutations и rating rendering; screenshot подтверждает unavailable policy; lint/TypeScript clean; 50 files / 308 tests проходят; coverage 15.98% statements/lines, 19.82% functions, 58.71% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
