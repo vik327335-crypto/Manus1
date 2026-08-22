@@ -1451,3 +1451,10 @@
 - [x] Убрать static score, market cap, price change, gainers/losers и trend claims без verified data provenance: `/analytics` больше не показывает synthetic market KPIs, distributions, trends или rankings.
 - [x] Добавить explicit unavailable disclosure и regression safeguard: route объясняет requirements source/timestamp/freshness/universe, а client test запрещает MOCK_DATA/priceChange24h/marketCap/avgScore.
 - [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает unavailable policy; lint и TypeScript clean; 43 files / 301 tests проходят; coverage 15.58% statements/lines, 19.82% functions, 58.91% branches; build и HTTP 200 успешны.
+
+## Dashboard Accuracy Hardening
+- [x] Проаудировать routed Dashboard, mockAssets/mockMarketTrend, derived filters и export path на предмет synthetic market, CAN SLIM score и trend claims: экран показывал и экспортировал hardcoded цены, 24h changes, market caps, scores и BTC trend.
+- [x] Убрать synthetic asset prices, 24h changes, market caps, scores, BTC trend и export без verified source, timestamp и freshness metadata: mock market overview, cards, filters, score sorting и export удалены из routed UI.
+- [x] Сохранить independently verified read-only exchange balance widgets и заменить прочие market sections explicit unavailable/research-only состоянием: balance widget сохранён с source/timestamp/freshness disclosure; market sections требуют auditable dataset.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует mockAssets/mockMarketTrend/DashboardExportButton/market and score indicators; screenshot подтверждает unavailable policy; lint/TypeScript clean; 44 files / 302 tests проходят; coverage 15.62% statements/lines, 19.82% functions, 58.88% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.

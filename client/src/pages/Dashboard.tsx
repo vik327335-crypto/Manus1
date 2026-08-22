@@ -1,217 +1,28 @@
-import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Loader2, Search, Star, Bookmark, RefreshCw, Wallet } from "lucide-react";
+import { RefreshCw, Wallet } from "lucide-react";
 import { useLocation } from "wouter";
-import { MarketTrendIndicator } from "@/components/MarketTrendIndicator";
-import { ScoreIndicator } from "@/components/ScoreIndicator";
-import { DashboardExportButton } from "@/components/DashboardExportButton";
 import { PriceTicker } from "@/components/PriceTicker";
-import { cn } from "@/lib/utils";
-
-type SortBy = "total" | "c" | "a" | "n" | "s" | "l" | "i" | "m";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<SortBy>("total");
-  const [filterCategory, setFilterCategory] = useState<string>("all");
-
-  // Fetch assets and market trend
-  const { data: _assets, isLoading: assetsLoading } = trpc.assets.list.useQuery();
-  const { data: _marketTrend, isLoading: trendLoading } = trpc.market.trend.useQuery();
-  const balanceSummary = trpc.exchangeConnections.balances.useQuery(undefined, { enabled: false, refetchOnWindowFocus: false });
-
-  // Mock data for development
-  const mockAssets = useMemo(() => [
-    {
-      id: 1,
-      ticker: "BTC",
-      name: "Bitcoin",
-      logo: "https://cdn.coinbase.com/api/v2/assets/images/bitcoin.png",
-      category: "Layer1",
-      currentPrice: 6250000,
-      priceChange24h: 250,
-      marketCap: 1200000,
-      totalScore: 79,
-      cScore: 72,
-      aScore: 65,
-      nScore: 58,
-      sScore: 85,
-      lScore: 88,
-      iScore: 92,
-      mScore: 95,
-    },
-    {
-      id: 2,
-      ticker: "ETH",
-      name: "Ethereum",
-      logo: "https://cdn.coinbase.com/api/v2/assets/images/ethereum.png",
-      category: "Layer1",
-      currentPrice: 225000,
-      priceChange24h: 350,
-      marketCap: 450000,
-      totalScore: 81,
-      cScore: 78,
-      aScore: 72,
-      nScore: 85,
-      sScore: 68,
-      lScore: 82,
-      iScore: 88,
-      mScore: 92,
-    },
-    {
-      id: 3,
-      ticker: "SOL",
-      name: "Solana",
-      logo: "https://cdn.coinbase.com/api/v2/assets/images/solana.png",
-      category: "Layer1",
-      currentPrice: 15000,
-      priceChange24h: 450,
-      marketCap: 85000,
-      totalScore: 86,
-      cScore: 88,
-      aScore: 82,
-      nScore: 92,
-      sScore: 75,
-      lScore: 95,
-      iScore: 78,
-      mScore: 90,
-    },
-    {
-      id: 4,
-      ticker: "ARB",
-      name: "Arbitrum",
-      logo: "https://cdn.coinbase.com/api/v2/assets/images/arbitrum.png",
-      category: "Layer2",
-      currentPrice: 1200,
-      priceChange24h: 520,
-      marketCap: 12000,
-      totalScore: 82,
-      cScore: 82,
-      aScore: 75,
-      nScore: 88,
-      sScore: 72,
-      lScore: 85,
-      iScore: 82,
-      mScore: 88,
-    },
-    {
-      id: 5,
-      ticker: "AAVE",
-      name: "Aave",
-      logo: "https://cdn.coinbase.com/api/v2/assets/images/aave.png",
-      category: "DeFi",
-      currentPrice: 45000,
-      priceChange24h: 380,
-      marketCap: 18000,
-      totalScore: 75,
-      cScore: 76,
-      aScore: 70,
-      nScore: 72,
-      sScore: 68,
-      lScore: 78,
-      iScore: 75,
-      mScore: 85,
-    },
-    {
-      id: 6,
-      ticker: "AI",
-      name: "Artificial Intelligence",
-      logo: "https://cdn.coinbase.com/api/v2/assets/images/ai.png",
-      category: "AI",
-      currentPrice: 850,
-      priceChange24h: 680,
-      marketCap: 8500,
-      totalScore: 87,
-      cScore: 95,
-      aScore: 88,
-      nScore: 98,
-      sScore: 65,
-      lScore: 92,
-      iScore: 85,
-      mScore: 88,
-    },
-  ], []);
-
-  const mockMarketTrend = {
-    btcPrice: 6250000,
-    btc200EMA: 5800000,
-    btcAbove200EMA: 1,
-    dominance: 4500,
-    fearGreedIndex: 72,
-    status: "bullish" as const,
-    createdAt: new Date(),
-  };
-
-  // Filter and sort assets
-  const filteredAssets = useMemo(() => {
-    let filtered = mockAssets;
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (asset) =>
-          asset.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          asset.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by category
-    if (filterCategory !== "all") {
-      filtered = filtered.filter((asset) => asset.category === filterCategory);
-    }
-
-    // Sort
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "total":
-          return b.totalScore - a.totalScore;
-        case "c":
-          return b.cScore - a.cScore;
-        case "a":
-          return b.aScore - a.aScore;
-        case "n":
-          return b.nScore - a.nScore;
-        case "s":
-          return b.sScore - a.sScore;
-        case "l":
-          return b.lScore - a.lScore;
-        case "i":
-          return b.iScore - a.iScore;
-        case "m":
-          return b.mScore - a.mScore;
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [mockAssets, searchTerm, filterCategory, sortBy]);
-
-  const categories = ["all", ...Array.from(new Set(mockAssets.map((a) => a.category)))];
+  const balanceSummary = trpc.exchangeConnections.balances.useQuery(undefined, {
+    enabled: false,
+    refetchOnWindowFocus: false,
+  });
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-card">
+      <header className="border-b border-border bg-card">
         <div className="container py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gradient">CAN SLIM Crypto Scanner</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Evaluate cryptocurrencies using William O'Neil's proven methodology
+                Research workspace with explicit data-quality boundaries
               </p>
             </div>
             {user && (
@@ -226,199 +37,209 @@ export default function Dashboard() {
               variant="outline"
               size="sm"
               onClick={() => navigate("/watchlist")}
-              className="gap-2 mt-4"
+              className="mt-4 gap-2"
             >
-              <Bookmark className="h-4 w-4" />
               My Watchlist
             </Button>
           )}
         </div>
-      </div>
+      </header>
 
-      <div className="container py-8">
-        {/* Live Price Ticker */}
-        <div className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold">Verified Price Ticker</h2>
+      <main className="container space-y-8 py-8">
+        <section aria-labelledby="verified-ticker-heading">
+          <h2 id="verified-ticker-heading" className="mb-2 text-lg font-semibold">
+            Verified Price Ticker
+          </h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Prices appear only when a provider-backed quote is available. An unavailable quote is
+            withheld rather than replaced with a placeholder.
+          </p>
           <PriceTicker tickers={["BTC", "ETH", "ADA"]} />
-        </div>
+        </section>
 
-        {user && <div className="mb-8">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-semibold">Connected exchange balances</h2><p className="text-sm text-muted-foreground">Read-only account data. Refreshing does not submit trades, transfers, or withdrawals.</p></div><Button variant="outline" size="sm" disabled={balanceSummary.isFetching} onClick={() => balanceSummary.refetch()}><RefreshCw className="mr-2 h-4 w-4" />{balanceSummary.isFetching ? "Refreshing…" : "Refresh balances"}</Button></div>
-          {balanceSummary.error ? <Card className="p-4 text-sm text-destructive">Balances could not be retrieved. Verify that an active connection has the required account-read permission.</Card> : !balanceSummary.data ? <Card className="p-4 text-sm text-muted-foreground">Select “Refresh balances” to retrieve current data from active read-only connections.</Card> : balanceSummary.data.connections.length ? <><Card className="mb-4 p-4"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm text-muted-foreground">USD estimate of priced balances</p><p className="text-3xl font-semibold">{balanceSummary.data.valuation.totalUsd.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 })}</p></div><div className="text-sm text-muted-foreground"><p>{balanceSummary.data.valuation.pricedBalanceCount} priced balance{balanceSummary.data.valuation.pricedBalanceCount === 1 ? "" : "s"}</p><p>Quote time: {new Date(balanceSummary.data.valuation.priceRetrievedAt).toLocaleString()}</p></div></div>{balanceSummary.data.valuation.unpricedAssets.length > 0 && <p className="mt-3 text-sm text-amber-700 dark:text-amber-400">Not included in USD estimate: {balanceSummary.data.valuation.unpricedAssets.join(", ")}.</p>}</Card><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{balanceSummary.data.connections.map((connection) => <Card key={connection.id} className="p-4"><div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2"><Wallet className="h-4 w-4" /><span className="font-medium capitalize">{connection.provider}</span></div><span className="text-xs text-muted-foreground">{connection.keyMasked}</span></div>{connection.status === "error" ? <p className="text-sm text-destructive">{connection.message}</p> : connection.balances.length ? <><div className="mb-3"><p className="text-xs text-muted-foreground">USD estimate for priced balances</p><p className="text-xl font-semibold">{connection.valuedTotalUsd.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 })}</p>{connection.unpricedAssets.length > 0 && <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">Excluded: {connection.unpricedAssets.join(", ")}</p>}</div><div className="space-y-2">{connection.balances.map((balance) => <div key={`${balance.provider}-${balance.asset}`} className="flex justify-between gap-4 text-sm"><span>{balance.asset}</span><span className="text-right"><span className="block font-medium">{Number(balance.available).toLocaleString(undefined, { maximumFractionDigits: 8 })}{Number(balance.held) ? ` + ${Number(balance.held).toLocaleString(undefined, { maximumFractionDigits: 8 })} held` : ""}</span><span className="text-xs text-muted-foreground">{balance.usdValue === null ? "Unpriced" : balance.usdValue.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 })}</span></span></div>)}</div></> : <p className="text-sm text-muted-foreground">No non-zero balances returned.</p>}</Card>)}</div></> : <Card className="p-4 text-sm text-muted-foreground">No active read-only exchange connections are available. Add one at Exchange Connections.</Card>}
-          {balanceSummary.data && <p className="mt-3 text-xs text-muted-foreground">Balances retrieved {new Date(balanceSummary.data.retrievedAt).toLocaleString()}. USD estimates use {balanceSummary.data.valuation.priceSource}; quote freshness is shown above. Unpriced assets are excluded rather than estimated. This is research-only account reporting, not personalized financial advice.</p>}
-        </div>}
-
-        {/* Market Trend Section */}
-        <div className="mb-8">
-          <h2 className="mb-2 text-lg font-semibold">Market Overview</h2>
-          <p className="mb-4 text-sm text-amber-700 dark:text-amber-400">Research preview only: this overview is not a live verified market reading. Use the verified price ticker or Scanner for current provider-backed quotes.</p>
-          {trendLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          ) : (
-            <MarketTrendIndicator
-              status={mockMarketTrend.status as "bullish" | "neutral" | "bearish"}
-              btcPrice={mockMarketTrend.btcPrice}
-              btc200EMA={mockMarketTrend.btc200EMA}
-              dominance={mockMarketTrend.dominance}
-              fearGreedIndex={mockMarketTrend.fearGreedIndex}
-            />
-          )}
-        </div>
-
-        {/* Filters and Search */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search by ticker or name..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+        {user && (
+          <section aria-labelledby="exchange-balances-heading">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 id="exchange-balances-heading" className="text-lg font-semibold">
+                  Connected exchange balances
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Read-only account data. Refreshing does not submit trades, transfers, or
+                  withdrawals.
+                </p>
               </div>
-            </div>
-
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat === "all" ? "All Categories" : cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="total">Total Score</SelectItem>
-                <SelectItem value="c">Current Growth (C)</SelectItem>
-                <SelectItem value="a">Annual Growth (A)</SelectItem>
-                <SelectItem value="n">New Catalysts (N)</SelectItem>
-                <SelectItem value="s">Supply (S)</SelectItem>
-                <SelectItem value="l">Relative Strength (L)</SelectItem>
-                <SelectItem value="i">Institutional (I)</SelectItem>
-                <SelectItem value="m">Market Trend (M)</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <DashboardExportButton
-              assets={filteredAssets.map((asset) => ({
-                ticker: asset.ticker,
-                name: asset.name,
-                price: asset.currentPrice,
-                change24h: asset.priceChange24h,
-                score: asset.totalScore,
-                allocation: 100 / filteredAssets.length,
-              }))}
-              totalValue={filteredAssets.reduce((sum: number, a: any) => sum + a.marketCap, 0)}
-            />
-          </div>
-        </div>
-
-        {/* Assets Table */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Research examples — not live market data</h2>
-
-          {assetsLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredAssets.map((asset) => (
-                <Card
-                key={asset.id}
-                className="card-elevated p-4 cursor-pointer transition-all hover:shadow-lg"
-                onClick={() => navigate(`/asset/${asset.ticker}`)}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={balanceSummary.isFetching}
+                onClick={() => balanceSummary.refetch()}
               >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    {/* Asset Info */}
-                    <div className="flex items-center gap-4 flex-1">
-                      <img
-                        src={asset.logo}
-                        alt={asset.name}
-                        className="h-10 w-10 rounded-full"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{asset.ticker}</h3>
-                          <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded">
-                            {asset.category}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{asset.name}</p>
-                      </div>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {balanceSummary.isFetching ? "Refreshing…" : "Refresh balances"}
+              </Button>
+            </div>
+
+            {balanceSummary.error ? (
+              <Card className="p-4 text-sm text-destructive">
+                Balances could not be retrieved. Verify that an active connection has the required
+                account-read permission.
+              </Card>
+            ) : !balanceSummary.data ? (
+              <Card className="p-4 text-sm text-muted-foreground">
+                Select “Refresh balances” to retrieve current data from active read-only
+                connections.
+              </Card>
+            ) : balanceSummary.data.connections.length ? (
+              <>
+                <Card className="mb-4 p-4">
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">USD estimate of priced balances</p>
+                      <p className="text-3xl font-semibold">
+                        {balanceSummary.data.valuation.totalUsd.toLocaleString(undefined, {
+                          style: "currency",
+                          currency: "USD",
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
                     </div>
-
-                    {/* Price Info */}
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Price</p>
-                        <p className="font-semibold">${(asset.currentPrice / 100).toFixed(2)}</p>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">24h Change</p>
-                        <p
-                          className={cn(
-                            "font-semibold",
-                            asset.priceChange24h > 0 ? "text-green-600" : "text-red-600"
-                          )}
-                        >
-                          {asset.priceChange24h > 0 ? "+" : ""}
-                          {(asset.priceChange24h / 100).toFixed(2)}%
-                        </p>
-                      </div>
-
-                      {/* CAN SLIM Scores */}
-                      <div className="hidden lg:flex gap-2">
-                        <ScoreIndicator score={asset.cScore} label="C" size="sm" />
-                        <ScoreIndicator score={asset.aScore} label="A" size="sm" />
-                        <ScoreIndicator score={asset.nScore} label="N" size="sm" />
-                        <ScoreIndicator score={asset.sScore} label="S" size="sm" />
-                        <ScoreIndicator score={asset.lScore} label="L" size="sm" />
-                        <ScoreIndicator score={asset.iScore} label="I" size="sm" />
-                        <ScoreIndicator score={asset.mScore} label="M" size="sm" />
-                      </div>
-
-                      {/* Total Score */}
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Score</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold">{asset.totalScore}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                          >
-                            <Star className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                    <div className="text-sm text-muted-foreground">
+                      <p>
+                        {balanceSummary.data.valuation.pricedBalanceCount} priced balance
+                        {balanceSummary.data.valuation.pricedBalanceCount === 1 ? "" : "s"}
+                      </p>
+                      <p>
+                        Quote time:{" "}
+                        {new Date(balanceSummary.data.valuation.priceRetrievedAt).toLocaleString()}
+                      </p>
                     </div>
                   </div>
+                  {balanceSummary.data.valuation.unpricedAssets.length > 0 && (
+                    <p className="mt-3 text-sm text-amber-700 dark:text-amber-400">
+                      Not included in USD estimate: {balanceSummary.data.valuation.unpricedAssets.join(", ")}.
+                    </p>
+                  )}
                 </Card>
-              ))}
 
-              {filteredAssets.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No assets found matching your criteria.</p>
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {balanceSummary.data.connections.map((connection) => (
+                    <Card key={connection.id} className="p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Wallet className="h-4 w-4" />
+                          <span className="font-medium capitalize">{connection.provider}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{connection.keyMasked}</span>
+                      </div>
+                      {connection.status === "error" ? (
+                        <p className="text-sm text-destructive">{connection.message}</p>
+                      ) : connection.balances.length ? (
+                        <>
+                          <div className="mb-3">
+                            <p className="text-xs text-muted-foreground">
+                              USD estimate for priced balances
+                            </p>
+                            <p className="text-xl font-semibold">
+                              {connection.valuedTotalUsd.toLocaleString(undefined, {
+                                style: "currency",
+                                currency: "USD",
+                                maximumFractionDigits: 2,
+                              })}
+                            </p>
+                            {connection.unpricedAssets.length > 0 && (
+                              <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                                Excluded: {connection.unpricedAssets.join(", ")}
+                              </p>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            {connection.balances.map((balance) => (
+                              <div
+                                key={`${balance.provider}-${balance.asset}`}
+                                className="flex justify-between gap-4 text-sm"
+                              >
+                                <span>{balance.asset}</span>
+                                <span className="text-right">
+                                  <span className="block font-medium">
+                                    {Number(balance.available).toLocaleString(undefined, {
+                                      maximumFractionDigits: 8,
+                                    })}
+                                    {Number(balance.held)
+                                      ? ` + ${Number(balance.held).toLocaleString(undefined, {
+                                          maximumFractionDigits: 8,
+                                        })} held`
+                                      : ""}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {balance.usdValue === null
+                                      ? "Unpriced"
+                                      : balance.usdValue.toLocaleString(undefined, {
+                                          style: "currency",
+                                          currency: "USD",
+                                          maximumFractionDigits: 2,
+                                        })}
+                                  </span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No non-zero balances returned.</p>
+                      )}
+                    </Card>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+              </>
+            ) : (
+              <Card className="p-4 text-sm text-muted-foreground">
+                No active read-only exchange connections are available. Add one at Exchange
+                Connections.
+              </Card>
+            )}
+
+            {balanceSummary.data && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                Balances retrieved {new Date(balanceSummary.data.retrievedAt).toLocaleString()}. USD
+                estimates use {balanceSummary.data.valuation.priceSource}; quote freshness is shown
+                above. Unpriced assets are excluded rather than estimated. This is research-only
+                account reporting, not personalized financial advice.
+              </p>
+            )}
+          </section>
+        )}
+
+        <section aria-labelledby="market-overview-heading">
+          <h2 id="market-overview-heading" className="mb-2 text-lg font-semibold">
+            Market overview
+          </h2>
+          <Card className="p-6">
+            <h3 className="text-base font-semibold">Unavailable until the market dataset is auditable</h3>
+            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+              This dashboard does not display BTC trend, dominance, Fear &amp; Greed, CAN SLIM scores,
+              asset prices, 24-hour changes, market capitalisation, rankings, or market exports from
+              static examples. These fields remain unavailable until a dataset declares its asset
+              universe, source provenance, timestamp, freshness, scoring methodology, and export
+              eligibility.
+            </p>
+            <p className="mt-4 text-sm text-amber-700 dark:text-amber-400">
+              No market or score values are inferred, simulated, or exported from this screen.
+            </p>
+          </Card>
+        </section>
+
+        <section aria-labelledby="asset-research-heading">
+          <h2 id="asset-research-heading" className="mb-2 text-lg font-semibold">
+            Asset research queue
+          </h2>
+          <Card className="p-6 text-sm text-muted-foreground">
+            No verified dashboard asset universe is currently available. Search, category filters,
+            score sorting, asset cards, and market-data export remain disabled to avoid presenting
+            synthetic values as current research results.
+          </Card>
+        </section>
+      </main>
     </div>
   );
 }
