@@ -1,10 +1,40 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { afterEach, describe, it, expect, beforeEach, vi } from "vitest";
 import * as coingeckoModule from "../services/coingecko";
+
+function mockResponse(body: unknown, status = 200): Response {
+  return { ok: status >= 200 && status < 300, status, json: async () => body } as Response;
+}
+
+const priceById: Record<string, { usd: number; usd_market_cap: number; usd_24h_vol: number; usd_24h_change: number }> = {
+  bitcoin: { usd: 65_000, usd_market_cap: 1_250_000_000_000, usd_24h_vol: 30_000_000_000, usd_24h_change: 2.5 },
+  ethereum: { usd: 3_500, usd_market_cap: 420_000_000_000, usd_24h_vol: 15_000_000_000, usd_24h_change: 1.25 },
+  solana: { usd: 150, usd_market_cap: 70_000_000_000, usd_24h_vol: 3_000_000_000, usd_24h_change: -1.5 },
+};
+
+const mockedFetch = vi.fn(async (input: string | URL | Request) => {
+  const url = new URL(typeof input === "string" ? input : input.toString());
+  if (url.pathname.endsWith("/simple/price")) {
+    const coinId = url.searchParams.get("ids") ?? "";
+    const price = priceById[coinId];
+    return price ? mockResponse({ [coinId]: price }) : mockResponse({ error: "coin not found" }, 404);
+  }
+  if (url.pathname.includes("/market_chart")) {
+    const coinId = url.pathname.split("/")[4];
+    if (!priceById[coinId]) return mockResponse({ error: "coin not found" }, 404);
+    return mockResponse({ prices: [[1_704_067_200_000, priceById[coinId].usd - 5], [1_704_153_600_000, priceById[coinId].usd]] });
+  }
+  return mockResponse({ error: "unexpected request" }, 500);
+});
 
 describe("CoinGecko Service", () => {
   beforeEach(() => {
+    vi.stubGlobal("fetch", mockedFetch);
     vi.clearAllMocks();
     coingeckoModule.clearCache();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe("getCurrentPrice", () => {

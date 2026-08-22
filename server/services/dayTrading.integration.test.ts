@@ -118,25 +118,21 @@ describe('Day Trading Integration Tests', () => {
       const iterations = 100;
       const cacheKey = 'test-cache';
 
-      // Первый проход без кэша (будут кэшированы)
-      const start1 = Date.now();
+      // Первый проход заполняет кэш и создаёт cache hits после первого расчёта.
       for (let i = 0; i < iterations; i++) {
         calculator.calculateRSI(prices, 14, cacheKey);
       }
-      const time1 = Date.now() - start1;
+      const warmedStats = calculator.getCacheStats();
 
-      // Второй проход с кэшем
-      const start2 = Date.now();
+      // Второй проход должен обслуживаться из уже заполненного кэша.
       for (let i = 0; i < iterations; i++) {
         calculator.calculateRSI(prices, 14, cacheKey);
       }
-      const time2 = Date.now() - start2;
 
-      // Второй проход должен быть быстрее
-      expect(time2).toBeLessThanOrEqual(time1);
-
-      // Проверяем статистику кэша
       const stats = calculator.getCacheStats();
+      expect(warmedStats.misses).toBeGreaterThan(0);
+      expect(warmedStats.hits).toBeGreaterThan(0);
+      expect(stats.hits).toBeGreaterThan(warmedStats.hits);
       expect(stats.hits).toBeGreaterThan(0);
       expect(stats.hitRate).toBeGreaterThan(0);
     });

@@ -1,7 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createXTComService } from "../services/xtcom";
+
+vi.mock("../services/xtcom", () => ({
+  createXTComService: vi.fn(),
+}));
+
 import { xtcomRouter } from "./xtcomRouter";
 
 describe("xtcomRouter", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createXTComService).mockReturnValue({
+      getBalances: vi.fn().mockResolvedValue([{ asset: "USDT", free: 1_000, locked: 0, total: 1_000 }]),
+    } as any);
+  });
+
   describe("addCredentials", () => {
     it("должен добавить API ключи и вернуть успех", async () => {
       const result = await xtcomRouter.createCaller({
@@ -17,7 +30,7 @@ describe("xtcomRouter", () => {
     });
 
     it("должен выбросить ошибку при пустых ключах", async () => {
-      expect(async () => {
+      await expect(async () => {
         await xtcomRouter.createCaller({
           user: { id: 1, role: "user" },
         } as any).addCredentials({

@@ -1327,3 +1327,10 @@
 - [x] Исправить day-trading module failures и подтвердить его тесты: legacy aliases bb/vp снова поддерживаются generateSignal; stream memory включает buffer; 31 indicator/integration tests проходят.
 - [x] Исправить risk-management module failures и подтвердить его тесты: некорректный R:R expectation исправлен на 0.5/invalid; 18 risk-management tests проходят.
 - [x] Запустить полный test suite, TypeScript check и сохранить checkpoint с исправлениями: 280 тестов проходят; остаются 5 независимых failures в CoinGecko/Polygon/XT.com/strategy routers, не относящиеся к запрошенным scanner/day-trading/risk modules; TypeScript без ошибок.
+
+## Provider Test Isolation: CoinGecko, Polygon, XT.com
+- [x] Локализовать сетевые зависимости provider tests и зафиксировать контракты ответов: CoinGecko использует global fetch для simple price и market chart; Polygon использует global fetch для status/holidays/ticker/previous close; XT.com router вызывает createXTComService().getBalances() только при addCredentials.
+- [x] Добавить детерминированные fetch mocks для CoinGecko service tests: 16 тестов проходят без внешней сети; TypeScript без ошибок.
+- [x] Добавить детерминированные fetch mocks для Polygon и XT.com tests: 18 тестов проходят с transport/factory mocks; TypeScript без ошибок.
+- [x] Устранить flaky wall-clock assertion в day-trading cache performance test: заменён детерминированной проверкой cache hits; 12 integration tests проходят.
+- [x] Запустить полный regression suite, TypeScript check и сохранить checkpoint: 283 теста проходят, TypeScript без ошибок; остаются 2 независимых strategy router failures вне provider isolation scope.

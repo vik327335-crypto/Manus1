@@ -1,15 +1,30 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import PolygonApiService from "./polygonApiService";
+
+function mockResponse(body: unknown): Response {
+  return { ok: true, status: 200, json: async () => body } as Response;
+}
+
+const mockedFetch = vi.fn(async (input: string | URL | Request) => {
+  const url = new URL(typeof input === "string" ? input : input.toString());
+  if (url.pathname.endsWith("/marketstatus/now")) return mockResponse({ market: "open", serverTime: "2026-08-22T00:00:00Z" });
+  if (url.pathname.endsWith("/marketstatus/upcoming")) return mockResponse({ results: [{ exchange: "NYSE", name: "Holiday", date: "2026-12-25" }] });
+  if (url.pathname.includes("/reference/tickers/AAPL")) return mockResponse({ results: { ticker: "AAPL", name: "Apple Inc.", market: "stocks", locale: "us", type: "CS", active: true, currency_name: "usd" } });
+  if (url.pathname.endsWith("/aggs/ticker/AAPL/prev")) return mockResponse({ results: [{ c: 200, h: 202, l: 198, o: 199, t: 1, v: 1_000_000 }] });
+  return mockResponse({ results: [] });
+});
 
 describe("PolygonApiService", () => {
   let service: PolygonApiService;
 
-  beforeAll(() => {
-    const apiKey = process.env.POLYGON_API_KEY;
-    if (!apiKey) {
-      throw new Error("POLYGON_API_KEY environment variable is not set");
-    }
-    service = new PolygonApiService(apiKey);
+  beforeEach(() => {
+    vi.stubGlobal("fetch", mockedFetch);
+    vi.clearAllMocks();
+    service = new PolygonApiService("test-polygon-key");
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("should validate API key by fetching market status", async () => {
