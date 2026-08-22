@@ -1433,3 +1433,9 @@
 - [x] Убрать pseudo-live valuation, P&L, Sharpe, drawdown, VaR и rebalancing recommendations без verified source metadata: tracker больше не использует seeded prices, portfolio-management queries, charts или derived risk metrics.
 - [x] Добавить manual-research/unavailable disclosure и regression safeguard: manual research records явно отделены от live holdings; guard запрещает currentPrice и synthetic analytics; Vitest include расширен на client/**/*.accuracy.test.ts и 3 client accuracy files проходят.
 - [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает manual-research policy; lint и TypeScript clean; 40 files / 298 tests проходят; coverage 15.37% statements/lines, 19.82% functions, 58.69% branches; build и HTTP 200 успешны.
+
+## Paper Trading Accuracy Hardening
+- [x] Проаудировать routed PaperTrading UI и empty/stubbed paper-trading router contract: UI содержал mock account/trades, а router возвращает пустые/нулевые results, не создавая owner-scoped virtual-trade record.
+- [x] Убрать static balances, P&L, trades, risk/reward и performance claims без owner-scoped virtual-trade source: `/paper-trading` больше не показывает mock account/trades, prices, balances, P&L, win rate, drawdown или risk/reward как реальные virtual outcomes.
+- [x] Добавить explicit unavailable disclosure и regression safeguard: research-only unavailable policy отображается на всех tabs; client test запрещает возвращать mockAccounts/mockTrades/currentBalance/totalProfit.
+- [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает unavailable policy; lint и TypeScript clean; 41 files / 299 tests проходят; coverage 15.44% statements/lines, 19.82% functions, 58.73% branches; build и HTTP 200 успешны.
