@@ -1458,3 +1458,10 @@
 - [x] Сохранить independently verified read-only exchange balance widgets и заменить прочие market sections explicit unavailable/research-only состоянием: balance widget сохранён с source/timestamp/freshness disclosure; market sections требуют auditable dataset.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует mockAssets/mockMarketTrend/DashboardExportButton/market and score indicators; screenshot подтверждает unavailable policy; lint/TypeScript clean; 44 files / 302 tests проходят; coverage 15.62% statements/lines, 19.82% functions, 58.88% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## Traders Accuracy Hardening
+- [x] Проаудировать routed Traders, mockTraders, derived search/sort и performance/copy-trading action claims: route показывал hardcoded performance, followers, copied trades, ratings и verified badges как реальные trader facts.
+- [x] Убрать synthetic win rate, returns, drawdown, followers, copied trades, rating, verified badges и follow/copy actions без owner-scoped auditable source: mock profile cards, rankings, search/sort, follow и copy actions удалены.
+- [x] Заменить social-trading discovery на explicit unavailable/research-only state с требованиями provenance, timestamp, freshness и methodology: UI описывает identity/consent basis, complete trade universe и reviewable assumptions как prerequisites.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует mockTraders/filteredTraders/renderStars и former performance fields; screenshot подтверждает unavailable policy; lint/TypeScript clean; 45 files / 303 tests проходят; coverage 15.66% statements/lines, 19.82% functions, 58.72% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
