@@ -1363,3 +1363,9 @@
 - [x] Исправить неиспользуемые импорты, параметры и переменные без изменения логики: удалены недействующие значения и 367 неиспользуемых bindings очищены или явно помечены underscore-политикой; warnings сокращены до 158.
 - [x] Устранить console и framework-related warnings безопасными заменами или явными policy decisions: 106 console.log заменены на console.info; CLI scripts, tRPC router static-analysis noise и UI barrel modules получили scoped policy overrides; React dependencies стабилизированы; lint и TypeScript clean.
 - [x] Подтвердить lint без warnings, TypeScript, regression suite и production build; сохранить checkpoint: ESLint clean, TypeScript clean, 285 tests и production build проходят; dev server перезапущен на чистом runtime.
+
+## Blocking ESLint CI Gate
+- [x] Зафиксировать zero-warning lint contract и имя required CI check: команда pnpm run lint:check использует --max-warnings 0; CI job называется ESLint Quality Gate.
+- [x] Добавить lint:check script и отдельный blocking GitHub Actions job: validate job зависит от успешного ESLint Quality Gate.
+- [x] Локально подтвердить failure-on-warning behavior, TypeScript, regression suite и build: временный client-side lint warning корректно завершил lint:check с ошибкой; после удаления probe lint, TypeScript, 285 tests и build проходят.
+- [x] Сохранить checkpoint и описать включение required status check в branch protection: после синхронизации репозитория в GitHub выбрать ESLint Quality Gate в required status checks целевой ветки.
