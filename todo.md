@@ -1472,3 +1472,10 @@
 - [x] Заменить strategy comparison and dashboard analytics на explicit unavailable/research-only state до появления auditable historical run: requirements для universe, source, UTC timeframe, run date, fees, slippage и parameter version явно описаны.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует Math.random, chart components и ambiguous history/comparison queries; screenshot подтверждает unavailable policy; lint/TypeScript clean; 46 files / 304 tests проходят; coverage 15.74% statements/lines, 19.82% functions, 58.65% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## SocialCopyTrading Accuracy Hardening
+- [x] Проаудировать routed SocialCopyTrading на trader performance, subscription P&L, recommendation и execution-like copy actions: route показывал provider-unverified trader metrics, recommendation и управляемые copy subscriptions.
+- [x] Убрать непроверенные win rate, returns, followers, risk score, copied-trade P&L, ROI, suggested allocation и expected-return claims: performance cards, subscription P&L/ROI и recommendation values удалены.
+- [x] Убрать subscribe/pause/resume/unsubscribe actions и заменить social copying explicit unavailable/research-only state в соответствии с no-execution boundary: route не создаёт и не управляет subscriptions, не копирует сделки и не даёт allocation guidance.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует former trader/subscription mutations и allocation recommendation fields; screenshot подтверждает unavailable policy; lint/TypeScript clean; 47 files / 305 tests проходят; coverage 15.80% statements/lines, 19.82% functions, 58.63% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
