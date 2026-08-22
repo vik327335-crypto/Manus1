@@ -1479,3 +1479,10 @@
 - [x] Убрать subscribe/pause/resume/unsubscribe actions и заменить social copying explicit unavailable/research-only state в соответствии с no-execution boundary: route не создаёт и не управляет subscriptions, не копирует сделки и не даёт allocation guidance.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует former trader/subscription mutations и allocation recommendation fields; screenshot подтверждает unavailable policy; lint/TypeScript clean; 47 files / 305 tests проходят; coverage 15.80% statements/lines, 19.82% functions, 58.63% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## StrategyComparison Accuracy Hardening
+- [x] Проаудировать routed StrategyComparison, derived performance metrics, rankings, charts и export paths: route трансформировал source-ambiguous strategy metrics в derived performance, recommendations, charts и CSV/HTML export.
+- [x] Убрать source-ambiguous ROI, win rate, profit/loss, drawdown, recommendations, comparisons и export без auditable historical-run metadata: performance query presentation, tables, charts, rankings и export paths удалены.
+- [x] Заменить strategy comparison UI explicit unavailable/research-only state с requirements для data provenance, timeframe, assumptions и freshness: UI требует reproducible run, universe, source, UTC timeframe, fees, slippage и parameter version.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует former metrics query, exports, table/card и chart components; screenshot подтверждает unavailable policy; lint/TypeScript clean; 48 files / 306 tests проходят; coverage 15.90% statements/lines, 19.82% functions, 58.93% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
