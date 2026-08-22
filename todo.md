@@ -1375,3 +1375,13 @@
 - [x] Добавить coverage script, report output и пороги в Vitest configuration: подключён @vitest/coverage-v8 2.1.9, command test:coverage и text/json-summary/lcov reports; thresholds проходят baseline.
 - [x] Добавить отдельный blocking coverage job в GitHub Actions workflow: Test Coverage Gate зависит от ESLint Quality Gate и публикует coverage artifact; validate ожидает оба quality gate.
 - [x] Подтвердить coverage threshold, TypeScript, regression suite и build; сохранить checkpoint: negative probe при statements=15 завершился с кодом 1, final locked CI rehearsal прошёл (285 tests; 14.80% statements/lines, 19.48% functions, 58.12% branches).
+
+## GitHub Branch Protection: Required Quality Gates
+- [ ] Отложено до восстановления входа: включить GitHub-интеграцию и проверить правила защиты ветки main.
+- [ ] Отложено до восстановления входа: сделать ESLint Quality Gate и Test Coverage Gate обязательными status checks для ветки main.
+- [ ] Отложено до восстановления входа: проверить сохранённые правила branch protection и сохранить checkpoint конфигурации проекта.
+
+## Local Quality-Gate State Control (Without GitHub)
+- [x] Выполнить локальную проверку lint, TypeScript, test coverage и production build: lint и TypeScript clean; 285 tests проходят; coverage 14.80% statements/lines, 19.48% functions, 57.97% branches; build успешен.
+- [x] Проверить health локального приложения и отсутствие ошибок в свежих логах: HTTP 200; server log показывает штатный start и WebSocket connect/disconnect события без свежих TransformError.
+- [x] Зафиксировать проверенный локальный статус в checkpoint без внешних GitHub-изменений.
