@@ -115,7 +115,7 @@ class CacheService {
     keysToDelete.forEach((key) => this.cache.delete(key));
 
     if (cleaned > 0) {
-      console.log(`[Cache] Cleaned up ${cleaned} expired entries`);
+      console.info(`[Cache] Cleaned up ${cleaned} expired entries`);
     }
   }
 

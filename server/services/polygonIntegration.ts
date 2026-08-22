@@ -1,4 +1,4 @@
-import { invokeLLM } from "../_core/llm";
+import { invokeLLM as _invokeLLM } from "../_core/llm";
 
 interface PolygonOHLCV {
   timestamp: number;
@@ -46,7 +46,7 @@ export async function fetchPolygonOHLCV(
   // Check cache
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.log(`[Polygon] Cache hit for ${cacheKey}`);
+    console.info(`[Polygon] Cache hit for ${cacheKey}`);
     return cached.data;
   }
 
@@ -84,7 +84,7 @@ export async function fetchPolygonOHLCV(
     // Cache the results
     cache.set(cacheKey, { data: ohlcv, timestamp: Date.now() });
 
-    console.log(`[Polygon] Fetched ${ohlcv.length} bars for ${ticker}`);
+    console.info(`[Polygon] Fetched ${ohlcv.length} bars for ${ticker}`);
     return ohlcv;
   } catch (error) {
     console.error("[Polygon] Fetch error:", error);
@@ -154,8 +154,8 @@ export async function fetchMultiYearOHLCV(
  */
 export function calculateIndicators(ohlcv: PolygonOHLCV[], period: number = 20) {
   const closes = ohlcv.map((bar) => bar.close);
-  const highs = ohlcv.map((bar) => bar.high);
-  const lows = ohlcv.map((bar) => bar.low);
+  const _highs = ohlcv.map((bar) => bar.high);
+  const _lows = ohlcv.map((bar) => bar.low);
 
   // SMA (Simple Moving Average)
   const sma = calculateSMA(closes, period);
@@ -312,7 +312,7 @@ function calculateATR(ohlcv: PolygonOHLCV[], period: number = 14): number[] {
  */
 export function clearCache(): void {
   cache.clear();
-  console.log("[Polygon] Cache cleared");
+  console.info("[Polygon] Cache cleared");
 }
 
 /**

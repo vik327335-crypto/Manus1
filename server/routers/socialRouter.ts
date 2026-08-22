@@ -2,7 +2,7 @@ import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
 import { sharedStrategies } from "../../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and as _and } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -210,7 +210,7 @@ export const socialRouter = router({
    */
   likeStrategy: protectedProcedure
     .input(z.object({ sharedId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx: _ctx, input }) => {
       try {
         const db = await getDb();
         if (!db) throw new Error("Database not available");

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label as _Label } from "@/components/ui/label";
 import { Plus, Trash2, TrendingUp, TrendingDown, Loader2, Activity } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 

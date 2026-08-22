@@ -65,7 +65,7 @@ class PushNotificationService {
         '/sw.js',
         { scope: '/' }
       );
-      console.log('Service Worker registered:', this.registration);
+      console.info('Service Worker registered:', this.registration);
       return this.registration;
     } catch (error) {
       console.error('Service Worker registration failed:', error);
@@ -92,7 +92,7 @@ class PushNotificationService {
       });
 
       this.subscription = subscription;
-      console.log('Push subscription successful:', subscription);
+      console.info('Push subscription successful:', subscription);
       return subscription;
     } catch (error) {
       console.error('Push subscription failed:', error);
@@ -111,7 +111,7 @@ class PushNotificationService {
     try {
       const result = await this.subscription.unsubscribe();
       this.subscription = null;
-      console.log('Unsubscribed from push notifications');
+      console.info('Unsubscribed from push notifications');
       return result;
     } catch (error) {
       console.error('Unsubscribe failed:', error);

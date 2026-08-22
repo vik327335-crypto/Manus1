@@ -22,14 +22,14 @@ export function useKeyboardShortcuts() {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
         // Будет реализовано позже с компонентом поиска
-        console.log("Search shortcut triggered");
+        console.info("Search shortcut triggered");
       }
 
       // Cmd/Ctrl + /: Показать справку
       if ((event.metaKey || event.ctrlKey) && event.key === "/") {
         event.preventDefault();
         // Будет реализовано позже с компонентом справки
-        console.log("Help shortcut triggered");
+        console.info("Help shortcut triggered");
       }
 
       // Cmd/Ctrl + D: Перейти на Dashboard
@@ -77,7 +77,7 @@ export function useKeyboardShortcuts() {
       // Escape: Закрыть модальные окна (будет реализовано позже)
       if (event.key === "Escape") {
         // Будет реализовано позже
-        console.log("Escape pressed");
+        console.info("Escape pressed");
       }
     };
 

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useKeyboardShortcuts as _useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 interface AccessibilityProviderProps {
   children: ReactNode;

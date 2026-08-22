@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
-import { Download, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend as _Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
+import { Download, TrendingUp as _TrendingUp, TrendingDown as _TrendingDown, Activity } from 'lucide-react';
 
 interface BacktestResult {
   id: string;

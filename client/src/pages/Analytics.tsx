@@ -12,25 +12,24 @@ export interface AnalyticsData {
   }>;
 }
 
+const MOCK_DATA: AnalyticsData = {
+  assets: [
+    { ticker: "BTC", score: 85, priceChange24h: 2.5, marketCap: 1200000000000 },
+    { ticker: "ETH", score: 78, priceChange24h: 1.8, marketCap: 250000000000 },
+    { ticker: "SOL", score: 72, priceChange24h: -0.5, marketCap: 50000000000 },
+    { ticker: "ADA", score: 65, priceChange24h: 0.2, marketCap: 30000000000 },
+    { ticker: "XRP", score: 58, priceChange24h: -1.2, marketCap: 35000000000 },
+  ],
+};
+
 /**
  * Analytics страница для отображения статистики портфеля
  * Показывает общие метрики, распределение по score и тренды
  */
 export default function Analytics() {
-  // Пример данных (в реальном приложении будут загружены из API)
-  const mockData: AnalyticsData = {
-    assets: [
-      { ticker: "BTC", score: 85, priceChange24h: 2.5, marketCap: 1200000000000 },
-      { ticker: "ETH", score: 78, priceChange24h: 1.8, marketCap: 250000000000 },
-      { ticker: "SOL", score: 72, priceChange24h: -0.5, marketCap: 50000000000 },
-      { ticker: "ADA", score: 65, priceChange24h: 0.2, marketCap: 30000000000 },
-      { ticker: "XRP", score: 58, priceChange24h: -1.2, marketCap: 35000000000 },
-    ],
-  };
-
   // Вычисляем статистику
   const stats = useMemo(() => {
-    const { assets } = mockData;
+    const { assets } = MOCK_DATA;
 
     const avgScore = assets.reduce((sum, a) => sum + a.score, 0) / assets.length;
     const avgPriceChange = assets.reduce((sum, a) => sum + a.priceChange24h, 0) / assets.length;
@@ -57,7 +56,7 @@ export default function Analytics() {
       losers,
       total: assets.length,
     };
-  }, [mockData]);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -283,7 +282,7 @@ export default function Analytics() {
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">Топ активы по CAN SLIM Score</h2>
         <div className="space-y-2">
-          {mockData.assets
+          {[...MOCK_DATA.assets]
             .sort((a, b) => b.score - a.score)
             .map((asset, index) => (
               <div key={asset.ticker} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors">

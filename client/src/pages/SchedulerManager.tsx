@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertCircle, Clock, Plus, Trash2, Pause, Play } from "lucide-react";
+import { AlertCircle as _AlertCircle, Clock, Plus, Trash2, Pause, Play } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type JobType = "balance-sync" | "backtest" | "leaderboard" | "cleanup" | "daily-summary";
@@ -125,7 +125,7 @@ export function SchedulerManager() {
     return labels[type];
   };
 
-  const getJobTypeDescription = (type: JobType) => {
+  const _getJobTypeDescription = (type: JobType) => {
     const descriptions: Record<JobType, string> = {
       "balance-sync": "Synchronize exchange balances",
       backtest: "Run periodic backtesting",

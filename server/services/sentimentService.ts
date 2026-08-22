@@ -170,7 +170,7 @@ Return a JSON array of catalyst strings.`,
 /**
  * Получить сентимент для конкретного актива (mock)
  */
-export async function getAssetSentimentScore(assetTicker: string): Promise<{
+export async function getAssetSentimentScore(_assetTicker: string): Promise<{
   score: number;
   trend: "bullish" | "neutral" | "bearish";
   lastUpdated: Date;

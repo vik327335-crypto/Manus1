@@ -43,7 +43,7 @@ class DataUpdateService {
       ...config,
     };
 
-    console.log('[DataUpdateService] Initialized with config:', this.config);
+    console.info('[DataUpdateService] Initialized with config:', this.config);
 
     if (this.config.enabled) {
       this.start();
@@ -59,7 +59,7 @@ class DataUpdateService {
       return;
     }
 
-    console.log('[DataUpdateService] Starting automatic updates');
+    console.info('[DataUpdateService] Starting automatic updates');
 
     // Run first update immediately
     this.runUpdate();
@@ -80,7 +80,7 @@ class DataUpdateService {
     if (this.updateIntervalId) {
       clearInterval(this.updateIntervalId);
       this.updateIntervalId = null;
-      console.log('[DataUpdateService] Stopped automatic updates');
+      console.info('[DataUpdateService] Stopped automatic updates');
     }
 
     this.config.enabled = false;
@@ -90,7 +90,7 @@ class DataUpdateService {
    * Run update for all configured tickers
    */
   private async runUpdate(): Promise<void> {
-    console.log('[DataUpdateService] Running update cycle');
+    console.info('[DataUpdateService] Running update cycle');
 
     const updateTime = new Date();
     this.config.lastUpdate = updateTime;
@@ -114,7 +114,7 @@ class DataUpdateService {
         this.addNotification(notification);
         this.notifyListeners(notification);
 
-        console.log(`[DataUpdateService] Updated ${ticker}`);
+        console.info(`[DataUpdateService] Updated ${ticker}`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         const notification: UpdateNotification = {
@@ -192,7 +192,7 @@ class DataUpdateService {
       this.start();
     }
 
-    console.log('[DataUpdateService] Config updated:', this.config);
+    console.info('[DataUpdateService] Config updated:', this.config);
   }
 
   /**
@@ -201,7 +201,7 @@ class DataUpdateService {
   addTicker(ticker: string): void {
     if (!this.config.tickers.includes(ticker.toUpperCase())) {
       this.config.tickers.push(ticker.toUpperCase());
-      console.log('[DataUpdateService] Added ticker:', ticker);
+      console.info('[DataUpdateService] Added ticker:', ticker);
     }
   }
 
@@ -212,7 +212,7 @@ class DataUpdateService {
     this.config.tickers = this.config.tickers.filter(
       t => t !== ticker.toUpperCase()
     );
-    console.log('[DataUpdateService] Removed ticker:', ticker);
+    console.info('[DataUpdateService] Removed ticker:', ticker);
   }
 
   /**
@@ -227,7 +227,7 @@ class DataUpdateService {
    */
   clearHistory(): void {
     this.notifications = [];
-    console.log('[DataUpdateService] History cleared');
+    console.info('[DataUpdateService] History cleared');
   }
 
   /**
@@ -260,7 +260,7 @@ class DataUpdateService {
    * Force immediate update
    */
   forceUpdate(): Promise<void> {
-    console.log('[DataUpdateService] Forcing immediate update');
+    console.info('[DataUpdateService] Forcing immediate update');
     return new Promise((resolve) => {
       this.runUpdate().then(() => {
         resolve();

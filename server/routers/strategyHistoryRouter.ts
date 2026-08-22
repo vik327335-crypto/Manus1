@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { protectedProcedure, router } from '../_core/trpc';
-import { getDb } from '../db';
-import { dayTradingPositions } from '../../drizzle/schema';
-import { eq, gte, lte, desc } from 'drizzle-orm';
+import { getDb as _getDb } from '../db';
+import { dayTradingPositions as _dayTradingPositions } from '../../drizzle/schema';
+import { eq as _eq, gte as _gte, lte as _lte, desc as _desc } from 'drizzle-orm';
 
 interface StrategySnapshot {
   timestamp: number;

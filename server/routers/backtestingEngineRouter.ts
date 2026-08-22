@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import BacktestingService, {
   OHLCV,
   StrategyParams,
-  BacktestMetrics,
+  BacktestMetrics as _BacktestMetrics,
 } from "../services/backtestingService";
 import { v4 as uuidv4 } from "uuid";
 
@@ -224,7 +224,7 @@ export const backtestingEngineRouter = router({
    */
   getBacktestResult: protectedProcedure
     .input(z.object({ resultId: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx: _ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 

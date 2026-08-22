@@ -18,7 +18,7 @@ export function OfflineIndicator() {
       // Try to reconnect WebSocket (optional for demo)
       websocketService.connect().catch(() => {
         // Silently fail - WebSocket endpoint may not exist in demo
-        console.log('[OfflineIndicator] WebSocket endpoint not available (demo mode)');
+        console.info('[OfflineIndicator] WebSocket endpoint not available (demo mode)');
       });
     };
 
@@ -36,9 +36,9 @@ export function OfflineIndicator() {
         setWsConnected(connected);
         setIsReconnecting(false);
       });
-    } catch (error) {
+    } catch (_error) {
       // WebSocket not available in demo mode
-      console.log('[OfflineIndicator] WebSocket not available');
+      console.info('[OfflineIndicator] WebSocket not available');
     }
 
     return () => {

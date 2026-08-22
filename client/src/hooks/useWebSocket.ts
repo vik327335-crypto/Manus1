@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { io, Socket } from "socket.io-client";
+import { io as _io, Socket as _Socket } from "socket.io-client";
 
 export interface UseWebSocketOptions {
   autoConnect?: boolean;
@@ -43,6 +43,8 @@ const DEFAULT_OPTIONS: UseWebSocketOptions = {
 };
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
+  const { autoConnect, reconnectionDelay, maxReconnectionAttempts } = options;
+
   // Get WebSocket URL from current location
   const getWsUrl = useCallback(() => {
     if (typeof window === "undefined") return "ws://localhost:3000/ws";
@@ -51,8 +53,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   }, []);
 
   const mergedOptions = useMemo(
-    () => ({ ...DEFAULT_OPTIONS, ...options }),
-    [options.autoConnect, options.reconnectionDelay, options.maxReconnectionAttempts]
+    () => ({ ...DEFAULT_OPTIONS, autoConnect, reconnectionDelay, maxReconnectionAttempts }),
+    [autoConnect, reconnectionDelay, maxReconnectionAttempts]
   );
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -82,7 +84,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       const ws = new WebSocket(getWsUrl());
 
       ws.onopen = () => {
-        console.log("[WebSocket] Connected");
+        console.info("[WebSocket] Connected");
         reconnectAttemptsRef.current = 0;
         wsRef.current = ws;
         setState({
@@ -130,7 +132,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       };
 
       ws.onclose = () => {
-        console.log("[WebSocket] Disconnected");
+        console.info("[WebSocket] Disconnected");
         wsRef.current = null;
         setState((prev) => ({
           ...prev,
@@ -142,7 +144,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         if (reconnectAttemptsRef.current < mergedOptions.maxReconnectionAttempts!) {
           reconnectAttemptsRef.current++;
           const delay = mergedOptions.reconnectionDelay! * Math.pow(2, reconnectAttemptsRef.current - 1);
-          console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);
+          console.info(`[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, delay);

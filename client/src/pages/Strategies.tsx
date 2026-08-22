@@ -77,7 +77,7 @@ export function Strategies() {
     setSelectedStrategy(null);
   };
 
-  const togglePublic = (id: string) => {
+  const _togglePublic = (id: string) => {
     setStrategies(
       strategies.map((s) => (s.id === id ? { ...s, isPublic: !s.isPublic } : s))
     );

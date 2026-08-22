@@ -126,7 +126,7 @@ export const researchRegistryRouter = router({
       if (input.confirmValidated !== true) throw new Error("Validated status requires explicit owner confirmation");
       if (!protocolPath || !resultPath || sampleAdequacy !== "adequate") throw new Error("Validated status requires protocol, result reference, and adequate sample evidence");
     }
-    const { id, confirmValidated, ...changes } = input;
+    const { id, confirmValidated: _confirmValidated, ...changes } = input;
     await db.update(researchHypotheses).set({ ...changes, updatedAt: new Date() }).where(eq(researchHypotheses.id, id));
     await db.insert(researchHypothesisAudits).values({ hypothesisId: id, userId: ctx.user.id, action: "updated", details: { changedFields: Object.keys(changes), previousStatus: existing.status, nextStatus: changes.status ?? existing.status } });
     return { id };

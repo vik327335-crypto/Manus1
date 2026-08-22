@@ -2,8 +2,8 @@ import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
 import { sharedStrategies, strategyRatings, communityLeaderboard } from "../../drizzle/schema";
-import { eq, desc } from "drizzle-orm";
-import { v4 as uuidv4 } from "uuid";
+import { eq, desc as _desc } from "drizzle-orm";
+import { v4 as _uuidv4 } from "uuid";
 
 /**
  * Community Router

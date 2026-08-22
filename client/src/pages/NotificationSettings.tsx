@@ -12,7 +12,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function NotificationSettings() {
   const [, setLocation] = useLocation();
-  const [isSaving, setIsSaving] = useState(false);
+  const [_isSaving, _setIsSaving] = useState(false);
   const { user } = useAuth();
 
   // Fetch current preferences

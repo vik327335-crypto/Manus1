@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileText, Download, Trash2, Plus, Clock, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { FileText, Download, Trash2, Plus, Clock, CheckCircle2, AlertCircle as _AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ExportSchedule {
@@ -163,7 +163,7 @@ export default function AutomatedExportReports() {
       ));
 
       toast.success(`Export completed for ${schedule.ticker}`);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Export failed');
     } finally {
       setIsLoading(false);

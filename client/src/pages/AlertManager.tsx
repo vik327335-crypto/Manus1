@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { trpc as _trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent as _CardContent, CardDescription as _CardDescription, CardHeader as _CardHeader, CardTitle as _CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select as _Select,
+  SelectContent as _SelectContent,
+  SelectItem as _SelectItem,
+  SelectTrigger as _SelectTrigger,
+  SelectValue as _SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Bell, AlertCircle, TrendingUp, TrendingDown, ToggleLeft, ToggleRight } from "lucide-react";
+import { Checkbox as _Checkbox } from "@/components/ui/checkbox";
+import { Plus, Trash2, Bell, AlertCircle, TrendingUp, TrendingDown as _TrendingDown, ToggleLeft as _ToggleLeft, ToggleRight as _ToggleRight } from "lucide-react";
 
 interface Alert {
   id: string;

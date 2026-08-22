@@ -1,7 +1,7 @@
 import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
-import { tutorials, tutorialSteps, tutorialProgress } from "../../drizzle/schema";
+import { tutorials as _tutorials, tutorialSteps as _tutorialSteps, tutorialProgress as _tutorialProgress } from "../../drizzle/schema";
 
 export const tutorialRouter = router({
   /**
@@ -14,7 +14,7 @@ export const tutorialRouter = router({
         difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return [];
     }),
@@ -24,7 +24,7 @@ export const tutorialRouter = router({
    */
   getTutorialDetail: publicProcedure
     .input(z.object({ tutorialId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return null;
     }),
@@ -34,7 +34,7 @@ export const tutorialRouter = router({
    */
   getTutorialSteps: publicProcedure
     .input(z.object({ tutorialId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return [];
     }),
@@ -44,7 +44,7 @@ export const tutorialRouter = router({
    */
   startTutorial: protectedProcedure
     .input(z.object({ tutorialId: z.number() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -68,7 +68,7 @@ export const tutorialRouter = router({
         completedSteps: z.number(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.update is available
       return { success: true };
     }),
@@ -78,7 +78,7 @@ export const tutorialRouter = router({
    */
   completeTutorial: protectedProcedure
     .input(z.object({ progressId: z.number() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.update is available
       return { success: true };
     }),
@@ -86,7 +86,7 @@ export const tutorialRouter = router({
   /**
    * Получает прогресс пользователя по туториалам
    */
-  getUserTutorialProgress: protectedProcedure.query(async ({ ctx }) => {
+  getUserTutorialProgress: protectedProcedure.query(async ({ ctx: _ctx }) => {
     // TODO: Implement when db.query is available
     return [];
   }),
@@ -94,7 +94,7 @@ export const tutorialRouter = router({
   /**
    * Получает рекомендуемые туториалы для нового пользователя
    */
-  getRecommendedTutorials: protectedProcedure.query(async ({ ctx }) => {
+  getRecommendedTutorials: protectedProcedure.query(async ({ ctx: _ctx }) => {
     // TODO: Implement when db.query is available
     return [];
   }),
@@ -104,7 +104,7 @@ export const tutorialRouter = router({
    */
   skipTutorial: protectedProcedure
     .input(z.object({ progressId: z.number() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.delete is available
       return { success: true };
     }),

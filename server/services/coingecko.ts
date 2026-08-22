@@ -127,7 +127,7 @@ export async function get24hTrend(ticker: string): Promise<{
   trend: number;
 }> {
   try {
-    const history = await getPriceHistory(ticker, 1);
+    const _history = await getPriceHistory(ticker, 1);
     const price = await getCurrentPrice(ticker);
 
     // Calculate momentum based on 24h change

@@ -1,4 +1,4 @@
-import { getAllNews, getNewsByAsset } from "./rssService";
+import { getAllNews as _getAllNews, getNewsByAsset } from "./rssService";
 import { analyzeSentiment, extractCatalysts } from "./sentimentService";
 import { storeSentimentAnalysis } from "../db/sentimentDb";
 
@@ -160,7 +160,7 @@ export function startPeriodicNewsUpdates(
   assets: Array<{ id: number; ticker: string; name: string }>,
   intervalMs: number = 30 * 60 * 1000
 ): NodeJS.Timeout {
-  console.log(
+  console.info(
     `[NewsJob] Starting periodic news updates every ${intervalMs / 1000 / 60} minutes`
   );
 
@@ -187,5 +187,5 @@ export function startPeriodicNewsUpdates(
  */
 export function stopPeriodicNewsUpdates(interval: NodeJS.Timeout): void {
   clearInterval(interval);
-  console.log("[NewsJob] Stopped periodic news updates");
+  console.info("[NewsJob] Stopped periodic news updates");
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle, Clock, TrendingUp } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, TrendingUp as _TrendingUp } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface BacktestNotification {

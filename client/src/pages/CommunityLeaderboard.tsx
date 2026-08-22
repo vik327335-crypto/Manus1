@@ -3,7 +3,7 @@ import { trpc } from "../lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, TrendingUp, Users, BarChart3 } from "lucide-react";
+import { Trophy, TrendingUp, Users as _Users, BarChart3 } from "lucide-react";
 
 /**
  * Community Leaderboard Component

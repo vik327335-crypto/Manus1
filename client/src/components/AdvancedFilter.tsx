@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Filter, X, Plus } from "lucide-react";
+import { Filter, X, Plus as _Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface FilterCriteria {

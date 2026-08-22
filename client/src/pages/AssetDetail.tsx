@@ -7,12 +7,12 @@ import { cn } from "@/lib/utils";
 import { ExportButton } from "@/components/ExportButton";
 import { InstitutionalSupport } from "@/components/InstitutionalSupport";
 import { RelativeStrengthChart } from "@/components/RelativeStrengthChart";
-import { SentimentNewsFeed } from "@/components/SentimentNewsFeed";
+import { SentimentNewsFeed as _SentimentNewsFeed } from "@/components/SentimentNewsFeed";
 import RealTimeNewsFeed from "@/components/RealTimeNewsFeed";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useEffect, useState } from "react";
 
-interface CriterionDetail {
+interface _CriterionDetail {
   score: number;
   reason: string;
   status: "excellent" | "good" | "fair" | "poor";
@@ -77,7 +77,7 @@ export default function AssetDetail() {
   const { ticker } = useParams<{ ticker: string }>();
   const [, navigate] = useLocation();
   const [livePrice, setLivePrice] = useState<number | null>(null);
-  const [livePriceChange, setLivePriceChange] = useState<number | null>(null);
+  const [_livePriceChange, setLivePriceChange] = useState<number | null>(null);
   const { isConnected, subscribeToPrices, onPriceUpdate } = useWebSocket({
     autoConnect: true,
   });

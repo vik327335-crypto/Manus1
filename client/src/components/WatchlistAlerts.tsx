@@ -25,7 +25,7 @@ export function WatchlistAlerts({ assetId, assetName }: WatchlistAlertsProps) {
     { enabled: true }
   );
 
-  const { data: history, isLoading: historyLoading, refetch: refetchHistory } = trpc.alerts.getHistory.useQuery(
+  const { data: history, isLoading: historyLoading, refetch: _refetchHistory } = trpc.alerts.getHistory.useQuery(
     { limit: 20 },
     { enabled: true }
   );

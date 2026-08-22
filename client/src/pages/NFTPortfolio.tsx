@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, TrendingUp, Zap } from 'lucide-react';
+import { Loader2, TrendingUp as _TrendingUp, Zap } from 'lucide-react';
 
 export default function NFTPortfolio() {
   const [walletAddress, setWalletAddress] = useState('');

@@ -218,7 +218,7 @@ export const backtestingAnalyticsRouter = router({
       try {
         // Rank strategies
         const ranked = input.strategies
-          .map((s, i) => ({
+          .map((s, _i) => ({
             ...s,
             rank: 0,
             score: 0,

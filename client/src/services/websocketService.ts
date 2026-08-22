@@ -43,7 +43,7 @@ class WebSocketService {
         this.ws = new WebSocket(this.url);
 
         this.ws.onopen = () => {
-          console.log('[WebSocket] Connected');
+          console.info('[WebSocket] Connected');
           this.reconnectAttempts = 0;
           this.isIntentionallyClosed = false;
           this.startHeartbeat();
@@ -66,14 +66,14 @@ class WebSocketService {
         };
 
         this.ws.onclose = () => {
-          console.log('[WebSocket] Disconnected');
+          console.info('[WebSocket] Disconnected');
           this.stopHeartbeat();
           this.notifyConnectionHandlers(false);
 
           if (!this.isIntentionallyClosed && this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
             const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-            console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+            console.info(`[WebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
             setTimeout(() => this.connect().catch(console.error), delay);
           }
         };
@@ -181,7 +181,7 @@ class WebSocketService {
     }
 
     // Log all messages for debugging
-    console.log('[WebSocket] Message:', message);
+    console.info('[WebSocket] Message:', message);
   }
 
   private notifyConnectionHandlers(connected: boolean): void {

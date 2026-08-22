@@ -4,7 +4,7 @@ import {
   exportToJSON,
   exportToYAML,
   createSampleStrategy,
-  exportStrategyWithMetadata,
+  exportStrategyWithMetadata as _exportStrategyWithMetadata,
   parseFromJSON,
   validateStrategy,
   type CANSLIMStrategy,

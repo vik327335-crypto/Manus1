@@ -19,7 +19,7 @@ export const pushNotificationRouter = router({
       deviceType: z.enum(['ios', 'android', 'web']),
       deviceName: z.string().optional(),
     }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx: _ctx }) => {
       try {
         const db = await getDb();
         if (!db) throw new Error('Database not available');
@@ -41,7 +41,7 @@ export const pushNotificationRouter = router({
    */
   unregisterDevice: protectedProcedure
     .input(z.object({ deviceToken: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       try {
         // Remove device token from database
         return {
@@ -68,7 +68,7 @@ export const pushNotificationRouter = router({
       soundEnabled: z.boolean().optional(),
       vibrationEnabled: z.boolean().optional(),
     }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx: _ctx }) => {
       try {
         // Update preferences in database
         return {
@@ -84,7 +84,7 @@ export const pushNotificationRouter = router({
   /**
    * Get notification preferences
    */
-  getPreferences: protectedProcedure.query(async ({ ctx }) => {
+  getPreferences: protectedProcedure.query(async ({ ctx: _ctx }) => {
     try {
       // Fetch from database, return defaults if not found
       const defaultPreferences: NotificationPreferences = {

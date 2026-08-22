@@ -1,6 +1,6 @@
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, BorderStyle, WidthType, HeadingLevel, PageBreak, AlignmentType } from "docx";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun as _TextRun, BorderStyle as _BorderStyle, WidthType, HeadingLevel, PageBreak as _PageBreak, AlignmentType } from "docx";
 import * as XLSX from "xlsx";
-import { Readable } from "stream";
+import { Readable as _Readable } from "stream";
 
 export interface AssetReport {
   ticker: string;

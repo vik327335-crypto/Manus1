@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription as _CardDescription, CardHeader as _CardHeader, CardTitle as _CardTitle } from '@/components/ui/card';
+import { Alert as _Alert, AlertDescription as _AlertDescription, AlertTitle as _AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, AlertCircle, Bell, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

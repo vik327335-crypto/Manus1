@@ -65,7 +65,7 @@ export function AdvancedFilters({ onApply, onReset, isLoading }: AdvancedFilters
 
   const handlePresetSelect = (presetKey: keyof typeof FILTER_PRESETS) => {
     const preset = FILTER_PRESETS[presetKey];
-    setFilters((prev) => ({
+    setFilters((_prev) => ({
       ...preset.filters,
       preset: presetKey,
     }));

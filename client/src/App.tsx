@@ -90,7 +90,7 @@ function AppContent() {
 
   useEffect(() => {
     if (swState.isSupported && swState.isRegistered) {
-      console.log('[App] Service Worker registered and ready');
+      console.info('[App] Service Worker registered and ready');
     }
   }, [swState.isSupported, swState.isRegistered]);
 

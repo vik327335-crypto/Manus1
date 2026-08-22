@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray as _inArray } from "drizzle-orm";
 import {
   paperTradingMonitorRuns,
   paperTradingMonitors,
@@ -332,7 +332,7 @@ async function evaluateSymbol(symbol: string): Promise<{ asOfDate: Date; candleA
   const currentPrice = closes.at(-1)!;
   const ema12 = ema(closes.slice(-60), 12);
   const ema26 = ema(closes.slice(-60), 26);
-  const macdHistory = closes.slice(-35).map((_, index, series) => {
+  const macdHistory = closes.slice(-35).map((_, index, _series) => {
     const source = closes.slice(-(35 - index));
     return ema(source, 12) - ema(source, 26);
   });

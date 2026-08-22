@@ -248,7 +248,7 @@ export const binanceApiRouter = router({
               );
               const total = parseFloat(balance.free) + parseFloat(balance.locked);
               usdValue = Math.round(total * price * 100);
-            } catch (e) {
+            } catch (_e) {
               // If price fetch fails, skip USD value
             }
           } else {

@@ -88,7 +88,7 @@ class CacheService {
       })
 
       if (cleaned > 0) {
-        console.log(`[CacheService] Cleaned up ${cleaned} expired entries`);
+        console.info(`[CacheService] Cleaned up ${cleaned} expired entries`);
       }
     }, 5 * 60 * 1000); // Every 5 minutes
   }

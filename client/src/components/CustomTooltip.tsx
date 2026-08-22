@@ -123,7 +123,7 @@ export function CustomTooltip({
   payload,
   label,
   labelFormatter,
-  contentStyle,
+  contentStyle: _contentStyle,
   wrapperStyle,
   showMetricDescription = true,
   showTrend = false,

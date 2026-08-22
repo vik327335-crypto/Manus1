@@ -98,7 +98,7 @@ export default function Scanner() {
   }, [searchQuery, searchQuery_trpc.data, scanQuery.data]);
 
   const handleAddToWatchlist = (ticker: string) => {
-    console.log("Added to watchlist:", ticker);
+    console.info("Added to watchlist:", ticker);
   };
 
   const handleResetFilters = () => {

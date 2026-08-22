@@ -1,4 +1,4 @@
-import { CustomTooltip, ComparisonTooltip } from '@/components/CustomTooltip';
+import { CustomTooltip, ComparisonTooltip as _ComparisonTooltip } from '@/components/CustomTooltip';
 import React from 'react';
 import { BarChart, Bar, LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

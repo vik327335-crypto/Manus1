@@ -5,7 +5,7 @@ import { getDb } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
 import { encryptExchangeCredential, fingerprintExchangeKey, maskExchangeKey } from "../services/exchangeConnectionCrypto";
 import { checkReadOnlyPermissions, retrieveReadOnlyBalances, type ReadOnlyBalance } from "../services/exchangeBalanceService";
-import { getUsdPriceQuotes, normalizeExchangeAsset, valueBalancesInUsd } from "../services/exchangeBalanceValuationService";
+import { getUsdPriceQuotes, normalizeExchangeAsset as _normalizeExchangeAsset, valueBalancesInUsd } from "../services/exchangeBalanceValuationService";
 
 const providerSchema = z.enum(["binance", "coinbase", "kraken"]);
 

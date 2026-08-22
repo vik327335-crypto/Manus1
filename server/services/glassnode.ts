@@ -3,7 +3,7 @@
  * Provides on-chain metrics for CAN SLIM analysis
  */
 
-interface GlassnodeMetric {
+interface _GlassnodeMetric {
   ticker: string;
   metric: string;
   value: number;

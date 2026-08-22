@@ -127,7 +127,7 @@ export async function cleanupOldSentimentData(olderThanDays: number = 30): Promi
 
     // Note: Drizzle doesn't have a direct delete with date comparison in the simple API
     // This is a placeholder - in production, use raw SQL or Drizzle's advanced features
-    console.log(
+    console.info(
       `[SentimentDB] Would delete sentiment records older than ${cutoffDate.toISOString()}`
     );
     return 0;

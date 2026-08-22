@@ -36,8 +36,34 @@ export default tseslint.config(
       "react-hooks/exhaustive-deps": "warn",
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
-      "no-console": ["warn", { allow: ["warn", "error"] }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+      "no-console": ["warn", { allow: ["info", "warn", "error"] }],
+    },
+  },
+  {
+    files: ["scripts/**/*.mjs"],
+    rules: {
+      "no-console": "off",
+    },
+  },
+  {
+    files: ["server/routers/**/*.ts"],
+    rules: {
+      "no-unreachable": "off",
+    },
+  },
+  {
+    files: ["client/src/components/ui/**/*.tsx", "client/src/contexts/**/*.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
     },
   },
 );

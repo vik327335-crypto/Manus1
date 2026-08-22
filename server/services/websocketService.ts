@@ -70,7 +70,7 @@ export class WebSocketService {
    */
   private setupConnectionHandlers() {
     this.io.on("connection", (socket: Socket) => {
-      console.log(`[WebSocket] Client connected: ${socket.id}`);
+      console.info(`[WebSocket] Client connected: ${socket.id}`);
 
       // Handle user identification
       socket.on("identify", (userId: string) => {
@@ -79,7 +79,7 @@ export class WebSocketService {
         }
         this.userConnections.get(userId)!.add(socket.id);
         socket.data.userId = userId;
-        console.log(`[WebSocket] User ${userId} identified with socket ${socket.id}`);
+        console.info(`[WebSocket] User ${userId} identified with socket ${socket.id}`);
       });
 
       // Handle price subscription
@@ -89,7 +89,7 @@ export class WebSocketService {
         }
         this.priceSubscriptions.get(ticker)!.add(socket.id);
         socket.join(`price:${ticker}`);
-        console.log(`[WebSocket] Socket ${socket.id} subscribed to ${ticker}`);
+        console.info(`[WebSocket] Socket ${socket.id} subscribed to ${ticker}`);
       });
 
       // Handle price unsubscription
@@ -114,7 +114,7 @@ export class WebSocketService {
         if (userId) {
           this.userConnections.get(userId)?.delete(socket.id);
         }
-        console.log(`[WebSocket] Client disconnected: ${socket.id}`);
+        console.info(`[WebSocket] Client disconnected: ${socket.id}`);
       });
 
       // Handle errors

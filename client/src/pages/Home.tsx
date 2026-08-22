@@ -127,7 +127,7 @@ function PriceCard({ crypto, isUpdating }: { crypto: PriceData; isUpdating?: boo
 }
 
 export default function Home() {
-  const { user, isAuthenticated } = useAuth();
+  const { user: _user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const { isConnected, onPriceUpdate, subscribeToPrices } = useWebSocket({ autoConnect: true });
   const [prices, setPrices] = useState<Record<string, PriceData>>({
@@ -191,14 +191,14 @@ export default function Home() {
   useEffect(() => {
     if (isConnected) {
       subscribeToPrices(Object.keys(prices));
-      console.log("[Home] Subscribed to price updates");
+      console.info("[Home] Subscribed to price updates");
     }
   }, [isConnected, subscribeToPrices, prices]);
 
   // Listen to price updates from WebSocket
   useEffect(() => {
     const unsubscribe = onPriceUpdate((data) => {
-      console.log("[Home] Price update received:", data);
+      console.info("[Home] Price update received:", data);
       const { ticker, price, change } = data;
       
       if (ticker && prices[ticker]) {

@@ -20,7 +20,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { TrendingUp, TrendingDown, Zap } from "lucide-react";
+import { TrendingUp as _TrendingUp, TrendingDown as _TrendingDown, Zap as _Zap } from "lucide-react";
 
 interface SentimentData {
   source: "twitter" | "reddit" | "news" | "telegram" | "discord";
@@ -124,7 +124,7 @@ export default function SentimentAnalyzer() {
   // Timeline data
   const timelineData = sentimentData
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-    .map((d, i) => ({
+    .map((d, _i) => ({
       time: new Date(d.timestamp).toLocaleTimeString(),
       score: d.score,
       confidence: d.confidence,

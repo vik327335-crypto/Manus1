@@ -152,7 +152,7 @@ export default function ReportGenerator() {
     const report = reports.find((r) => r.id === id);
     if (report) {
       // Simulate download
-      console.log(`Downloading ${report.name}...`);
+      console.info(`Downloading ${report.name}...`);
       alert(`Download started for: ${report.name}`);
     }
   };

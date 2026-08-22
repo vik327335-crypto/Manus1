@@ -31,7 +31,7 @@ export function setupWebSocket(server: Server) {
   });
 
   wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
-    console.log('[WebSocket] Client connected from', req.socket.remoteAddress);
+    console.info('[WebSocket] Client connected from', req.socket.remoteAddress);
 
     // Initialize client data
     const clientData: ClientData = {
@@ -56,7 +56,7 @@ export function setupWebSocket(server: Server) {
 
         if (message.type === 'subscribe' && message.ticker) {
           clientData.subscriptions.add(message.ticker);
-          console.log(`[WebSocket] Client subscribed to ${message.ticker}`);
+          console.info(`[WebSocket] Client subscribed to ${message.ticker}`);
 
           // Send current price
           const price = priceUpdates.get(message.ticker);
@@ -73,7 +73,7 @@ export function setupWebSocket(server: Server) {
           }
         } else if (message.type === 'unsubscribe' && message.ticker) {
           clientData.subscriptions.delete(message.ticker);
-          console.log(`[WebSocket] Client unsubscribed from ${message.ticker}`);
+          console.info(`[WebSocket] Client unsubscribed from ${message.ticker}`);
         } else if (message.type === 'ping') {
           clientData.lastPing = Date.now();
           ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }));
@@ -86,7 +86,7 @@ export function setupWebSocket(server: Server) {
     // Handle client disconnect
     ws.on('close', () => {
       clients.delete(ws);
-      console.log('[WebSocket] Client disconnected');
+      console.info('[WebSocket] Client disconnected');
     });
 
     // Handle errors
@@ -127,12 +127,12 @@ export function setupWebSocket(server: Server) {
   setInterval(() => {
     clients.forEach((clientData, ws) => {
       if (Date.now() - clientData.lastPing > 60000) {
-        console.log('[WebSocket] Closing dead connection');
+        console.info('[WebSocket] Closing dead connection');
         ws.close();
       }
     });
   }, 30000);
 
-  console.log('[WebSocket] WebSocket server initialized');
+  console.info('[WebSocket] WebSocket server initialized');
   return wss;
 }

@@ -212,7 +212,7 @@ export const walletIntegrationRouter = router({
         message: z.string(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx: _ctx }) => {
       try {
         // Verify signature first
         const verification = WalletIntegrationService.verifySignature(
@@ -255,7 +255,7 @@ export const walletIntegrationRouter = router({
         walletAddress: z.string(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx: _ctx }) => {
       try {
         // In production, delete wallet from database
         // await db.userWallets.delete({
@@ -277,7 +277,7 @@ export const walletIntegrationRouter = router({
   /**
    * Get user's linked wallets
    */
-  getUserWallets: protectedProcedure.query(async ({ ctx }) => {
+  getUserWallets: protectedProcedure.query(async ({ ctx: _ctx }) => {
     try {
       // In production, fetch wallets from database
       // const wallets = await db.userWallets.findMany({
@@ -303,7 +303,7 @@ export const walletIntegrationRouter = router({
         walletAddress: z.string(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx: _ctx }) => {
       try {
         // In production, update database
         // await db.userWallets.updateMany(

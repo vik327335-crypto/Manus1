@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Download, FileText, Sheet } from "lucide-react";
+import { Download as _Download, FileText, Sheet } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 

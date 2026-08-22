@@ -46,7 +46,7 @@ export default function DayTradingChart() {
   const [selectedSignal, setSelectedSignal] = useState<Signal | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [panOffset, setPanOffset] = useState(0);
-  const chartRef = useRef<HTMLDivElement>(null);
+  const _chartRef = useRef<HTMLDivElement>(null);
 
   // Симуляция получения данных
   useEffect(() => {

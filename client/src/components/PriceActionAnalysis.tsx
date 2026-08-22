@@ -55,7 +55,7 @@ interface PriceActionAnalysisProps {
 function calculateSupportResistance(data: PricePoint[]): SupportResistanceLevel[] {
   if (data.length < 5) return [];
 
-  const levels: SupportResistanceLevel[] = [];
+  const _levels: SupportResistanceLevel[] = [];
   const tolerance = 0.02; // 2% tolerance for grouping levels
 
   // Find local highs and lows
@@ -83,7 +83,7 @@ function calculateSupportResistance(data: PricePoint[]): SupportResistanceLevel[
     let found = false;
 
     const entries = Array.from(grouped.entries());
-    for (const [key, level] of entries) {
+    for (const [_key, level] of entries) {
       const diff = Math.abs(level.price - swing.price) / level.price;
       if (diff < tolerance) {
         level.touches++;
@@ -211,7 +211,7 @@ function calculateVolatility(data: PricePoint[]): VolatilityMetrics {
   };
 }
 
-export function PriceActionAnalysis({ data, ticker }: PriceActionAnalysisProps) {
+export function PriceActionAnalysis({ data, ticker: _ticker }: PriceActionAnalysisProps) {
   const supportResistance = useMemo(() => calculateSupportResistance(data), [data]);
   const trend = useMemo(() => analyzeTrend(data), [data]);
   const volatility = useMemo(() => calculateVolatility(data), [data]);

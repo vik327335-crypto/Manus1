@@ -184,7 +184,7 @@ Use /alerts to modify alert preferences.
       }
     });
 
-    console.log("[Telegram] Bot initialized successfully");
+    console.info("[Telegram] Bot initialized successfully");
     return bot;
   } catch (error) {
     console.error("[Telegram] Failed to initialize bot:", error);
@@ -401,6 +401,6 @@ export async function broadcastAlert(
 export function stopTelegramBot() {
   if (bot) {
     bot.stopPolling();
-    console.log("[Telegram] Bot stopped");
+    console.info("[Telegram] Bot stopped");
   }
 }

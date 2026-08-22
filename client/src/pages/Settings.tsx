@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataUpdateSettings } from '@/components/DataUpdateSettings';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input as _Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings as SettingsIcon, Bell, Database, User, Moon, Sun, Globe, Lock } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Database, User, Moon, Sun, Globe as _Globe, Lock } from 'lucide-react';
 
 export default function Settings() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');

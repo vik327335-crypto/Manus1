@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Activity, Target, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Target as _Target, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StrategyKPICardProps {

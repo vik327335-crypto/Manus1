@@ -6,7 +6,7 @@
 import { cache } from './cacheService';
 
 const POLYGON_API_KEY = process.env.POLYGON_API_KEY || '';
-const POLYGON_BASE_URL = 'https://api.polygon.io/v1/open-close';
+const _POLYGON_BASE_URL = 'https://api.polygon.io/v1/open-close';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 export interface OHLCVData {
@@ -42,7 +42,7 @@ export async function getHistoricalOHLCV(
   // Check cache first
   const cached = cache.get(cacheKey);
   if (cached) {
-    console.log(`[PolygonService] Cache hit for ${ticker} (${startDate} to ${endDate})`);
+    console.info(`[PolygonService] Cache hit for ${ticker} (${startDate} to ${endDate})`);
     return cached as HistoricalDataResponse;
   }
 

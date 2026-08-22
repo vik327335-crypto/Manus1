@@ -7,10 +7,10 @@ import { router, protectedProcedure } from '../_core/trpc';
 import { z } from 'zod';
 import PortfolioRecommendationService, {
   PortfolioAsset,
-  RecommendationResult,
-  PortfolioOptimizationResult,
+  RecommendationResult as _RecommendationResult,
+  PortfolioOptimizationResult as _PortfolioOptimizationResult,
 } from '../services/portfolioRecommendationService';
-import { getDb } from '../db';
+import { getDb as _getDb } from '../db';
 
 export const portfolioRecommendationRouter = router({
   /**

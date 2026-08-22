@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, LineChart as _LineChart, Line as _Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend as _Legend, ResponsiveContainer } from "recharts";
 
 /**
  * Страница отчётов по CAN SLIM критериям

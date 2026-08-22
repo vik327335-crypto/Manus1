@@ -270,7 +270,7 @@ export class SolanaIntegrationService {
    */
   static async getPortfolioRecommendations(
     nfts: SolanaNFT[],
-    budget: number
+    _budget: number
   ): Promise<Array<{ collection: string; reason: string; opportunity: number }>> {
     try {
       const collections = Array.from(new Set(nfts.map(nft => nft.collection)));

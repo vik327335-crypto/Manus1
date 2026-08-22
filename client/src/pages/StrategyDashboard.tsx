@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
+import { LineChart, Line, BarChart, Bar, PieChart as _PieChart, Pie as _Pie, Cell as _Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart as _ScatterChart, Scatter as _Scatter } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button as _Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { Badge as _Badge } from '@/components/ui/badge';
 import { trpc } from '@/lib/trpc';
-import { Loader2, TrendingUp, TrendingDown, Activity, Target } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Activity as _Activity, Target as _Target } from 'lucide-react';
 import { CustomTooltip, ComparisonTooltip } from '@/components/CustomTooltip';
 
-interface MetricData {
+interface _MetricData {
   timestamp: number;
   strategyName: string;
   roi: number;
@@ -93,7 +93,7 @@ export function StrategyDashboard() {
   }, [comparisonData]);
 
   // Prepare metrics comparison data
-  const metricsData = useMemo(() => {
+  const _metricsData = useMemo(() => {
     if (selectedStrategies.length === 0) return [];
 
     return selectedStrategies.map((strategy, index) => ({

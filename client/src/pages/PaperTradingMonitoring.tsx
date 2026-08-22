@@ -140,7 +140,7 @@ export default function PaperTradingMonitoring() {
       degradedProfitFactorMilli: monitor.degradedProfitFactorMilli,
       degradedBenchmarkLagBps: monitor.degradedBenchmarkLagBps,
     });
-  }, [monitor?.id, monitor?.minimumTradeCount, monitor?.watchProfitFactorMilli, monitor?.degradedProfitFactorMilli, monitor?.degradedBenchmarkLagBps]);
+  }, [monitor]);
 
   const updateThresholds = trpc.paperTradingMonitor.updateThresholds.useMutation({
     onSuccess: async () => {

@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
-import { paperTradingAccounts, paperTrades } from "../../drizzle/schema";
+import { paperTradingAccounts as _paperTradingAccounts, paperTrades as _paperTrades } from "../../drizzle/schema";
 
 export const paperTradingRouter = router({
   /**
@@ -14,7 +14,7 @@ export const paperTradingRouter = router({
         initialBalance: z.number().positive(), // in dollars
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -30,7 +30,7 @@ export const paperTradingRouter = router({
   /**
    * Получает список всех виртуальных счётов пользователя
    */
-  getAccounts: protectedProcedure.query(async ({ ctx }) => {
+  getAccounts: protectedProcedure.query(async ({ ctx: _ctx }) => {
     // TODO: Implement when db.query is available
     return [];
   }),
@@ -40,7 +40,7 @@ export const paperTradingRouter = router({
    */
   getAccountDetail: protectedProcedure
     .input(z.object({ accountId: z.number() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.query is available
       return null;
     }),
@@ -57,7 +57,7 @@ export const paperTradingRouter = router({
         entryPrice: z.number().positive(), // in dollars
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -80,7 +80,7 @@ export const paperTradingRouter = router({
         exitPrice: z.number().positive(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -104,7 +104,7 @@ export const paperTradingRouter = router({
         offset: z.number().min(0).default(0),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return [];
     }),
@@ -114,7 +114,7 @@ export const paperTradingRouter = router({
    */
   getOpenPositions: protectedProcedure
     .input(z.object({ accountId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return [];
     }),
@@ -124,7 +124,7 @@ export const paperTradingRouter = router({
    */
   getAccountStats: protectedProcedure
     .input(z.object({ accountId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return {
         initialBalance: 0,
@@ -142,7 +142,7 @@ export const paperTradingRouter = router({
    */
   deleteAccount: protectedProcedure
     .input(z.object({ accountId: z.number() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.delete is available
       return { success: true };
     }),
@@ -157,7 +157,7 @@ export const paperTradingRouter = router({
         amount: z.number().positive(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.update is available
       return { success: true, newBalance: 0 };
     }),
@@ -167,7 +167,7 @@ export const paperTradingRouter = router({
    */
   compareWithRealPortfolio: protectedProcedure
     .input(z.object({ accountId: z.number() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.query is available
       return {
         paperReturn: 0,

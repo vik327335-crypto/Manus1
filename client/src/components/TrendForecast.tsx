@@ -49,7 +49,7 @@ export function TrendForecast({ ticker, historicalPrices }: TrendForecastProps) 
     const confidence = Math.max(0, Math.min(100, r2 * 100));
 
     // Генерация прогноза на 7 дней вперёд
-    const forecastData = historicalPrices.map((item, index) => ({
+    const forecastData = historicalPrices.map((item, _index) => ({
       date: new Date(item.date).toLocaleDateString("ru-RU"),
       actual: item.price as any,
       forecast: undefined as any,

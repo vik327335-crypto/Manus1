@@ -38,7 +38,7 @@ export async function createExportJob(
   };
 
   // Store in database (when schema is updated)
-  console.log(`[BackgroundJobs] Created job: ${id}`);
+  console.info(`[BackgroundJobs] Created job: ${id}`);
 
   // Schedule the job
   if (job.enabled) {
@@ -55,7 +55,7 @@ export async function updateExportJob(
   jobId: string,
   updates: Partial<ExportJob>
 ): Promise<ExportJob | null> {
-  console.log(`[BackgroundJobs] Updated job: ${jobId}`);
+  console.info(`[BackgroundJobs] Updated job: ${jobId}`);
 
   // Cancel existing schedule
   if (jobQueue.has(jobId)) {
@@ -81,7 +81,7 @@ export async function deleteExportJob(jobId: string): Promise<boolean> {
     jobQueue.delete(jobId);
   }
 
-  console.log(`[BackgroundJobs] Deleted job: ${jobId}`);
+  console.info(`[BackgroundJobs] Deleted job: ${jobId}`);
   return true;
 }
 
@@ -110,7 +110,7 @@ function scheduleJob(job: ExportJob): void {
   }, delay);
 
   jobQueue.set(job.id, timeout);
-  console.log(
+  console.info(
     `[BackgroundJobs] Scheduled job ${job.id} to run at ${nextRun.toISOString()}`
   );
 }
@@ -147,7 +147,7 @@ function calculateNextRun(job: ExportJob): Date {
  * Execute a job (generate and send report)
  */
 async function executeJob(job: ExportJob): Promise<void> {
-  console.log(`[BackgroundJobs] Executing job: ${job.id}`);
+  console.info(`[BackgroundJobs] Executing job: ${job.id}`);
 
   try {
     // Generate report data
@@ -157,7 +157,7 @@ async function executeJob(job: ExportJob): Promise<void> {
     await sendReportEmail(job.email, job.name, reportData, job.type);
 
     // Update job's lastRun
-    console.log(`[BackgroundJobs] Job ${job.id} completed successfully`);
+    console.info(`[BackgroundJobs] Job ${job.id} completed successfully`);
   } catch (error) {
     console.error(`[BackgroundJobs] Job execution error:`, error);
     throw error;
@@ -171,7 +171,7 @@ async function generateReportData(
   tickers: string[],
   type: "pdf" | "csv" | "json"
 ): Promise<string> {
-  console.log(`[BackgroundJobs] Generating ${type} report for ${tickers.join(",")}`);
+  console.info(`[BackgroundJobs] Generating ${type} report for ${tickers.join(",")}`);
 
   // Placeholder - would generate actual report
   const data = {
@@ -200,10 +200,10 @@ async function sendReportEmail(
   reportData: string,
   type: "pdf" | "csv" | "json"
 ): Promise<void> {
-  console.log(`[BackgroundJobs] Sending report to ${email}`);
+  console.info(`[BackgroundJobs] Sending report to ${email}`);
 
   // Placeholder - would use email service
-  console.log(`Email sent to ${email} with ${jobName} report (${type})`);
+  console.info(`Email sent to ${email} with ${jobName} report (${type})`);
 }
 
 /**
@@ -211,7 +211,7 @@ async function sendReportEmail(
  */
 export async function getUserJobs(userId: string): Promise<ExportJob[]> {
   // Placeholder - would query database
-  console.log(`[BackgroundJobs] Fetching jobs for user: ${userId}`);
+  console.info(`[BackgroundJobs] Fetching jobs for user: ${userId}`);
   return [];
 }
 
@@ -220,7 +220,7 @@ export async function getUserJobs(userId: string): Promise<ExportJob[]> {
  */
 export async function getJobById(jobId: string): Promise<ExportJob | null> {
   // Placeholder - would query database
-  console.log(`[BackgroundJobs] Fetching job: ${jobId}`);
+  console.info(`[BackgroundJobs] Fetching job: ${jobId}`);
   return null;
 }
 
@@ -237,7 +237,7 @@ export function getActiveJobs(): string[] {
 export function stopAllJobs(): void {
   jobQueue.forEach((timeout) => clearTimeout(timeout));
   jobQueue.clear();
-  console.log("[BackgroundJobs] All jobs stopped");
+  console.info("[BackgroundJobs] All jobs stopped");
 }
 
 /**

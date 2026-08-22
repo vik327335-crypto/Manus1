@@ -29,11 +29,11 @@ import { coingeckoRouter } from "./routers/coingeckoRouter";
 import { xtcomRouter } from "./routers/xtcomRouter";
 import {
   getAssetsWithScores,
-  getLatestMarketTrend,
+  getLatestMarketTrend as _getLatestMarketTrend,
   getUserWatchlist,
   addToWatchlist,
   removeFromWatchlist,
-  getAssetSentiment,
+  getAssetSentiment as _getAssetSentiment,
   getAssetById,
   getAssetByTicker,
   searchAssets,

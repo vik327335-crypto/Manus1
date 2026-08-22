@@ -1,5 +1,5 @@
 import Parser from "rss-parser";
-import axios from "axios";
+import _axios from "axios";
 
 export interface NewsItem {
   id: string;

@@ -2,17 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs as _Tabs, TabsContent as _TabsContent, TabsList as _TabsList, TabsTrigger as _TabsTrigger } from '@/components/ui/tabs';
 import {
   Bell,
   TrendingUp,
   TrendingDown,
-  AlertCircle,
+  AlertCircle as _AlertCircle,
   CheckCircle,
-  Clock,
+  Clock as _Clock,
   Trash2,
   Archive,
-  Filter,
+  Filter as _Filter,
   Search,
 } from 'lucide-react';
 

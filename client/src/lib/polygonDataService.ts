@@ -36,7 +36,7 @@ export async function fetchOHLCVData(
     // Check cache first
     const cached = cache.get(cacheKey);
     if (cached && isCacheValid(cached.timestamp)) {
-      console.log(`[PolygonDataService] Using cached data for ${cacheKey}`);
+      console.info(`[PolygonDataService] Using cached data for ${cacheKey}`);
       return { success: true, data: cached.data };
     }
 
@@ -75,7 +75,7 @@ export async function fetchOHLCVData(
         timestamp: Date.now(),
       });
 
-      console.log(`[PolygonDataService] Fetched ${ohlcvData.length} data points for ${ticker}`);
+      console.info(`[PolygonDataService] Fetched ${ohlcvData.length} data points for ${ticker}`);
       return { success: true, data: ohlcvData };
     }
 
@@ -149,11 +149,11 @@ export function clearCache(ticker?: string): void {
       }
     }
     keysToDelete.forEach(key => cache.delete(key));
-    console.log(`[PolygonDataService] Cleared cache for ${ticker}`);
+    console.info(`[PolygonDataService] Cleared cache for ${ticker}`);
   } else {
     // Clear all cache
     cache.clear();
-    console.log('[PolygonDataService] Cleared all cache');
+    console.info('[PolygonDataService] Cleared all cache');
   }
 }
 

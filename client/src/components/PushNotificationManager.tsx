@@ -8,7 +8,7 @@ export function PushNotificationManager() {
   const {
     isSupported,
     isSubscribed,
-    requestPermission,
+    requestPermission: _requestPermission,
     subscribe,
     unsubscribe,
     sendLocalNotification,

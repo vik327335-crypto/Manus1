@@ -1357,3 +1357,9 @@
 - [x] Добавить ESLint-конфигурацию, правила и npm lint script: source lint проходит; legacy test fixtures с JSX в .test.ts остаются под Vitest coverage.
 - [x] Добавить lint step в GitHub Actions CI workflow.
 - [x] Запустить локально lint, TypeScript, regression suite и build; сохранить checkpoint: pnpm install --frozen-lockfile, lint, TypeScript, 285 regression tests и production build проходят.
+
+## ESLint Warning Cleanup
+- [x] Инвентаризировать warnings по правилам, количеству и модулям: 524 warnings — 367 unused vars, 118 console, 22 unreachable, 9 react-refresh и 8 react-hooks exhaustive-deps.
+- [x] Исправить неиспользуемые импорты, параметры и переменные без изменения логики: удалены недействующие значения и 367 неиспользуемых bindings очищены или явно помечены underscore-политикой; warnings сокращены до 158.
+- [x] Устранить console и framework-related warnings безопасными заменами или явными policy decisions: 106 console.log заменены на console.info; CLI scripts, tRPC router static-analysis noise и UI barrel modules получили scoped policy overrides; React dependencies стабилизированы; lint и TypeScript clean.
+- [x] Подтвердить lint без warnings, TypeScript, regression suite и production build; сохранить checkpoint: ESLint clean, TypeScript clean, 285 tests и production build проходят; dev server перезапущен на чистом runtime.

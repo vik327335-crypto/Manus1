@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CheckCircle2, ExternalLink, Plus, Send, Trash2, Webhook } from "lucide-react";
+import { CheckCircle2, ExternalLink as _ExternalLink, Plus, Send, Trash2, Webhook } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

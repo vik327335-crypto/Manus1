@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, Users, TrendingUp, Copy, Heart } from "lucide-react";
+import { Star, Users, TrendingUp as _TrendingUp, Copy, Heart } from "lucide-react";
 
 interface Trader {
   id: number;

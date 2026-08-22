@@ -19,7 +19,7 @@ const ALERT_TYPE_LABELS: Record<string, string> = {
   sentiment_change: "Sentiment Change",
 };
 
-export function AlertHistory({ history, isLoading }: AlertHistoryProps) {
+export function AlertHistory({ history, isLoading: _isLoading }: AlertHistoryProps) {
   if (history.length === 0) {
     return (
       <Card className="p-8 text-center bg-card border-border">

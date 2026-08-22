@@ -22,7 +22,7 @@ interface PeriodComparisonProps {
   ticker: string;
 }
 
-export function PeriodComparison({ periods, ticker }: PeriodComparisonProps) {
+export function PeriodComparison({ periods, ticker: _ticker }: PeriodComparisonProps) {
   const comparisonData = useMemo(() => {
     return periods.map((p) => ({
       period: p.period,

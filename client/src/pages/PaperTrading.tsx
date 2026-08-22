@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Input as _Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   TrendingUp,
   TrendingDown,
-  DollarSign,
-  Percent,
+  DollarSign as _DollarSign,
+  Percent as _Percent,
   BarChart3,
 } from "lucide-react";
 
@@ -89,12 +89,12 @@ const mockTrades: PaperTrade[] = [
 ];
 
 export default function PaperTrading() {
-  const [selectedAccount, setSelectedAccount] = useState<PaperAccount | null>(
+  const [selectedAccount, _setSelectedAccount] = useState<PaperAccount | null>(
     mockAccounts[0] || null
   );
-  const [showNewAccountForm, setShowNewAccountForm] = useState(false);
-  const [newAccountName, setNewAccountName] = useState("");
-  const [newAccountBalance, setNewAccountBalance] = useState("10000");
+  const [_showNewAccountForm, setShowNewAccountForm] = useState(false);
+  const [_newAccountName, _setNewAccountName] = useState("");
+  const [_newAccountBalance, _setNewAccountBalance] = useState("10000");
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("ru-RU", {

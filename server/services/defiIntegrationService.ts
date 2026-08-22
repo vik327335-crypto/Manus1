@@ -284,7 +284,7 @@ export class DeFiIntegrationService {
     const priceRatio0 = currentPrice0 / initialPrice0;
     const priceRatio1 = currentPrice1 / initialPrice1;
 
-    const k = Math.sqrt(priceRatio0 * priceRatio1);
+    const _k = Math.sqrt(priceRatio0 * priceRatio1);
     const il = (2 * Math.sqrt(priceRatio0 * priceRatio1)) / (priceRatio0 + priceRatio1) - 1;
 
     return il;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Bell, AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
+import { Bell, AlertCircle, TrendingUp, TrendingDown as _TrendingDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface Notification {

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const useToast = () => ({
-  toast: (props: any) => console.log('[Toast]', props.title, props.description),
+  toast: (props: any) => console.info('[Toast]', props.title, props.description),
 });
 
 interface ExportChartButtonProps {
@@ -28,7 +28,7 @@ export function ExportChartButton({
   onExportCSV,
 }: ExportChartButtonProps) {
   const { toast } = useToast();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const _canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleExportPNG = async () => {
     try {

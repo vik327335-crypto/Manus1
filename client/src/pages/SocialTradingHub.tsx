@@ -35,7 +35,7 @@ export const SocialTradingHub: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [likedStrategies, setLikedStrategies] = useState<Set<string>>(new Set());
 
-  const mockStrategies: Strategy[] = [
+  const mockStrategies = useMemo<Strategy[]>(() => [
     {
       id: '1',
       name: 'CAN SLIM Momentum',
@@ -72,7 +72,7 @@ export const SocialTradingHub: React.FC = () => {
       copiers: 38,
       tags: ['breakout', 'trend-following', 'technical'],
     },
-  ];
+  ], []);
 
   const mockLeaderboard: LeaderboardEntry[] = [
     {
@@ -117,7 +117,7 @@ export const SocialTradingHub: React.FC = () => {
 
       return matchesSearch && matchesTags;
     });
-  }, [searchQuery, selectedTags]);
+  }, [mockStrategies, searchQuery, selectedTags]);
 
   const toggleLike = (strategyId: string) => {
     const newLiked = new Set(likedStrategies);

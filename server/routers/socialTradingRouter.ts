@@ -1,9 +1,9 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
-import { traders, copiedTrades, traderFollowers } from "../../drizzle/schema";
-import { eq, desc } from "drizzle-orm";
-import SocialTradingService from "../services/socialTradingService";
+import { traders as _traders, copiedTrades, traderFollowers } from "../../drizzle/schema";
+import { eq as _eq, desc as _desc } from "drizzle-orm";
+import _SocialTradingService from "../services/socialTradingService";
 
 export const socialTradingRouter = router({
   /**
@@ -17,7 +17,7 @@ export const socialTradingRouter = router({
         sortBy: z.enum(["rating", "followers", "winRate"]).default("rating"),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return [];
     }),
@@ -27,7 +27,7 @@ export const socialTradingRouter = router({
    */
   getTraderProfile: protectedProcedure
     .input(z.object({ traderId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return null;
     }),
@@ -37,7 +37,7 @@ export const socialTradingRouter = router({
    */
   getTraderStats: protectedProcedure
     .input(z.object({ traderId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return {
         totalTrades: 0,
@@ -91,7 +91,7 @@ export const socialTradingRouter = router({
    */
   unfollowTrader: protectedProcedure
     .input(z.object({ traderId: z.number() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -154,7 +154,7 @@ export const socialTradingRouter = router({
         exitPrice: z.number().positive(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -177,7 +177,7 @@ export const socialTradingRouter = router({
         offset: z.number().min(0).default(0),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.query is available
       return [];
     }),
@@ -192,7 +192,7 @@ export const socialTradingRouter = router({
         offset: z.number().min(0).default(0),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.query is available
       return [];
     }),
@@ -207,7 +207,7 @@ export const socialTradingRouter = router({
         limit: z.number().min(1).max(50).default(10),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // TODO: Implement when db.query is available
       return [];
     }),
@@ -223,7 +223,7 @@ export const socialTradingRouter = router({
         avatar: z.string().url().optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -256,7 +256,7 @@ export const socialTradingRouter = router({
         avatar: z.string().url().optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.update is available
       return { success: true };
     }),
@@ -264,7 +264,7 @@ export const socialTradingRouter = router({
   /**
    * Получает статистику по скопированным сделкам
    */
-  getCopiedTradesStats: protectedProcedure.query(async ({ ctx }) => {
+  getCopiedTradesStats: protectedProcedure.query(async ({ ctx: _ctx }) => {
     // TODO: Implement when db.query is available
     return {
       totalCopied: 0,

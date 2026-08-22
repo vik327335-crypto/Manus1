@@ -124,7 +124,7 @@ export class PortfolioRecommendationService {
   static async generateBuyRecommendations(
     assets: PortfolioAsset[],
     portfolioValue: number,
-    marketData: any[]
+    _marketData: any[]
   ): Promise<RecommendationResult[]> {
     const recommendations: RecommendationResult[] = [];
 
@@ -189,12 +189,10 @@ export class PortfolioRecommendationService {
   ): Promise<PortfolioOptimizationResult> {
     // Calculate current allocation
     const currentAllocation: Record<string, number> = {};
-    let totalValue = 0;
 
     for (const asset of assets) {
       const assetValue = asset.currentPrice * asset.quantity;
       currentAllocation[asset.symbol] = assetValue / portfolioValue;
-      totalValue += assetValue;
     }
 
     // Calculate portfolio metrics

@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, TrendingUp, BarChart3, Activity } from "lucide-react";
+import { Alert as _Alert, AlertDescription as _AlertDescription } from "@/components/ui/alert";
+import { Loader2, TrendingUp, BarChart3 as _BarChart3, Activity as _Activity } from "lucide-react";
 
 /**
  * Backtesting Engine Component

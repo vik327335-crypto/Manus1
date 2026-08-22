@@ -38,7 +38,7 @@ export class PushNotificationService {
     try {
       // Firebase Admin SDK implementation would go here
       // For now, we'll return a mock response
-      console.log(`Sending notification to device: ${deviceToken}`, payload);
+      console.info(`Sending notification to device: ${deviceToken}`, payload);
       return `notification_${Date.now()}`;
     } catch (error) {
       throw new Error(`Failed to send notification: ${String(error)}`);
@@ -53,7 +53,7 @@ export class PushNotificationService {
     payload: PushNotificationPayload
   ): Promise<{ successCount: number; failureCount: number; errors: string[] }> {
     try {
-      console.log(`Sending notification to ${deviceTokens.length} devices`, payload);
+      console.info(`Sending notification to ${deviceTokens.length} devices`, payload);
       return {
         successCount: deviceTokens.length,
         failureCount: 0,
@@ -72,7 +72,7 @@ export class PushNotificationService {
     payload: PushNotificationPayload
   ): Promise<string> {
     try {
-      console.log(`Sending notification to topic: ${topic}`, payload);
+      console.info(`Sending notification to topic: ${topic}`, payload);
       return `topic_notification_${Date.now()}`;
     } catch (error) {
       throw new Error(`Failed to send topic notification: ${String(error)}`);
@@ -87,7 +87,7 @@ export class PushNotificationService {
     topic: string
   ): Promise<void> {
     try {
-      console.log(`Subscribing ${deviceTokens.length} devices to topic: ${topic}`);
+      console.info(`Subscribing ${deviceTokens.length} devices to topic: ${topic}`);
     } catch (error) {
       throw new Error(`Failed to subscribe to topic: ${String(error)}`);
     }
@@ -101,7 +101,7 @@ export class PushNotificationService {
     topic: string
   ): Promise<void> {
     try {
-      console.log(`Unsubscribing ${deviceTokens.length} devices from topic: ${topic}`);
+      console.info(`Unsubscribing ${deviceTokens.length} devices from topic: ${topic}`);
     } catch (error) {
       throw new Error(`Failed to unsubscribe from topic: ${String(error)}`);
     }

@@ -90,7 +90,7 @@ export function DataUpdateSettings() {
       await dataUpdateService.forceUpdate();
       updateStats();
       toast.success('Update completed');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Update failed');
     } finally {
       setIsLoading(false);

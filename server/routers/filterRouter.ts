@@ -225,7 +225,7 @@ export const filterRouter = router({
 
       const avgScore = scores.length > 0 ? scores.reduce((a: number, b: number) => a + b) / scores.length : 0;
       const maxScore = scores.length > 0 ? Math.max(...scores) : 0;
-      const avgChange = prices.length > 0 ? prices.reduce((a: number, b: number) => a + b) / prices.length : 0;
+      const _avgChange = prices.length > 0 ? prices.reduce((a: number, b: number) => a + b) / prices.length : 0;
 
       return [
         {

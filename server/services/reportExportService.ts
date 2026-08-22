@@ -4,9 +4,9 @@
  */
 
 import { Workbook } from "exceljs";
-import { PDFDocument, rgb, PDFPage } from "pdf-lib";
-import * as fs from "fs";
-import * as path from "path";
+import { PDFDocument, rgb, PDFPage as _PDFPage } from "pdf-lib";
+import * as _fs from "fs";
+import * as _path from "path";
 
 export interface PortfolioReport {
   userId: string;

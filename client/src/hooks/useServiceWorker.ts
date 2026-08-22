@@ -17,7 +17,7 @@ export function useServiceWorker() {
 
   useEffect(() => {
     if (!state.isSupported) {
-      console.log('[useServiceWorker] Service Worker not supported');
+      console.info('[useServiceWorker] Service Worker not supported');
       return;
     }
 
@@ -28,7 +28,7 @@ export function useServiceWorker() {
           '/service-worker-enhanced.js',
           { scope: '/' }
         );
-        console.log('[useServiceWorker] Service Worker registered:', registration);
+        console.info('[useServiceWorker] Service Worker registered:', registration);
         setState((prev) => ({ ...prev, isRegistered: true }));
 
         // Check for updates periodically
@@ -47,7 +47,7 @@ export function useServiceWorker() {
                 newWorker.state === 'installed' &&
                 navigator.serviceWorker.controller
               ) {
-                console.log('[useServiceWorker] Update available');
+                console.info('[useServiceWorker] Update available');
                 setState((prev) => ({ ...prev, updateAvailable: true }));
               }
             });
@@ -62,12 +62,12 @@ export function useServiceWorker() {
 
     // Listen for online/offline events
     const handleOnline = () => {
-      console.log('[useServiceWorker] Online');
+      console.info('[useServiceWorker] Online');
       setState((prev) => ({ ...prev, isOnline: true }));
     };
 
     const handleOffline = () => {
-      console.log('[useServiceWorker] Offline');
+      console.info('[useServiceWorker] Offline');
       setState((prev) => ({ ...prev, isOnline: false }));
     };
 
@@ -84,7 +84,7 @@ export function useServiceWorker() {
   const clearCache = async () => {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
-      console.log('[useServiceWorker] Cache clear requested');
+      console.info('[useServiceWorker] Cache clear requested');
     }
   };
 
@@ -109,7 +109,7 @@ export function useServiceWorker() {
       try {
         const registration = await navigator.serviceWorker.ready;
         await (registration as any).sync.register(tag);
-        console.log('[useServiceWorker] Background sync registered:', tag);
+        console.info('[useServiceWorker] Background sync registered:', tag);
       } catch (error) {
         console.error('[useServiceWorker] Background sync failed:', error);
       }

@@ -19,7 +19,7 @@ export const notificationsManagementRouter = router({
         type: z.enum(['all', 'price_alert', 'signal', 'portfolio', 'social', 'system']).default('all'),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: _input, ctx: _ctx }) => {
       try {
         // In production, fetch from database
         // const notifications = await db.notifications.findMany({
@@ -48,7 +48,7 @@ export const notificationsManagementRouter = router({
    */
   markAsRead: protectedProcedure
     .input(z.object({ notificationId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       try {
         // In production, update database
         // await db.notifications.update({
@@ -68,7 +68,7 @@ export const notificationsManagementRouter = router({
   /**
    * Mark all notifications as read
    */
-  markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+  markAllAsRead: protectedProcedure.mutation(async ({ ctx: _ctx }) => {
     try {
       // In production, update database
       // await db.notifications.updateMany({
@@ -90,7 +90,7 @@ export const notificationsManagementRouter = router({
    */
   deleteNotification: protectedProcedure
     .input(z.object({ notificationId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       try {
         // In production, delete from database
         // await db.notifications.delete({
@@ -111,7 +111,7 @@ export const notificationsManagementRouter = router({
    */
   archiveNotification: protectedProcedure
     .input(z.object({ notificationId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       try {
         // In production, update database
         // await db.notifications.update({
@@ -131,7 +131,7 @@ export const notificationsManagementRouter = router({
   /**
    * Get unread count
    */
-  getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
+  getUnreadCount: protectedProcedure.query(async ({ ctx: _ctx }) => {
     try {
       // In production, query database
       // const count = await db.notifications.count({
@@ -163,7 +163,7 @@ export const notificationsManagementRouter = router({
         quietHoursEnd: z.string().optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       try {
         // In production, update database
         // await db.notificationPreferences.upsert({
@@ -184,7 +184,7 @@ export const notificationsManagementRouter = router({
   /**
    * Get notification preferences
    */
-  getPreferences: protectedProcedure.query(async ({ ctx }) => {
+  getPreferences: protectedProcedure.query(async ({ ctx: _ctx }) => {
     try {
       // In production, fetch from database
       // const preferences = await db.notificationPreferences.findUnique({
@@ -212,7 +212,7 @@ export const notificationsManagementRouter = router({
   /**
    * Clear all notifications
    */
-  clearAll: protectedProcedure.mutation(async ({ ctx }) => {
+  clearAll: protectedProcedure.mutation(async ({ ctx: _ctx }) => {
     try {
       // In production, delete from database
       // await db.notifications.deleteMany({
@@ -231,7 +231,7 @@ export const notificationsManagementRouter = router({
   /**
    * Get notification statistics
    */
-  getStatistics: protectedProcedure.query(async ({ ctx }) => {
+  getStatistics: protectedProcedure.query(async ({ ctx: _ctx }) => {
     try {
       // In production, query database
       // const stats = await db.notifications.groupBy({

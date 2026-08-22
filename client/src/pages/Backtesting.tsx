@@ -32,7 +32,7 @@ export default function Backtesting() {
   // Export mutations
   const exportPdfMutation = trpc.export.assetPDF.useMutation();
   const exportExcelMutation = trpc.export.portfolioExcel.useMutation();
-  const exportCsvMutation = trpc.export.csv.useMutation();
+  const _exportCsvMutation = trpc.export.csv.useMutation();
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -64,7 +64,7 @@ export default function Backtesting() {
         link.click();
         toast.success("PDF exported successfully");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to export PDF");
     } finally {
       setIsExporting(false);
@@ -101,7 +101,7 @@ export default function Backtesting() {
         link.click();
         toast.success("Excel exported successfully");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to export Excel");
     } finally {
       setIsExporting(false);

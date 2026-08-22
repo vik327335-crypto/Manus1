@@ -209,7 +209,7 @@ export const strategyDataRouter = router({
       const cacheKey = cacheKeys.allMetrics(ctx.user.id, input.startDate, input.endDate);
       const cachedMetrics = cacheService.get(cacheKey);
       if (cachedMetrics) {
-        console.log(`[Cache] Hit for all metrics (user: ${ctx.user.id})`);
+        console.info(`[Cache] Hit for all metrics (user: ${ctx.user.id})`);
         return cachedMetrics;
       }
 
@@ -320,7 +320,7 @@ export const strategyDataRouter = router({
 
       // Cache the results for 5 minutes (300 seconds)
       cacheService.set(cacheKey, allMetrics, 300);
-      console.log(`[Cache] Stored all metrics for user ${ctx.user.id}`);
+      console.info(`[Cache] Stored all metrics for user ${ctx.user.id}`);
 
       return allMetrics;
     }),

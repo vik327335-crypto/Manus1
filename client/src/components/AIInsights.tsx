@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Lightbulb, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Lightbulb, TrendingUp, AlertTriangle as _AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface Prediction {
   metric: string;

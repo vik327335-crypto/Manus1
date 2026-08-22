@@ -6,7 +6,7 @@
 import { router, protectedProcedure } from '../_core/trpc';
 import { z } from 'zod';
 import EmailNotificationService from '../services/emailNotificationService';
-import { getDb } from '../db';
+import { getDb as _getDb } from '../db';
 
 export const emailNotificationRouter = router({
   /**

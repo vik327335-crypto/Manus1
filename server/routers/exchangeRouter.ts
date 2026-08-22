@@ -1,8 +1,8 @@
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { getDb } from "../db";
-import { exchangeApiKeys, exchangeBalances } from "../../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { exchangeApiKeys, exchangeBalances as _exchangeBalances } from "../../drizzle/schema";
+import { eq, and as _and } from "drizzle-orm";
 import BinanceApiService from "../services/binanceApiService";
 import CoinbaseApiService from "../services/coinbaseApiService";
 import KrakenApiService from "../services/krakenApiService";
@@ -354,7 +354,7 @@ export const exchangeRouter = router({
                 price,
                 timestamp: Date.now(),
               });
-            } catch (error) {
+            } catch (_error) {
               // Skip this exchange if price fetch fails
             }
           }

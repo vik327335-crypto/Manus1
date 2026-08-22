@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react';
 import {
   LineChart,
   Line,
-  AreaChart,
-  Area,
+  AreaChart as _AreaChart,
+  Area as _Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,7 +14,7 @@ import {
   Bar,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button as _Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -65,7 +65,7 @@ export function HistoricalDataChart({
   data,
   ticker,
   isLoading = false,
-  onDateRangeChange,
+  onDateRangeChange: _onDateRangeChange,
 }: HistoricalDataChartProps) {
   const [selectedIndicators, setSelectedIndicators] = useState<IndicatorType[]>(['price', 'sma']);
   const [timeframe, setTimeframe] = useState<'1d' | '1w' | '1m'>('1d');
@@ -83,7 +83,7 @@ export function HistoricalDataChart({
   const priceStats = useMemo(() => {
     if (data.length === 0) return null;
 
-    const closes = data.map((d) => d.close);
+    const _closes = data.map((d) => d.close);
     const highs = data.map((d) => d.high);
     const lows = data.map((d) => d.low);
     const volumes = data.map((d) => d.volume);

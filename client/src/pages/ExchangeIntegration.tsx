@@ -20,8 +20,8 @@ export function ExchangeIntegration() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const addCredentialsMutation = trpc.binanceApi.addApiCredentials.useMutation();
-  const getCredentialsMutation = trpc.binanceApi.getApiCredentials.useQuery();
-  const removeCredentialsMutation = trpc.binanceApi.removeApiCredentials.useMutation();
+  const _getCredentialsMutation = trpc.binanceApi.getApiCredentials.useQuery();
+  const _removeCredentialsMutation = trpc.binanceApi.removeApiCredentials.useMutation();
 
   const handleAddCredentials = async () => {
     if (!apiKey || !apiSecret) {
@@ -51,7 +51,7 @@ export function ExchangeIntegration() {
       // Remove credentials logic
       // await removeCredentialsMutation.mutateAsync({});
       setMessage({ type: "success", text: `Credentials removed` });
-    } catch (error) {
+    } catch (_error) {
       setMessage({ type: "error", text: `Failed to remove credentials` });
     } finally {
       setLoading(false);

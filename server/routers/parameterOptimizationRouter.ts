@@ -290,7 +290,7 @@ export const parameterOptimizationRouter = router({
    */
   getOptimizationJob: protectedProcedure
     .input(z.object({ jobId: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx: _ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 

@@ -1,9 +1,9 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
-import { BacktestingEngine, HistoricalData, BacktestResult } from "../services/backtesting";
+import { BacktestingEngine, HistoricalData, BacktestResult as _BacktestResult } from "../services/backtesting";
 import { getDb } from "../db";
 import { backtests } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq as _eq } from "drizzle-orm";
 
 export const backtestingRouter = router({
   /**
@@ -82,7 +82,7 @@ export const backtestingRouter = router({
    */
   getBacktest: protectedProcedure
     .input(z.object({ backtestId: z.string() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.query is available
       return { success: false, message: "Not yet implemented" };
     }),
@@ -90,7 +90,7 @@ export const backtestingRouter = router({
   /**
    * Получает все бэктесты пользователя
    */
-  getBacktests: protectedProcedure.query(async ({ ctx }) => {
+  getBacktests: protectedProcedure.query(async ({ ctx: _ctx }) => {
     // TODO: Implement when db.query is available
     return [];
   }),
@@ -100,7 +100,7 @@ export const backtestingRouter = router({
    */
   deleteBacktest: protectedProcedure
     .input(z.object({ backtestId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.query is available
       return { success: true };
     }),
@@ -114,7 +114,7 @@ export const backtestingRouter = router({
         backtestIds: z.array(z.string()).min(2).max(5),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: _input, ctx: _ctx }) => {
       // TODO: Implement when db.query is available
       return {
         backtests: [],
@@ -137,7 +137,7 @@ export const backtestingRouter = router({
         format: z.enum(["json", "csv"]),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input, ctx: _ctx }) => {
       // TODO: Implement when db.query is available
       return {
         data: "",

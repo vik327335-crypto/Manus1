@@ -48,7 +48,7 @@ export function SavedFiltersUI({
   onDelete,
   onToggleFavorite,
   onDuplicate,
-  isLoading = false,
+  isLoading: _isLoading = false,
 }: SavedFiltersUIProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "favorite" | "usage">("recent");

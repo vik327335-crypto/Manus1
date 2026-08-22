@@ -68,7 +68,7 @@ export function XTComSettings() {
       setSuccess("API ключи успешно добавлены!");
 
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
+    } catch (_err) {
       setError("Ошибка при добавлении API ключей");
     } finally {
       setIsLoading(false);

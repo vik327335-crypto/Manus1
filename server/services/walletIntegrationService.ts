@@ -59,7 +59,7 @@ export class WalletIntegrationService {
     message: string,
     signature: string,
     publicKey: string,
-    walletType: 'phantom' | 'magic'
+    _walletType: 'phantom' | 'magic'
   ): SignatureVerification {
     try {
       // In production, use proper signature verification libraries
@@ -216,7 +216,7 @@ export class WalletIntegrationService {
    * Send transaction (Phantom - Solana)
    */
   static async sendPhantomTransaction(
-    transaction: WalletTransaction
+    _transaction: WalletTransaction
   ): Promise<{ success: boolean; transactionHash?: string; error?: string }> {
     try {
       const phantom = (window as any)?.phantom?.solana;
@@ -367,7 +367,7 @@ export class WalletIntegrationService {
       }
 
       return false;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -378,7 +378,7 @@ export class WalletIntegrationService {
   static async getWalletTransactionHistory(
     walletAddress: string,
     walletType: 'phantom' | 'magic',
-    limit: number = 50
+    _limit: number = 50
   ): Promise<
     Array<{
       hash: string;

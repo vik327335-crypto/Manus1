@@ -17,7 +17,7 @@ export const xtcomRouter = router({
         accountName: z.string().min(1),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx: _ctx }) => {
       try {
         // Проверяем подключение
         const service = createXTComService(input.apiKey, input.apiSecret);
@@ -32,7 +32,7 @@ export const xtcomRouter = router({
           message: "API ключи успешно добавлены и проверены",
           accountName: input.accountName,
         };
-      } catch (error) {
+      } catch (_error) {
         throw new Error("Ошибка при проверке API ключей");
       }
     }),
@@ -58,7 +58,7 @@ export const xtcomRouter = router({
    */
   deleteCredentials: protectedProcedure
     .input(z.object({ credentialId: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input: _input }) => {
       // Имитация удаления
       return {
         success: true,
@@ -71,7 +71,7 @@ export const xtcomRouter = router({
    */
   getBalances: protectedProcedure
     .input(z.object({ credentialId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // Имитация получения балансов
       return [
         { asset: "BTC", free: 0.5, locked: 0.1, total: 0.6 },
@@ -85,7 +85,7 @@ export const xtcomRouter = router({
    */
   getPositions: protectedProcedure
     .input(z.object({ credentialId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // Имитация получения позиций
       return [
         {
@@ -118,7 +118,7 @@ export const xtcomRouter = router({
         limit: z.number().default(100),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input: _input }) => {
       // Имитация получения сделок
       return [
         {
@@ -147,7 +147,7 @@ export const xtcomRouter = router({
    */
   importPositions: protectedProcedure
     .input(z.object({ credentialId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // Имитация импорта
       return {
         success: true,
@@ -161,7 +161,7 @@ export const xtcomRouter = router({
    */
   syncPortfolio: protectedProcedure
     .input(z.object({ credentialId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input: _input, ctx: _ctx }) => {
       // Имитация синхронизации
       return {
         success: true,
@@ -183,7 +183,7 @@ export const xtcomRouter = router({
         price: z.number().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input: _input }) => {
       // Имитация размещения ордера
       return {
         success: true,
@@ -203,7 +203,7 @@ export const xtcomRouter = router({
         orderId: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input: _input }) => {
       // Имитация отмены ордера
       return {
         success: true,

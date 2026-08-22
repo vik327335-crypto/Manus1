@@ -20,27 +20,26 @@ interface ComparisonChartProps {
   className?: string;
 }
 
+const CRITERIA = [
+  { key: "cScore", label: "C - Current", color: "bg-red-500" },
+  { key: "aScore", label: "A - Annual", color: "bg-orange-500" },
+  { key: "nScore", label: "N - New", color: "bg-yellow-500" },
+  { key: "sScore", label: "S - Supply", color: "bg-green-500" },
+  { key: "lScore", label: "L - Leader", color: "bg-blue-500" },
+  { key: "iScore", label: "I - Institutional", color: "bg-indigo-500" },
+  { key: "mScore", label: "M - Market", color: "bg-purple-500" },
+] as const;
+
 /**
  * ComparisonChart компонент для сравнения активов по CAN SLIM критериям
  * Отображает радиальную диаграмму для каждого актива
  */
 export function ComparisonChart({ assets, className }: ComparisonChartProps) {
-  // Критерии CAN SLIM
-  const criteria = [
-    { key: "cScore", label: "C - Current", color: "bg-red-500" },
-    { key: "aScore", label: "A - Annual", color: "bg-orange-500" },
-    { key: "nScore", label: "N - New", color: "bg-yellow-500" },
-    { key: "sScore", label: "S - Supply", color: "bg-green-500" },
-    { key: "lScore", label: "L - Leader", color: "bg-blue-500" },
-    { key: "iScore", label: "I - Institutional", color: "bg-indigo-500" },
-    { key: "mScore", label: "M - Market", color: "bg-purple-500" },
-  ];
-
   // Вычисляем максимальное значение для масштабирования
   const maxScore = useMemo(() => {
     let max = 0;
     assets.forEach((asset) => {
-      criteria.forEach((c) => {
+      CRITERIA.forEach((c) => {
         const value = asset[c.key as keyof ComparisonAsset] as number;
         if (typeof value === "number" && value > max) {
           max = value;
@@ -64,7 +63,7 @@ export function ComparisonChart({ assets, className }: ComparisonChartProps) {
 
       {/* Легенда критериев */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 pb-6 border-b border-border">
-        {criteria.map((c) => (
+        {CRITERIA.map((c) => (
           <div key={c.key} className="flex items-center gap-2">
             <div className={cn("h-3 w-3 rounded-full", c.color)} />
             <span className="text-xs font-medium">{c.label}</span>
@@ -89,7 +88,7 @@ export function ComparisonChart({ assets, className }: ComparisonChartProps) {
 
             {/* Полосы для каждого критерия */}
             <div className="space-y-2">
-              {criteria.map((c) => {
+              {CRITERIA.map((c) => {
                 const value = asset[c.key as keyof ComparisonAsset] as number;
                 const percentage = (value / maxScore) * 100;
 

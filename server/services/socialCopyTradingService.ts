@@ -80,7 +80,7 @@ export class SocialCopyTradingService {
   /**
    * Get top traders by performance
    */
-  static async getTopTraders(limit: number = 10): Promise<TopTrader[]> {
+  static async getTopTraders(_limit: number = 10): Promise<TopTrader[]> {
     // Mock implementation - in production, would fetch from database
     return [
       {
@@ -311,7 +311,7 @@ export class SocialCopyTradingService {
   /**
    * Get copy trading recommendations
    */
-  static async getCopyTradingRecommendations(userId: string): Promise<CopyTradingRecommendation[]> {
+  static async getCopyTradingRecommendations(_userId: string): Promise<CopyTradingRecommendation[]> {
     // Mock implementation
     return [
       {
@@ -341,7 +341,7 @@ export class SocialCopyTradingService {
   static calculateOptimalAllocation(
     traders: TopTrader[],
     totalCapital: number,
-    riskTolerance: number
+    _riskTolerance: number
   ): { traderId: string; allocation: number; expectedReturn: number }[] {
     // Sort by risk-adjusted returns
     const sorted = traders.sort((a, b) => {

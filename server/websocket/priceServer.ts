@@ -50,7 +50,7 @@ export function initializeWebSocketServer(httpServer: HTTPServer): SocketIOServe
   });
 
   io.on("connection", (socket) => {
-    console.log(`[WebSocket] Client connected: ${socket.id}`);
+    console.info(`[WebSocket] Client connected: ${socket.id}`);
 
     // Send initial market data
     socket.emit("connected", {
@@ -61,25 +61,25 @@ export function initializeWebSocketServer(httpServer: HTTPServer): SocketIOServe
     // Handle subscription to price updates
     socket.on("subscribe:prices", (tickers: string[]) => {
       socket.join(`prices:${tickers.join(",")}`);
-      console.log(`[WebSocket] Client ${socket.id} subscribed to prices:`, tickers);
+      console.info(`[WebSocket] Client ${socket.id} subscribed to prices:`, tickers);
     });
 
     // Handle subscription to news updates
     socket.on("subscribe:news", (assets?: string[]) => {
       const room = assets ? `news:${assets.join(",")}` : "news:all";
       socket.join(room);
-      console.log(`[WebSocket] Client ${socket.id} subscribed to ${room}`);
+      console.info(`[WebSocket] Client ${socket.id} subscribed to ${room}`);
     });
 
     // Handle subscription to market updates
     socket.on("subscribe:market", () => {
       socket.join("market:global");
-      console.log(`[WebSocket] Client ${socket.id} subscribed to market updates`);
+      console.info(`[WebSocket] Client ${socket.id} subscribed to market updates`);
     });
 
     // Handle disconnection
     socket.on("disconnect", () => {
-      console.log(`[WebSocket] Client disconnected: ${socket.id}`);
+      console.info(`[WebSocket] Client disconnected: ${socket.id}`);
     });
 
     // Handle errors
@@ -138,7 +138,7 @@ export async function startPriceUpdates(interval: number = 30000) {
 
   // Set up interval
   priceUpdateInterval = setInterval(broadcastPrices, interval);
-  console.log(`[WebSocket] Price updates started (interval: ${interval}ms)`);
+  console.info(`[WebSocket] Price updates started (interval: ${interval}ms)`);
 }
 
 /**
@@ -184,7 +184,7 @@ export async function startNewsUpdates(interval: number = 600000) {
 
   // Set up interval
   newsUpdateInterval = setInterval(broadcastNews, interval);
-  console.log(`[WebSocket] News updates started (interval: ${interval}ms)`);
+  console.info(`[WebSocket] News updates started (interval: ${interval}ms)`);
 }
 
 /**
@@ -217,7 +217,7 @@ export async function startMarketUpdates(interval: number = 60000) {
 
   // Set up interval
   setInterval(broadcastMarket, interval);
-  console.log(`[WebSocket] Market updates started (interval: ${interval}ms)`);
+  console.info(`[WebSocket] Market updates started (interval: ${interval}ms)`);
 }
 
 /**
@@ -232,7 +232,7 @@ export function stopAllBroadcasts() {
     clearInterval(newsUpdateInterval);
     newsUpdateInterval = null;
   }
-  console.log("[WebSocket] All broadcasts stopped");
+  console.info("[WebSocket] All broadcasts stopped");
 }
 
 /**

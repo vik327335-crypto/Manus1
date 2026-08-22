@@ -29,12 +29,12 @@ export default function Dashboard() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
 
   // Fetch assets and market trend
-  const { data: assets, isLoading: assetsLoading } = trpc.assets.list.useQuery();
-  const { data: marketTrend, isLoading: trendLoading } = trpc.market.trend.useQuery();
+  const { data: _assets, isLoading: assetsLoading } = trpc.assets.list.useQuery();
+  const { data: _marketTrend, isLoading: trendLoading } = trpc.market.trend.useQuery();
   const balanceSummary = trpc.exchangeConnections.balances.useQuery(undefined, { enabled: false, refetchOnWindowFocus: false });
 
   // Mock data for development
-  const mockAssets = [
+  const mockAssets = useMemo(() => [
     {
       id: 1,
       ticker: "BTC",
@@ -143,7 +143,7 @@ export default function Dashboard() {
       iScore: 85,
       mScore: 88,
     },
-  ];
+  ], []);
 
   const mockMarketTrend = {
     btcPrice: 6250000,
@@ -198,7 +198,7 @@ export default function Dashboard() {
     });
 
     return filtered;
-  }, [searchTerm, filterCategory, sortBy]);
+  }, [mockAssets, searchTerm, filterCategory, sortBy]);
 
   const categories = ["all", ...Array.from(new Set(mockAssets.map((a) => a.category)))];
 

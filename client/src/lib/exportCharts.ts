@@ -111,7 +111,7 @@ export async function exportChartToSVG(elementId: string, filename: string = `ch
     }
 
     // Clone the element to avoid modifying the original
-    const clone = element.cloneNode(true) as HTMLElement;
+    const _clone = element.cloneNode(true) as HTMLElement;
 
     // Create SVG wrapper
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

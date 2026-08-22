@@ -1,25 +1,25 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription as _CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  LineChart,
-  Line,
+  LineChart as _LineChart,
+  Line as _Line,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
+  Legend as _Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
 } from "recharts";
-import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
+import { TrendingUp as _TrendingUp, TrendingDown as _TrendingDown, AlertCircle as _AlertCircle } from "lucide-react";
 
 interface Position {
   ticker: string;

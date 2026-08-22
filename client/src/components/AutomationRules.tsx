@@ -37,7 +37,7 @@ export function AutomationRules() {
     },
   ]);
 
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [_editingId, setEditingId] = useState<string | null>(null);
   const [newRule, setNewRule] = useState<Partial<AutomationRule>>({
     trigger: 'drawdown_exceeded',
     action: 'send_alert',

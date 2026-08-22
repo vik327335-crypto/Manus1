@@ -1,16 +1,16 @@
 import { getDb } from "../db";
-import { exchangeApiKeys, exchangeBalances, backtestResults, sharedStrategies } from "../../drizzle/schema";
+import { exchangeApiKeys, exchangeBalances, backtestResults, sharedStrategies as _sharedStrategies } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { BinanceApiService } from "./binanceApiService";
 import { CoinbaseApiService } from "./coinbaseApiService";
-import { KrakenApiService } from "./krakenApiService";
+import { KrakenApiService as _KrakenApiService } from "./krakenApiService";
 import { BacktestingService } from "./backtestingService";
 
 // Lazy initialization of services
 let binanceApiService: BinanceApiService | null = null;
 let coinbaseApiService: CoinbaseApiService | null = null;
 
-function getBinanceService() {
+function _getBinanceService() {
   if (!binanceApiService) binanceApiService = new BinanceApiService({} as any);
   return binanceApiService;
 }
@@ -118,7 +118,7 @@ export const schedulerService = {
 
       // Run backtests for each strategy
       for (const entry of Array.from(strategiesByType.entries())) {
-        const [key, lastBacktest] = entry;
+        const [key, _lastBacktest] = entry;
         try {
           const [strategyType, symbol] = key.split("-");
 
@@ -136,7 +136,7 @@ export const schedulerService = {
 
           // Use static methods from BacktestingService
           if (strategyType === "SMA") {
-            const signals = BacktestingService.smaStrategy(historicalData, {
+            const _signals = BacktestingService.smaStrategy(historicalData, {
               fastPeriod: 10,
               slowPeriod: 20,
               quantity: 1,
@@ -216,7 +216,7 @@ export const schedulerService = {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const cutoffDate = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000);
+      const _cutoffDate = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000);
 
       // Delete old backtests
       // await db.delete(backtestResults).where(lt(backtestResults.backtestDate, cutoffDate));

@@ -1,6 +1,6 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
-import MLPredictionService, { PriceData } from "../services/mlPredictionService";
+import MLPredictionService, { PriceData as _PriceData } from "../services/mlPredictionService";
 
 const priceDataSchema = z.object({
   timestamp: z.number(),

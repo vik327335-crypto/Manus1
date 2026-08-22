@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StrategyMetricsCard } from '@/components/StrategyMetricsCard';
 import { StrategyComparisonTable } from '@/components/StrategyComparisonTable';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, Award, AlertCircle, Loader2, Download, FileText } from 'lucide-react';
+import { LineChart as _LineChart, Line as _Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown as _TrendingDown, Award, AlertCircle, Loader2, Download, FileText } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 
@@ -54,7 +54,7 @@ export function StrategyComparison() {
   const metricsSubscription = trpc.websocket.subscribeToAllMetrics.useSubscription(undefined, {
     onData: (update) => {
       // Обновляем данные стратегий при получении обновления
-      console.log('Обновление метрик:', update);
+      console.info('Обновление метрик:', update);
       // Можно добавить рефреш данных
     },
     onError: (error) => {

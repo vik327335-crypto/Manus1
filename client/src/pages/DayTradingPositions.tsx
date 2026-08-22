@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, X, Edit2 } from 'lucide-react';
+import { Badge as _Badge } from '@/components/ui/badge';
+import { TrendingUp as _TrendingUp, TrendingDown as _TrendingDown, X, Edit2 } from 'lucide-react';
 
 interface Position {
   id: string;
@@ -89,7 +89,7 @@ export default function DayTradingPositions() {
   }, []);
 
   const calculateStats = (positionList: Position[]) => {
-    const openPositions = positionList.filter((p) => p.status === 'OPEN');
+    const _openPositions = positionList.filter((p) => p.status === 'OPEN');
     const closedPositions = positionList.filter((p) => p.status === 'CLOSED');
 
     const totalPnL = positionList.reduce((sum, p) => sum + p.pnl, 0);

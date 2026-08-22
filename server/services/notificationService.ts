@@ -56,7 +56,7 @@ export async function sendEmailNotification(
       content: htmlContent,
     });
 
-    console.log(`[NotificationService] Email sent to ${email}: ${subject}`);
+    console.info(`[NotificationService] Email sent to ${email}: ${subject}`);
     return true;
   } catch (error) {
     console.error("[NotificationService] Error sending email:", error);
@@ -76,10 +76,10 @@ export async function sendPushNotification(
   try {
     // In production, integrate with push notification service
     // (Firebase Cloud Messaging, OneSignal, Pusher, etc.)
-    console.log(`[NotificationService] Push notification for user ${userId}: ${title}`);
-    console.log(`Message: ${message}`);
+    console.info(`[NotificationService] Push notification for user ${userId}: ${title}`);
+    console.info(`Message: ${message}`);
     if (data) {
-      console.log(`Data: ${JSON.stringify(data)}`);
+      console.info(`Data: ${JSON.stringify(data)}`);
     }
     return true;
   } catch (error) {

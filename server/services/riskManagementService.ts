@@ -335,7 +335,7 @@ export class RiskManagementService {
     portfolioValue: number,
     returns: number[]
   ): RiskMetrics {
-    const volatility = Math.sqrt(
+    const _volatility = Math.sqrt(
       returns.reduce((sum, r) => sum + Math.pow(r, 2), 0) / returns.length
     );
 

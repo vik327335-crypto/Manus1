@@ -288,7 +288,7 @@ export const notificationRouter = router({
       };
 
       pushSubscriptions.set(`${userId}-${input.endpoint}`, subscription);
-      console.log(`[Notifications] User ${userId} subscribed to push notifications`);
+      console.info(`[Notifications] User ${userId} subscribed to push notifications`);
 
       return {
         success: true,
@@ -309,7 +309,7 @@ export const notificationRouter = router({
 
       if (pushSubscriptions.has(key)) {
         pushSubscriptions.delete(key);
-        console.log(`[Notifications] User ${userId} unsubscribed from push notifications`);
+        console.info(`[Notifications] User ${userId} unsubscribed from push notifications`);
       }
 
       return {

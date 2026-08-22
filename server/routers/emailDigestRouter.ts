@@ -20,7 +20,7 @@ export const emailDigestRouter = router({
         time: z.string().optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx: _ctx }) => {
       try {
         const frequency: DigestFrequency = {
           type: input.type,
@@ -58,7 +58,7 @@ export const emailDigestRouter = router({
   /**
    * Get user's digest preferences
    */
-  getDigestPreferences: protectedProcedure.query(async ({ ctx }) => {
+  getDigestPreferences: protectedProcedure.query(async ({ ctx: _ctx }) => {
     try {
       // In production, fetch from database
       // const preferences = await db.userDigestPreferences.findUnique({
@@ -224,7 +224,7 @@ export const emailDigestRouter = router({
         };
 
         // Generate HTML email
-        const htmlContent = EmailDigestService.generateDigestHTML(digest);
+        const _htmlContent = EmailDigestService.generateDigestHTML(digest);
 
         // In production, send email using nodemailer
         // const transporter = nodemailer.createTransport({...});
@@ -248,7 +248,7 @@ export const emailDigestRouter = router({
   /**
    * Calculate next digest time
    */
-  getNextDigestTime: protectedProcedure.query(async ({ ctx }) => {
+  getNextDigestTime: protectedProcedure.query(async ({ ctx: _ctx }) => {
     try {
       // In production, fetch preferences from database
       const frequency: DigestFrequency = {
@@ -272,7 +272,7 @@ export const emailDigestRouter = router({
   /**
    * Disable digest emails
    */
-  disableDigest: protectedProcedure.mutation(async ({ ctx }) => {
+  disableDigest: protectedProcedure.mutation(async ({ ctx: _ctx }) => {
     try {
       // In production, update database
       // await db.userDigestPreferences.update({
@@ -292,7 +292,7 @@ export const emailDigestRouter = router({
   /**
    * Enable digest emails
    */
-  enableDigest: protectedProcedure.mutation(async ({ ctx }) => {
+  enableDigest: protectedProcedure.mutation(async ({ ctx: _ctx }) => {
     try {
       // In production, update database
       // await db.userDigestPreferences.update({
@@ -318,7 +318,7 @@ export const emailDigestRouter = router({
         limit: z.number().default(10),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input: _input, ctx: _ctx }) => {
       try {
         // In production, fetch from database
         // const digests = await db.digestHistory.findMany({

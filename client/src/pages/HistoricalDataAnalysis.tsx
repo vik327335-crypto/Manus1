@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect as _useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Search, TrendingUp, TrendingDown, Download, BarChart3, FileText } from 'lucide-react';
+import { Loader2, Search, TrendingUp as _TrendingUp, TrendingDown as _TrendingDown, Download, BarChart3, FileText } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { HistoricalDataChart, type ChartDataPoint } from '@/components/HistoricalDataChart';
 import { PriceActionAnalysis, type PricePoint } from '@/components/PriceActionAnalysis';
@@ -37,7 +37,7 @@ export default function HistoricalDataAnalysis() {
     { enabled: false }
   );
 
-  const getMultiYearQuery = trpc.historicalData.getMultiYear.useQuery(
+  const _getMultiYearQuery = trpc.historicalData.getMultiYear.useQuery(
     { ticker, years },
     { enabled: false }
   );
@@ -57,13 +57,11 @@ export default function HistoricalDataAnalysis() {
     try {
       // Try to fetch real OHLCV data from Polygon.io
       let mockOHLCVData: PricePoint[] = [];
-      let useRealData = false;
 
       try {
         const result = await fetchOHLCVData(ticker, years);
         if (result.success && result.data) {
           mockOHLCVData = result.data;
-          useRealData = true;
           setDataSource('real');
           toast.success(`Loaded ${mockOHLCVData.length} real data points from Polygon.io`);
         } else {

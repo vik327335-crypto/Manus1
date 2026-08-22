@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Trash2, Bell, TrendingUp, AlertCircle } from "lucide-react";
+import { ArrowLeft, Trash2, Bell, TrendingUp, AlertCircle as _AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -65,8 +65,8 @@ export default function Watchlist() {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>(mockWatchlist);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newThreshold, setNewThreshold] = useState<string>("");
-  const [wsConnected, setWsConnected] = useState(false);
-  const [alerts, setAlerts] = useState<Map<string, any>>(new Map());
+  const [_wsConnected, setWsConnected] = useState(false);
+  const [_alerts, setAlerts] = useState<Map<string, any>>(new Map());
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -76,7 +76,7 @@ export default function Watchlist() {
     const unsubscribeConnection = websocketService.onConnectionChange((connected) => {
       setWsConnected(connected);
       if (connected) {
-        console.log('[Watchlist] WebSocket connected');
+        console.info('[Watchlist] WebSocket connected');
         // Subscribe to alerts for all watchlist items
         watchlist.forEach((item) => {
           websocketService.subscribeToAlerts(`watchlist-${item.id}`);

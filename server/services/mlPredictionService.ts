@@ -234,8 +234,8 @@ export class MLPredictionService {
    */
   private static generateReasoning(
     input: PredictionInput,
-    momentumScore: number,
-    prediction: string
+    _momentumScore: number,
+    _prediction: string
   ): string {
     const closes = input.priceHistory.map((p) => p.close);
     const sma20 = this.calculateSMA(closes, 20);

@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { LineChart, Line, BarChart, Bar, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Download, Filter } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, ScatterChart as _ScatterChart, Scatter as _Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { TrendingUp, TrendingDown, Download, Filter as _Filter } from 'lucide-react';
 
 interface NFTAnalytics {
   portfolioValue: number;
@@ -50,7 +50,7 @@ interface PriceHistory {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
 export const NFTAnalyticsDashboard: React.FC = () => {
-  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const [_selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d'>('24h');
   const [sortBy, setSortBy] = useState<'value' | 'gain' | 'rarity'>('value');
 
@@ -66,7 +66,7 @@ export const NFTAnalyticsDashboard: React.FC = () => {
     gainAveragePercent: 42.3,
   };
 
-  const collections: CollectionData[] = [
+  const collections = useMemo<CollectionData[]>(() => [
     {
       name: 'Magic Eden Wizards',
       floorPrice: 4.5,
@@ -103,7 +103,7 @@ export const NFTAnalyticsDashboard: React.FC = () => {
       totalValue: 45000,
       gainPercent: 35.8,
     },
-  ];
+  ], []);
 
   const rarityDistribution: RarityDistribution[] = [
     { range: '0-20', count: 2, percentage: 4.8 },
@@ -129,7 +129,7 @@ export const NFTAnalyticsDashboard: React.FC = () => {
       value: c.totalValue,
       color: COLORS[collections.indexOf(c) % COLORS.length],
     }));
-  }, []);
+  }, [collections]);
 
   const sortedCollections = useMemo(() => {
     const sorted = [...collections];
@@ -141,7 +141,7 @@ export const NFTAnalyticsDashboard: React.FC = () => {
       sorted.sort((a, b) => b.averageRarity - a.averageRarity);
     }
     return sorted;
-  }, [sortBy]);
+  }, [collections, sortBy]);
 
   const handleExportAnalytics = () => {
     const csv = generateCSV();

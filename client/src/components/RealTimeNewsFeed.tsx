@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect as _useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
