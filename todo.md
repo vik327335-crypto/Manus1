@@ -1341,3 +1341,13 @@
 - [x] Исправить оставшиеся strategy router contract failures для зелёного full-suite baseline: cache key all-strategies metrics включает period; strategy history tests используют изолированный user scope; 17 strategy tests проходят.
 - [x] Обновить cache key generator regression contract для period-aware all metrics cache.
 - [x] Локально проверить CI-команды и сохранить checkpoint: pnpm install --frozen-lockfile, TypeScript check, полный suite из 285 тестов и build проходят.
+
+## Project Health Check and Error Repair
+- [x] Собрать build, TypeScript, regression, runtime log и UI diagnostics: TypeScript, build и 285 tests были зелёными; UI diagnostic выявил отсутствие Tailwind styles.
+- [x] Исправить подтверждённые ошибки и добавить/обновить регрессионные проверки: восстановлен обязательный Tailwind 4 import в client/src/index.css.
+- [x] Повторно выполнить полный validation набор и сохранить checkpoint: TypeScript, все 285 regression tests и production build проходят.
+
+## Frontend Styling Runtime Repair
+- [x] Подтвердить источник отсутствия Tailwind styling в dev runtime: в client/src/index.css отсутствует обязательный Tailwind 4 import.
+- [x] Исправить pipeline подключения frontend CSS и проверить визуальный результат: Tailwind utilities снова применяются на главной странице.
+- [x] Повторно выполнить TypeScript, regression suite и production build: validation проходит успешно.
