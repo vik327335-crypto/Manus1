@@ -180,7 +180,7 @@ export async function getGlobalData(): Promise<{
   btc_dominance: number;
   eth_dominance: number;
   market_cap_change_24h: number;
-  fear_greed_index: number;
+  fear_greed_index: number | null;
 } | null> {
   try {
     return await getCachedOrFetch("global_data", async () => {
@@ -191,7 +191,8 @@ export async function getGlobalData(): Promise<{
         btc_dominance: data.btc_dominance || 0,
         eth_dominance: data.eth_dominance || 0,
         market_cap_change_24h: data.market_cap_change_percentage_24h_usd || 0,
-        fear_greed_index: 50, // CoinGecko не предоставляет Fear & Greed, используем заглушку
+        // CoinGecko does not supply this index. Explicit absence is safer than a neutral placeholder.
+        fear_greed_index: null,
       };
     });
   } catch (error) {

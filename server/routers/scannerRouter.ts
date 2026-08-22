@@ -69,6 +69,8 @@ export const scannerRouter = router({
       try {
         const tickers = ["BTC", "ETH", "SOL", "ADA", "XRP"];
         const assets = [];
+        const verifiedQuotes = await coingecko.getMarketData(tickers);
+        const quoteByTicker = new Map(verifiedQuotes.map((quote) => [quote.ticker, quote]));
 
         for (const ticker of tickers) {
           try {
@@ -77,7 +79,11 @@ export const scannerRouter = router({
             const marketMetrics = await glassnode.getMarketMetrics(ticker);
             
             // Get CoinGecko price data and 24h trend
-            const priceData = await coingecko.getCurrentPrice(ticker);
+            const priceData = quoteByTicker.get(ticker);
+            if (!priceData) {
+              console.warn(`[Scanner] Skipping ${ticker}: verified price data is unavailable`);
+              continue;
+            }
             const trendData = await coingecko.get24hTrend(ticker);
 
             // Calculate CAN SLIM score based on metrics

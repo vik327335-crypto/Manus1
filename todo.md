@@ -1385,3 +1385,16 @@
 - [x] Выполнить локальную проверку lint, TypeScript, test coverage и production build: lint и TypeScript clean; 285 tests проходят; coverage 14.80% statements/lines, 19.48% functions, 57.97% branches; build успешен.
 - [x] Проверить health локального приложения и отсутствие ошибок в свежих логах: HTTP 200; server log показывает штатный start и WebSocket connect/disconnect события без свежих TransformError.
 - [x] Зафиксировать проверенный локальный статус в checkpoint без внешних GitHub-изменений.
+
+## Data Accuracy and Freshness Safeguards
+- [x] Инвентаризировать критические показания, их источники, cache TTL и существующие fallback-пути: выявлены silent zero fallback, часовой cache, demo/simulated prices, rate-limit fan-out и static dashboard previews.
+- [x] Определить измеримые data-quality инварианты: только finite provider values с price > 0; source/fetchedAt/cacheAge; 60-second TTL; отсутствие подмены нулями, demo или случайными обновлениями; пропуск непроверенной котировки.
+- [x] Добавить приоритетные server-side safeguards точности без изменения торговых правил или исполнительных действий: валидированный CoinGecko adapter, timeout, batch quote fetch, provenance/freshness metadata и scanner skip для недоступных quotes.
+- [x] Добавить детерминированные regression tests для обнаруженных data-quality рисков: malformed quote/history rejection, no fabricated zeros и one-request batch contract покрыты в CoinGecko suite.
+- [x] Провести полный quality validation, обновить disclosure и сохранить checkpoint: UI больше не маркирует provider-backed quotes как Live, а static dashboard preview явно объявлен research-only/non-live; lint и TypeScript clean, 287 tests проходят, coverage 14.95% statements/lines, 19.65% functions, 58.77% branches, build и HTTP 200 успешны.
+
+## Remaining Accuracy Hardening
+- [x] Убрать synthetic zero/neutral fallback из marketRouter и legacy CoinGecko market-trend path: market API возвращает explicit available/unavailable contract, а unavailable Fear & Greed остаётся null.
+- [x] Заменить misleading live labels и static asset-detail данные явными unavailable/research-only состояниями: static preview получил prominent disclosure, verified-quote unavailable state и отключённый export.
+- [x] Добавить regression tests для unavailable market trend и asset-detail disclosure: marketRouter suite проверяет отсутствие synthetic zeroes, AssetDetail source guard фиксирует disclosure и disabled export.
+- [x] Провести сквозную quality validation и сохранить checkpoint расширенного accuracy hardening: lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.02% statements/lines, 19.82% functions, 58.82% branches; build и HTTP 200 успешны.

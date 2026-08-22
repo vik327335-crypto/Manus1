@@ -5,6 +5,16 @@ import {
   getCoinData,
 } from "../services/coingeckoService";
 
+const source = "coingecko" as const;
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isVerifiedPositive(value: unknown): value is number {
+  return isFiniteNumber(value) && value > 0;
+}
+
 export const marketRouter = router({
   trend: publicProcedure.query(async () => {
     try {
@@ -14,29 +24,20 @@ export const marketRouter = router({
         getBitcoin200EMA(),
       ]);
 
-      if (!btcData || !globalData || !emaData) {
-        return {
-          status: "neutral" as const,
-          btcPrice: 0,
-          btc200EMA: 0,
-          btcAbove200EMA: 0,
-          dominance: 0,
-          fearGreedIndex: 50,
-          error: "Failed to fetch market data",
-        };
+      if (!btcData || !globalData || !emaData || !isVerifiedPositive(btcData.current_price) || !isVerifiedPositive(emaData.ema200) || !isVerifiedPositive(globalData.btc_dominance)) {
+        return { available: false as const, source, reason: "Verified market trend data is currently unavailable" };
       }
 
       const btcAbove200EMA = btcData.current_price > emaData.ema200 ? 1 : -1;
-
-      // Determine market status based on BTC position and dominance
-      let status: "bullish" | "neutral" | "bearish" = "neutral";
-      if (btcAbove200EMA > 0 && globalData.btc_dominance > 40) {
-        status = "bullish";
-      } else if (btcAbove200EMA < 0 && globalData.btc_dominance < 35) {
-        status = "bearish";
-      }
+      const status = btcAbove200EMA > 0 && globalData.btc_dominance > 40
+        ? "bullish" as const
+        : btcAbove200EMA < 0 && globalData.btc_dominance < 35
+          ? "bearish" as const
+          : "neutral" as const;
 
       return {
+        available: true as const,
+        source,
         status,
         btcPrice: btcData.current_price,
         btc200EMA: emaData.ema200,
@@ -45,64 +46,54 @@ export const marketRouter = router({
         fearGreedIndex: globalData.fear_greed_index,
       };
     } catch (error) {
-      console.error("[Market] Error fetching trend:", error);
-      return {
-        status: "neutral" as const,
-        btcPrice: 0,
-        btc200EMA: 0,
-        btcAbove200EMA: 0,
-        dominance: 0,
-        fearGreedIndex: 50,
-        error: "Failed to fetch market data",
-      };
+      console.warn("[Market] Verified trend data unavailable:", error);
+      return { available: false as const, source, reason: "Verified market trend data is currently unavailable" };
     }
   }),
 
   btcPrice: publicProcedure.query(async () => {
     try {
       const data = await getCoinData("bitcoin");
-      return {
-        price: data?.current_price || 0,
-        change24h: data?.price_change_percentage_24h || 0,
-        marketCap: data?.market_cap || 0,
-      };
+      if (!data || !isVerifiedPositive(data.current_price) || !isFiniteNumber(data.price_change_percentage_24h) || !isFiniteNumber(data.market_cap)) {
+        return { available: false as const, source, reason: "Verified BTC quote is currently unavailable" };
+      }
+      return { available: true as const, source, price: data.current_price, change24h: data.price_change_percentage_24h, marketCap: data.market_cap };
     } catch (error) {
-      console.error("[Market] Error fetching BTC price:", error);
-      return { price: 0, change24h: 0, marketCap: 0 };
+      console.warn("[Market] Verified BTC quote unavailable:", error);
+      return { available: false as const, source, reason: "Verified BTC quote is currently unavailable" };
     }
   }),
 
   ethereum: publicProcedure.query(async () => {
     try {
       const data = await getCoinData("ethereum");
-      return {
-        price: data?.current_price || 0,
-        change24h: data?.price_change_percentage_24h || 0,
-        marketCap: data?.market_cap || 0,
-      };
+      if (!data || !isVerifiedPositive(data.current_price) || !isFiniteNumber(data.price_change_percentage_24h) || !isFiniteNumber(data.market_cap)) {
+        return { available: false as const, source, reason: "Verified ETH quote is currently unavailable" };
+      }
+      return { available: true as const, source, price: data.current_price, change24h: data.price_change_percentage_24h, marketCap: data.market_cap };
     } catch (error) {
-      console.error("[Market] Error fetching ETH price:", error);
-      return { price: 0, change24h: 0, marketCap: 0 };
+      console.warn("[Market] Verified ETH quote unavailable:", error);
+      return { available: false as const, source, reason: "Verified ETH quote is currently unavailable" };
     }
   }),
 
   global: publicProcedure.query(async () => {
     try {
       const data = await getGlobalData();
+      if (!data || !isVerifiedPositive(data.btc_dominance) || !isVerifiedPositive(data.eth_dominance) || !isFiniteNumber(data.market_cap_change_24h)) {
+        return { available: false as const, source, reason: "Verified global market data is currently unavailable" };
+      }
       return {
-        btcDominance: data?.btc_dominance || 0,
-        ethDominance: data?.eth_dominance || 0,
-        marketCapChange24h: data?.market_cap_change_24h || 0,
-        fearGreedIndex: data?.fear_greed_index || 50,
+        available: true as const,
+        source,
+        btcDominance: data.btc_dominance,
+        ethDominance: data.eth_dominance,
+        marketCapChange24h: data.market_cap_change_24h,
+        fearGreedIndex: data.fear_greed_index,
       };
     } catch (error) {
-      console.error("[Market] Error fetching global data:", error);
-      return {
-        btcDominance: 0,
-        ethDominance: 0,
-        marketCapChange24h: 0,
-        fearGreedIndex: 50,
-      };
+      console.warn("[Market] Verified global market data unavailable:", error);
+      return { available: false as const, source, reason: "Verified global market data is currently unavailable" };
     }
   }),
 });

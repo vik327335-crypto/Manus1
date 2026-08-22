@@ -1,76 +1,33 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, TrendingUp, BarChart3, Zap, Wifi, WifiOff } from "lucide-react";
+import { ArrowRight, TrendingUp, BarChart3, Zap, CircleAlert, Clock3 } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useWebSocket } from "@/hooks/useWebSocket";
-import { useState, useEffect } from "react";
-
-// Default price data - будет заменено на реальные данные из CoinGecko
-const defaultPrices = [
-  {
-    symbol: "BTC",
-    name: "Bitcoin",
-    price: 0,
-    change24h: 0,
-    high24h: 0,
-    low24h: 0,
-    volume24h: 0,
-    marketCap: 0,
-  },
-  {
-    symbol: "ETH",
-    name: "Ethereum",
-    price: 0,
-    change24h: 0,
-    high24h: 0,
-    low24h: 0,
-    volume24h: 0,
-    marketCap: 0,
-  },
-  {
-    symbol: "SOL",
-    name: "Solana",
-    price: 0,
-    change24h: 0,
-    high24h: 0,
-    low24h: 0,
-    volume24h: 0,
-    marketCap: 0,
-  },
-  {
-    symbol: "ADA",
-    name: "Cardano",
-    price: 0,
-    change24h: 0,
-    high24h: 0,
-    low24h: 0,
-    volume24h: 0,
-    marketCap: 0,
-  },
-];
+import { useMemo } from "react";
 
 interface PriceData {
   symbol: string;
   name: string;
-  price: number;
-  change24h: number;
-  high24h: number;
-  low24h: number;
-  volume24h: number;
-  marketCap: number;
+  price?: number;
+  change24h?: number;
+  volume24h?: number;
+  marketCap?: number;
+  fetchedAt?: number;
+  cacheAgeMs?: number;
 }
 
-function PriceCard({ crypto, isUpdating }: { crypto: PriceData; isUpdating?: boolean }) {
+function PriceCard({ crypto }: { crypto: PriceData }) {
+  if (crypto.price === undefined || crypto.change24h === undefined || crypto.volume24h === undefined || crypto.marketCap === undefined) {
+    return <Card className="card-elevated p-4"><p className="font-semibold text-sm">{crypto.symbol}</p><p className="text-xs text-muted-foreground">{crypto.name}</p><div className="mt-6 flex items-start gap-2 text-sm text-muted-foreground"><CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />Verified market data is currently unavailable.</div></Card>;
+  }
+
   const isPositive = crypto.change24h >= 0;
 
   return (
-    <Card className={`card-elevated p-4 hover:shadow-md transition-all ${
-      isUpdating ? "ring-2 ring-blue-500" : ""
-    }`}>
+    <Card className="card-elevated p-4 hover:shadow-md transition-all">
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="font-semibold text-sm">{crypto.symbol}</p>
@@ -87,7 +44,7 @@ function PriceCard({ crypto, isUpdating }: { crypto: PriceData; isUpdating?: boo
         </div>
       </div>
 
-      <p className="text-lg font-bold mb-3 transition-colors">
+      <p className="text-lg font-bold mb-3">
         ${crypto.price.toLocaleString("en-US", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
@@ -96,24 +53,6 @@ function PriceCard({ crypto, isUpdating }: { crypto: PriceData; isUpdating?: boo
 
       <div className="space-y-2 text-xs">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">High 24h</span>
-          <span className="font-medium">
-            ${crypto.high24h.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Low 24h</span>
-          <span className="font-medium">
-            ${crypto.low24h.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </span>
-        </div>
-        <div className="flex justify-between">
           <span className="text-muted-foreground">24h Volume</span>
           <span className="font-medium">${crypto.volume24h.toFixed(2)}B</span>
         </div>
@@ -121,6 +60,7 @@ function PriceCard({ crypto, isUpdating }: { crypto: PriceData; isUpdating?: boo
           <span className="text-muted-foreground">Market Cap</span>
           <span className="font-medium">${crypto.marketCap.toFixed(2)}B</span>
         </div>
+        <div className="flex items-center justify-between pt-1 text-muted-foreground"><span>CoinGecko</span><span>{crypto.fetchedAt ? new Date(crypto.fetchedAt).toLocaleTimeString() : "—"}</span></div>
       </div>
     </Card>
   );
@@ -129,129 +69,19 @@ function PriceCard({ crypto, isUpdating }: { crypto: PriceData; isUpdating?: boo
 export default function Home() {
   const { user: _user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
-  const { isConnected, onPriceUpdate, subscribeToPrices } = useWebSocket({ autoConnect: true });
-  const [prices, setPrices] = useState<Record<string, PriceData>>({
-    BTC: defaultPrices[0],
-    ETH: defaultPrices[1],
-    SOL: defaultPrices[2],
-    ADA: defaultPrices[3],
-  });
-  const [updatingSymbol, setUpdatingSymbol] = useState<string | null>(null);
-  const [isLoadingPrices, setIsLoadingPrices] = useState(true);
-  
-  // Fetch real prices from CoinGecko
   const marketDataQuery = trpc.coingecko.getMarketData.useQuery(
     { tickers: ["BTC", "ETH", "SOL", "ADA"] },
-    { refetchInterval: 60000 } // Refresh every 60 seconds
+    { refetchInterval: 60_000, refetchOnWindowFocus: true }
   );
 
-  // Update prices when CoinGecko data is fetched
-  useEffect(() => {
-    if (marketDataQuery.data) {
-      const cryptoMap: Record<string, any> = {};
-      for (const crypto of marketDataQuery.data) {
-        cryptoMap[crypto.ticker] = crypto;
-      }
-      
-      setPrices((prev) => ({
-        BTC: {
-          ...prev.BTC,
-          price: cryptoMap.BTC?.price || prev.BTC.price,
-          change24h: cryptoMap.BTC?.priceChange24h || prev.BTC.change24h,
-          marketCap: (cryptoMap.BTC?.marketCap || 0) / 1e9, // Convert to billions
-          volume24h: (cryptoMap.BTC?.volume24h || 0) / 1e9,
-        },
-        ETH: {
-          ...prev.ETH,
-          price: cryptoMap.ETH?.price || prev.ETH.price,
-          change24h: cryptoMap.ETH?.priceChange24h || prev.ETH.change24h,
-          marketCap: (cryptoMap.ETH?.marketCap || 0) / 1e9,
-          volume24h: (cryptoMap.ETH?.volume24h || 0) / 1e9,
-        },
-        SOL: {
-          ...prev.SOL,
-          price: cryptoMap.SOL?.price || prev.SOL.price,
-          change24h: cryptoMap.SOL?.priceChange24h || prev.SOL.change24h,
-          marketCap: (cryptoMap.SOL?.marketCap || 0) / 1e9,
-          volume24h: (cryptoMap.SOL?.volume24h || 0) / 1e9,
-        },
-        ADA: {
-          ...prev.ADA,
-          price: cryptoMap.ADA?.price || prev.ADA.price,
-          change24h: cryptoMap.ADA?.priceChange24h || prev.ADA.change24h,
-          marketCap: (cryptoMap.ADA?.marketCap || 0) / 1e9,
-          volume24h: (cryptoMap.ADA?.volume24h || 0) / 1e9,
-        },
-      }));
-      setIsLoadingPrices(false);
-    }
+  const prices = useMemo<Record<string, PriceData>>(() => {
+    const metadata = { BTC: "Bitcoin", ETH: "Ethereum", SOL: "Solana", ADA: "Cardano" };
+    const quoteMap = new Map((marketDataQuery.data ?? []).map((quote) => [quote.ticker, quote]));
+    return Object.fromEntries(Object.entries(metadata).map(([symbol, name]) => {
+      const quote = quoteMap.get(symbol);
+      return [symbol, quote ? { symbol, name, price: quote.price, change24h: quote.priceChangePercent24h, marketCap: quote.marketCap / 1e9, volume24h: quote.volume24h / 1e9, fetchedAt: quote.fetchedAt, cacheAgeMs: quote.cacheAgeMs } : { symbol, name }];
+    }));
   }, [marketDataQuery.data]);
-
-  // Subscribe to price updates when connected
-  useEffect(() => {
-    if (isConnected) {
-      subscribeToPrices(Object.keys(prices));
-      console.info("[Home] Subscribed to price updates");
-    }
-  }, [isConnected, subscribeToPrices, prices]);
-
-  // Listen to price updates from WebSocket
-  useEffect(() => {
-    const unsubscribe = onPriceUpdate((data) => {
-      console.info("[Home] Price update received:", data);
-      const { ticker, price, change } = data;
-      
-      if (ticker && prices[ticker]) {
-        setUpdatingSymbol(ticker);
-        setPrices((prev) => ({
-          ...prev,
-          [ticker]: {
-            ...prev[ticker],
-            price: price || prev[ticker].price,
-            change24h: change !== undefined ? change : prev[ticker].change24h,
-          },
-        }));
-        
-        setTimeout(() => setUpdatingSymbol(null), 500);
-      }
-    });
-
-    return () => unsubscribe?.();
-  }, [onPriceUpdate, prices]);
-
-  // Fallback: simulate price updates if WebSocket is not connected
-  useEffect(() => {
-    if (isConnected) return; // Don't simulate if connected
-
-    const interval = setInterval(() => {
-      setPrices((prev) => {
-        const updated = { ...prev };
-        const symbols = Object.keys(updated);
-        const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-        const crypto = updated[randomSymbol];
-        
-        // Simulate price change
-        const priceChange = (Math.random() - 0.5) * 100;
-        const newPrice = Math.max(crypto.price + priceChange, 1);
-        const changePercent = ((newPrice - crypto.price) / crypto.price) * 100;
-        
-        updated[randomSymbol] = {
-          ...crypto,
-          price: newPrice,
-          change24h: crypto.change24h + changePercent,
-          high24h: Math.max(crypto.high24h, newPrice),
-          low24h: Math.min(crypto.low24h, newPrice),
-        };
-        
-        setUpdatingSymbol(randomSymbol);
-        setTimeout(() => setUpdatingSymbol(null), 500);
-        
-        return updated;
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isConnected]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -295,23 +125,12 @@ export default function Home() {
             <div className="lg:col-span-1">
               <div className="sticky top-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold">Live Price Ticker</h3>
+                  <h3 className="text-lg font-bold">Verified Price Ticker</h3>
                   <div className="flex items-center gap-2">
-                    {isLoadingPrices && <Skeleton className="h-4 w-4 rounded-full" />}
-                    {isConnected ? (
-                      <>
-                        <Wifi className="h-4 w-4 text-green-500" />
-                        <span className="text-xs text-green-600 dark:text-green-400">Live</span>
-                      </>
-                    ) : (
-                      <>
-                        <WifiOff className="h-4 w-4 text-red-500" />
-                        <span className="text-xs text-red-600 dark:text-red-400">Offline</span>
-                      </>
-                    )}
+                    {marketDataQuery.isLoading ? <Skeleton className="h-4 w-4 rounded-full" /> : <><Clock3 className="h-4 w-4 text-green-500" /><span className="text-xs text-muted-foreground">Verified source</span></>}
                   </div>
                 </div>
-                {isLoadingPrices ? (
+                {marketDataQuery.isLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3, 4].map((i) => (
                       <Skeleton key={i} className="h-32 rounded-lg" />
@@ -323,7 +142,6 @@ export default function Home() {
                     <PriceCard 
                       key={symbol} 
                       crypto={crypto}
-                      isUpdating={updatingSymbol === symbol}
                     />
                   ))}
                 </div>

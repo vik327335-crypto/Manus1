@@ -4,13 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ScoreIndicator } from "@/components/ScoreIndicator";
 import { ArrowLeft, Star, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ExportButton } from "@/components/ExportButton";
 import { InstitutionalSupport } from "@/components/InstitutionalSupport";
 import { RelativeStrengthChart } from "@/components/RelativeStrengthChart";
 import { SentimentNewsFeed as _SentimentNewsFeed } from "@/components/SentimentNewsFeed";
 import RealTimeNewsFeed from "@/components/RealTimeNewsFeed";
-import { useWebSocket } from "@/hooks/useWebSocket";
-import { useEffect, useState } from "react";
 
 interface _CriterionDetail {
   score: number;
@@ -76,29 +73,6 @@ const mockAssetDetails = {
 export default function AssetDetail() {
   const { ticker } = useParams<{ ticker: string }>();
   const [, navigate] = useLocation();
-  const [livePrice, setLivePrice] = useState<number | null>(null);
-  const [_livePriceChange, setLivePriceChange] = useState<number | null>(null);
-  const { isConnected, subscribeToPrices, onPriceUpdate } = useWebSocket({
-    autoConnect: true,
-  });
-
-  // Subscribe to live price updates
-  useEffect(() => {
-    if (isConnected && ticker) {
-      subscribeToPrices([ticker]);
-    }
-  }, [isConnected, ticker, subscribeToPrices]);
-
-  // Listen for price updates
-  useEffect(() => {
-    const unsubscribe = onPriceUpdate((data) => {
-      if (data.ticker === ticker) {
-        setLivePrice(data.price);
-        setLivePriceChange(data.change24h);
-      }
-    });
-    return unsubscribe;
-  }, [ticker, onPriceUpdate]);
 
   const asset = mockAssetDetails[ticker as keyof typeof mockAssetDetails];
 
@@ -168,22 +142,17 @@ export default function AssetDetail() {
             </div>
 
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Current Price {isConnected && "(Live)"}</p>
-              <p className="text-3xl font-bold">${(livePrice !== null ? livePrice / 100 : asset.currentPrice / 100).toFixed(2)}</p>
-              <p
-                className={cn(
-                  "text-sm font-semibold mt-1",
-                  asset.priceChange24h > 0 ? "text-green-600" : "text-red-600"
-                )}
-              >
-                {asset.priceChange24h > 0 ? "+" : ""}{(asset.priceChange24h / 100).toFixed(2)}% (24h)
-              </p>
+              <p className="text-sm text-muted-foreground">Verified current quote</p>
+              <p className="text-lg font-semibold">Unavailable on this research preview</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="container py-8">
+        <Card className="mb-8 border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+          This asset page is a static research preview. Its score examples, historical-performance examples, institutional examples, supply values, and description are not current verified market data. Use the Verified Price Ticker or Scanner for provider-backed quotes; no trading action should rely on this preview.
+        </Card>
         {/* Overview Section */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Overview</h2>
@@ -209,7 +178,7 @@ export default function AssetDetail() {
 
         {/* CAN SLIM Breakdown */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">CAN SLIM Analysis</h2>
+          <h2 className="text-2xl font-bold mb-6">Illustrative CAN SLIM Research Breakdown</h2>
 
           <div className="grid gap-6 lg:grid-cols-2">
             {Object.entries(asset.criteria).map(([key, criterion]) => (
@@ -257,7 +226,7 @@ export default function AssetDetail() {
 
         {/* Supply Dynamics */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">Supply Dynamics</h2>
+          <h2 className="text-2xl font-bold mb-6">Illustrative Supply Dynamics</h2>
           <Card className="card-elevated p-6">
             <div className="grid gap-6 md:grid-cols-3">
               <div>
@@ -281,7 +250,7 @@ export default function AssetDetail() {
 
         {/* Relative Strength Charts */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">Performance Analysis</h2>
+          <h2 className="text-2xl font-bold mb-6">Illustrative Performance Examples</h2>
           <div className="grid gap-6 lg:grid-cols-2">
             <RelativeStrengthChart
               data={[
@@ -310,13 +279,13 @@ export default function AssetDetail() {
 
         {/* Real-Time News Sentiment Analysis */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">Real-Time News & Sentiment Analysis</h2>
+          <h2 className="text-2xl font-bold mb-6">News & Sentiment Research</h2>
           <RealTimeNewsFeed ticker={asset.ticker} name={asset.name} />
         </div>
 
         {/* Institutional Support */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">Institutional Support</h2>
+          <h2 className="text-2xl font-bold mb-6">Illustrative Institutional Support</h2>
           <InstitutionalSupport
             funds={[
               {
@@ -367,25 +336,7 @@ export default function AssetDetail() {
           <Button variant="outline" size="lg">
             View on Chain
           </Button>
-          <ExportButton
-            assetData={{
-              ticker: asset.ticker,
-              name: asset.name,
-              currentPrice: asset.currentPrice,
-              marketCap: asset.marketCap,
-              totalScore: asset.totalScore,
-              criteria: {
-                c: asset.criteria.c.score,
-                a: asset.criteria.a.score,
-                n: asset.criteria.n.score,
-                s: asset.criteria.s.score,
-                l: asset.criteria.l.score,
-                i: asset.criteria.i.score,
-                m: asset.criteria.m.score,
-              },
-              description: asset.description,
-            }}
-          />
+          <Button variant="outline" size="lg" disabled>Export unavailable for static research preview</Button>
         </div>
       </div>
     </div>

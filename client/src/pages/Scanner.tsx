@@ -12,8 +12,9 @@ function ScannerResultCard({
   result: any;
   onAddToWatchlist: (ticker: string) => void;
 }) {
-  const isPositive = (result.priceChange24h || 0) >= 0;
-  const score = result.canslimScore?.totalScore || 0;
+  const hasVerifiedQuote = typeof result.price === "number" && Number.isFinite(result.price) && result.price > 0;
+  const isPositive = (result.priceChange24h ?? 0) >= 0;
+  const score = result.score ?? null;
 
   return (
     <Card className="p-4 hover:shadow-lg transition-shadow">
@@ -23,33 +24,25 @@ function ScannerResultCard({
           <p className="text-sm text-gray-500">{result.name}</p>
         </div>
         <div className="text-right">
-          <div className="text-lg font-bold">${(result.currentPrice || 0) / 100}</div>
-          <div
-            className={`text-sm font-semibold flex items-center justify-end gap-1 ${
-              isPositive ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-            {((result.priceChange24h || 0) / 100).toFixed(2)}%
-          </div>
+          {hasVerifiedQuote ? <><div className="text-lg font-bold">${result.price.toLocaleString("en-US", { maximumFractionDigits: 2 })}</div><div className={`text-sm font-semibold flex items-center justify-end gap-1 ${isPositive ? "text-green-600" : "text-red-600"}`}>{isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}{isPositive ? "+" : ""}{result.priceChange24h.toFixed(2)}%</div></> : <p className="text-sm text-muted-foreground">Verified quote unavailable</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
         <div>
           <p className="text-gray-500">Market Cap</p>
-          <p className="font-semibold">${(result.marketCap || 0) / 1000}B</p>
+          <p className="font-semibold">{typeof result.marketCap === "number" ? `$${(result.marketCap / 1_000_000_000).toFixed(2)}B` : "Unavailable"}</p>
         </div>
         <div>
           <p className="text-gray-500">24h Volume</p>
-          <p className="font-semibold">${(result.volume24h || 0) / 1000}B</p>
+          <p className="font-semibold">{typeof result.volume24h === "number" ? `$${(result.volume24h / 1_000_000_000).toFixed(2)}B` : "Unavailable"}</p>
         </div>
       </div>
 
       <div className="mb-3 p-2 bg-blue-50 rounded">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold">CAN SLIM Score</span>
-          <span className="text-lg font-bold text-blue-600">{score}/100</span>
+          <span className="text-sm font-semibold">Research score</span>
+          <span className="text-lg font-bold text-blue-600">{score ?? "Unavailable"}{score === null ? "" : "/100"}</span>
         </div>
       </div>
 
@@ -193,7 +186,7 @@ export default function Scanner() {
               </div>
             ) : displayResults.length === 0 ? (
               <Card className="p-8 text-center">
-                <p className="text-gray-500">No results found</p>
+                <p className="text-gray-500">No assets passed the verified-data checks for this scan.</p>
               </Card>
             ) : (
               <div>

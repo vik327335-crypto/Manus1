@@ -238,7 +238,7 @@ export default function Dashboard() {
       <div className="container py-8">
         {/* Live Price Ticker */}
         <div className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold">Live Price Ticker</h2>
+          <h2 className="mb-4 text-lg font-semibold">Verified Price Ticker</h2>
           <PriceTicker tickers={["BTC", "ETH", "ADA"]} />
         </div>
 
@@ -250,7 +250,8 @@ export default function Dashboard() {
 
         {/* Market Trend Section */}
         <div className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold">Market Overview</h2>
+          <h2 className="mb-2 text-lg font-semibold">Market Overview</h2>
+          <p className="mb-4 text-sm text-amber-700 dark:text-amber-400">Research preview only: this overview is not a live verified market reading. Use the verified price ticker or Scanner for current provider-backed quotes.</p>
           {trendLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -326,7 +327,7 @@ export default function Dashboard() {
 
         {/* Assets Table */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Top Cryptocurrencies</h2>
+          <h2 className="text-lg font-semibold">Research examples — not live market data</h2>
 
           {assetsLoading ? (
             <div className="flex justify-center py-12">

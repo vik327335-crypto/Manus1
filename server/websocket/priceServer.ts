@@ -25,7 +25,7 @@ export interface NewsUpdate {
 
 export interface MarketUpdate {
   btcDominance: number;
-  fearGreedIndex: number;
+  fearGreedIndex: number | null;
   timestamp: number;
 }
 
@@ -115,7 +115,7 @@ export async function startPriceUpdates(interval: number = 30000) {
 
       for (const ticker of tickers) {
         const data = await getCoinData(ticker);
-        if (data) {
+        if (data && Number.isFinite(data.current_price) && data.current_price > 0 && Number.isFinite(data.price_change_percentage_24h)) {
           const update: PriceUpdate = {
             ticker,
             price: data.current_price,
@@ -198,7 +198,7 @@ export async function startMarketUpdates(interval: number = 60000) {
     try {
       const globalData = await getGlobalData();
 
-      if (globalData) {
+      if (globalData && Number.isFinite(globalData.btc_dominance) && globalData.btc_dominance > 0) {
         const update: MarketUpdate = {
           btcDominance: globalData.btc_dominance,
           fearGreedIndex: globalData.fear_greed_index,
