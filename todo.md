@@ -1445,3 +1445,9 @@
 - [x] Убрать static prices, 24h changes, total value и aggregate score claims без verified owner-scoped source: `/watchlist` больше не отображает mock assets, prices, 24h change, total value, score, alert threshold или synthetic WebSocket update.
 - [x] Добавить explicit unavailable disclosure и regression safeguard: route объясняет необходимые source/timestamp/freshness metadata, а client test запрещает mockWatchlist/websocketService/currentPrice/priceChange24h.
 - [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает unavailable policy; lint и TypeScript clean; 42 files / 300 tests проходят; coverage 15.51% statements/lines, 19.82% functions, 58.69% branches; build и HTTP 200 успешны.
+
+## Analytics Accuracy Hardening
+- [x] Проаудировать routed Analytics, MOCK_DATA и derived aggregate market-performance claims: route вычислял average score/price change/market cap, distributions, gainers/losers и asset rankings из static examples.
+- [x] Убрать static score, market cap, price change, gainers/losers и trend claims без verified data provenance: `/analytics` больше не показывает synthetic market KPIs, distributions, trends или rankings.
+- [x] Добавить explicit unavailable disclosure и regression safeguard: route объясняет requirements source/timestamp/freshness/universe, а client test запрещает MOCK_DATA/priceChange24h/marketCap/avgScore.
+- [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает unavailable policy; lint и TypeScript clean; 43 files / 301 tests проходят; coverage 15.58% statements/lines, 19.82% functions, 58.91% branches; build и HTTP 200 успешны.
