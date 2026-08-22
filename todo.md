@@ -1398,3 +1398,9 @@
 - [x] Заменить misleading live labels и static asset-detail данные явными unavailable/research-only состояниями: static preview получил prominent disclosure, verified-quote unavailable state и отключённый export.
 - [x] Добавить regression tests для unavailable market trend и asset-detail disclosure: marketRouter suite проверяет отсутствие synthetic zeroes, AssetDetail source guard фиксирует disclosure и disabled export.
 - [x] Провести сквозную quality validation и сохранить checkpoint расширенного accuracy hardening: lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.02% statements/lines, 19.82% functions, 58.82% branches; build и HTTP 200 успешны.
+
+## Static Analytics Accuracy Audit
+- [x] Инвентаризировать market/analytics экраны с mock или hardcoded показаниями, которые могут выглядеть как актуальные данные: найдено 19 экранов; подтверждённый market-data риск сосредоточен в generated intraday chart, static asset detail и dashboard preview.
+- [x] Приоритизировать наиболее рискованные user-facing misleading claims и определить безопасный display policy: DayTradingChart генерировал случайные цены, индикаторы и BUY/SELL сигналы, поэтому выбран для немедленного удаления synthetic stream.
+- [x] Исправить выбранные экраны, добавить disclosure или explicit unavailable state и regression guard: DayTradingChart не генерирует котировки/сигналы без provider-backed OHLCV feed, отображает unavailable disclosure и защищён source-level regression test.
+- [x] Выполнить validation и сохранить checkpoint следующего accuracy hardening: lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.04% statements/lines, 19.82% functions, 59.09% branches; build и HTTP 200 успешны.

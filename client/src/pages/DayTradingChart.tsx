@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Bar } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,96 +40,13 @@ export default function DayTradingChart() {
   const [selectedIndicators, setSelectedIndicators] = useState<Set<string>>(
     new Set(['rsi', 'macd', 'bollingerBands'])
   );
-  const [candles, setCandles] = useState<Candle[]>([]);
-  const [indicators, setIndicators] = useState<Indicator[]>([]);
-  const [signals, setSignals] = useState<Signal[]>([]);
+  const [candles] = useState<Candle[]>([]);
+  const [indicators] = useState<Indicator[]>([]);
+  const [signals] = useState<Signal[]>([]);
   const [selectedSignal, setSelectedSignal] = useState<Signal | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [panOffset, setPanOffset] = useState(0);
   const _chartRef = useRef<HTMLDivElement>(null);
-
-  // Симуляция получения данных
-  useEffect(() => {
-    const generateMockCandles = () => {
-      const newCandles: Candle[] = [];
-      let price = 45000;
-
-      for (let i = 0; i < 100; i++) {
-        const change = (Math.random() - 0.5) * 200;
-        price += change;
-
-        newCandles.push({
-          timestamp: Date.now() - (100 - i) * 5 * 60 * 1000,
-          open: price,
-          high: price + Math.abs(change),
-          low: price - Math.abs(change),
-          close: price + (Math.random() - 0.5) * 100,
-          volume: 1000 + Math.random() * 5000,
-          timeframe: '5m',
-        });
-      }
-
-      setCandles(newCandles);
-      generateMockIndicators(newCandles);
-      generateMockSignals(newCandles);
-    };
-
-    generateMockCandles();
-
-    // Обновление данных каждые 5 секунд
-    const interval = setInterval(generateMockCandles, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const generateMockIndicators = (candleData: Candle[]) => {
-    const newIndicators: Indicator[] = candleData.map((candle, index) => {
-      // Симуляция RSI
-      const rsi = 30 + Math.sin(index * 0.1) * 40;
-
-      // Симуляция MACD
-      const macdLine = Math.sin(index * 0.05) * 100;
-      const macdSignal = Math.sin(index * 0.05 - 0.2) * 100;
-
-      // Симуляция Bollinger Bands
-      const bbMiddle = candle.close;
-      const bbUpper = bbMiddle + 200;
-      const bbLower = bbMiddle - 200;
-
-      return {
-        timestamp: candle.timestamp,
-        rsi,
-        macdLine,
-        macdSignal,
-        macdHistogram: macdLine - macdSignal,
-        bbUpper,
-        bbMiddle,
-        bbLower,
-      };
-    });
-
-    setIndicators(newIndicators);
-  };
-
-  const generateMockSignals = (candleData: Candle[]) => {
-    const newSignals: Signal[] = [];
-
-    for (let i = 20; i < candleData.length; i += 15) {
-      const type = Math.random() > 0.5 ? 'BUY' : 'SELL';
-      newSignals.push({
-        type,
-        confidence: 60 + Math.random() * 40,
-        timestamp: candleData[i].timestamp,
-        price: candleData[i].close,
-        reasons: [
-          type === 'BUY' ? 'RSI < 30' : 'RSI > 70',
-          'MACD пересечение',
-          'Высокий объём',
-        ],
-      });
-    }
-
-    setSignals(newSignals);
-  };
 
   const toggleIndicator = (indicator: string) => {
     const newSet = new Set(selectedIndicators);
@@ -164,7 +81,7 @@ export default function DayTradingChart() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Day Trading Chart</h1>
-          <p className="text-gray-600">Микро-уровневый анализ для внутридневной торговли</p>
+          <p className="text-gray-600">Внутридневной анализ доступен только для верифицированного OHLCV-потока</p>
         </div>
         <div className="flex gap-2">
           <Select value={timeframe} onValueChange={(value: any) => setTimeframe(value)}>
@@ -180,6 +97,12 @@ export default function DayTradingChart() {
           </Select>
         </div>
       </div>
+
+      <Card className="border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+        <CardContent className="pt-6 text-sm">
+          Верифицированный intraday OHLCV-поток для этого экрана пока не подключён. Поэтому приложение не генерирует случайные цены, индикаторы или сигналы. Пустые графики и отсутствие сигналов являются намеренным состоянием unavailable, а не торговой рекомендацией.
+        </CardContent>
+      </Card>
 
       {/* Управление индикаторами */}
       <Card>
@@ -425,7 +348,9 @@ export default function DayTradingChart() {
           <CardTitle>Сигналы торговли</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
+          {signals.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Нет верифицированных intraday данных — торговые сигналы не отображаются.</p>
+          ) : <div className="space-y-2 max-h-64 overflow-y-auto">
             {signals.map((signal, index) => (
               <div
                 key={index}
@@ -474,7 +399,7 @@ export default function DayTradingChart() {
                 )}
               </div>
             ))}
-          </div>
+          </div>}
         </CardContent>
       </Card>
 
