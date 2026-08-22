@@ -1369,3 +1369,9 @@
 - [x] Добавить lint:check script и отдельный blocking GitHub Actions job: validate job зависит от успешного ESLint Quality Gate.
 - [x] Локально подтвердить failure-on-warning behavior, TypeScript, regression suite и build: временный client-side lint warning корректно завершил lint:check с ошибкой; после удаления probe lint, TypeScript, 285 tests и build проходят.
 - [x] Сохранить checkpoint и описать включение required status check в branch protection: после синхронизации репозитория в GitHub выбрать ESLint Quality Gate в required status checks целевой ветки.
+
+## Blocking Test Coverage CI Gate
+- [x] Измерить текущее coverage и зафиксировать реалистичный baseline threshold: baseline — 14.80% statements/lines, 19.48% functions, 57.99% branches; initial thresholds — 14/14/18/55 соответственно.
+- [x] Добавить coverage script, report output и пороги в Vitest configuration: подключён @vitest/coverage-v8 2.1.9, command test:coverage и text/json-summary/lcov reports; thresholds проходят baseline.
+- [x] Добавить отдельный blocking coverage job в GitHub Actions workflow: Test Coverage Gate зависит от ESLint Quality Gate и публикует coverage artifact; validate ожидает оба quality gate.
+- [x] Подтвердить coverage threshold, TypeScript, regression suite и build; сохранить checkpoint: negative probe при statements=15 завершился с кодом 1, final locked CI rehearsal прошёл (285 tests; 14.80% statements/lines, 19.48% functions, 58.12% branches).
