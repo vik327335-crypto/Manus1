@@ -1404,3 +1404,9 @@
 - [x] Приоритизировать наиболее рискованные user-facing misleading claims и определить безопасный display policy: DayTradingChart генерировал случайные цены, индикаторы и BUY/SELL сигналы, поэтому выбран для немедленного удаления synthetic stream.
 - [x] Исправить выбранные экраны, добавить disclosure или explicit unavailable state и regression guard: DayTradingChart не генерирует котировки/сигналы без provider-backed OHLCV feed, отображает unavailable disclosure и защищён source-level regression test.
 - [x] Выполнить validation и сохранить checkpoint следующего accuracy hardening: lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.04% statements/lines, 19.82% functions, 59.09% branches; build и HTTP 200 успешны.
+
+## Positions and Backtest Accuracy Hardening
+- [x] Проаудировать synthetic positions, P&L, price updates и hardcoded backtest/export paths: DayTradingPositions создавал позиции и random price/P&L stream; Backtesting отображал hardcoded metrics, curves, trades и экспортировал их как результаты.
+- [x] Устранить наиболее рискованные pseudo-live positions и pseudo-backtest performance claims: positions/P&L теперь unavailable без verified source; Backtesting больше не показывает, не экспортирует и не симулирует показатели без воспроизводимого historical run.
+- [x] Добавить explicit unavailable/research-only disclosure и regression safeguards: два экрана содержат explicit unavailable policy и source-level Vitest guard против возврата mock/random данных.
+- [x] Выполнить full quality validation и сохранить checkpoint: lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.16% statements/lines, 19.82% functions, 58.73% branches; build и HTTP 200 успешны.

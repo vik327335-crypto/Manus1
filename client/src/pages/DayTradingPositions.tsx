@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,83 +23,6 @@ export default function DayTradingPositions() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<Position>>({});
-  const [totalPnL, setTotalPnL] = useState(0);
-  const [winRate, setWinRate] = useState(0);
-
-  // Симуляция получения позиций
-  useEffect(() => {
-    const mockPositions: Position[] = [
-      {
-        id: '1',
-        asset: 'BTC/USD',
-        entryPrice: 45000,
-        currentPrice: 45230,
-        quantity: 0.5,
-        stopLoss: 44800,
-        takeProfit: 45500,
-        entryTime: new Date(Date.now() - 30 * 60000),
-        status: 'OPEN',
-        pnl: 115,
-        pnlPercentage: 0.51,
-      },
-      {
-        id: '2',
-        asset: 'ETH/USD',
-        entryPrice: 2500,
-        currentPrice: 2480,
-        quantity: 1,
-        stopLoss: 2450,
-        takeProfit: 2550,
-        entryTime: new Date(Date.now() - 15 * 60000),
-        status: 'OPEN',
-        pnl: -20,
-        pnlPercentage: -0.8,
-      },
-      {
-        id: '3',
-        asset: 'SOL/USD',
-        entryPrice: 85,
-        currentPrice: 87,
-        quantity: 10,
-        stopLoss: 83,
-        takeProfit: 90,
-        entryTime: new Date(Date.now() - 2 * 60 * 60000),
-        status: 'CLOSED',
-        pnl: 20,
-        pnlPercentage: 2.35,
-      },
-    ];
-
-    setPositions(mockPositions);
-    calculateStats(mockPositions);
-
-    // Обновление цен каждые 2 секунды
-    const interval = setInterval(() => {
-      setPositions((prev) =>
-        prev.map((pos) => ({
-          ...pos,
-          currentPrice: pos.currentPrice + (Math.random() - 0.5) * 10,
-          pnl: (pos.currentPrice - pos.entryPrice) * pos.quantity,
-          pnlPercentage: ((pos.currentPrice - pos.entryPrice) / pos.entryPrice) * 100,
-        }))
-      );
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const calculateStats = (positionList: Position[]) => {
-    const _openPositions = positionList.filter((p) => p.status === 'OPEN');
-    const closedPositions = positionList.filter((p) => p.status === 'CLOSED');
-
-    const totalPnL = positionList.reduce((sum, p) => sum + p.pnl, 0);
-    setTotalPnL(totalPnL);
-
-    if (closedPositions.length > 0) {
-      const winCount = closedPositions.filter((p) => p.pnl > 0).length;
-      setWinRate((winCount / closedPositions.length) * 100);
-    }
-  };
 
   const closePosition = (id: string) => {
     setPositions((prev) =>
@@ -127,8 +50,14 @@ export default function DayTradingPositions() {
       {/* Заголовок */}
       <div>
         <h1 className="text-3xl font-bold">Day Trading Positions</h1>
-        <p className="text-gray-600">Управление открытыми и закрытыми позициями</p>
+        <p className="text-gray-600">Read-only мониторинг доступен только после подключения верифицированного источника позиций</p>
       </div>
+
+      <Card className="border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+        <CardContent className="pt-6 text-sm">
+          Верифицированный источник day-trading позиций и P&amp;L для этого экрана пока не подключён. Приложение не создаёт тестовые позиции, не обновляет цены случайным образом и не показывает искусственную доходность. Все значения ниже недоступны, а открытие позиции отключено.
+        </CardContent>
+      </Card>
 
       {/* Статистика */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -137,9 +66,7 @@ export default function DayTradingPositions() {
             <CardTitle className="text-sm font-medium">Общий P&L</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${totalPnL.toFixed(2)}
-            </div>
+            <div className="text-2xl font-bold text-muted-foreground">—</div>
           </CardContent>
         </Card>
 
@@ -148,9 +75,7 @@ export default function DayTradingPositions() {
             <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {winRate.toFixed(1)}%
-            </div>
+            <div className="text-2xl font-bold text-muted-foreground">—</div>
           </CardContent>
         </Card>
 
@@ -178,6 +103,9 @@ export default function DayTradingPositions() {
         <CardHeader>
           <CardTitle>Открытые позиции ({openPositions.length})</CardTitle>
         </CardHeader>
+        {openPositions.length === 0 && (
+          <CardContent className="pb-0 text-sm text-muted-foreground">Нет верифицированных открытых позиций.</CardContent>
+        )}
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -315,6 +243,9 @@ export default function DayTradingPositions() {
         <CardHeader>
           <CardTitle>Закрытые позиции ({closedPositions.length})</CardTitle>
         </CardHeader>
+        {closedPositions.length === 0 && (
+          <CardContent className="pb-0 text-sm text-muted-foreground">Нет верифицированной истории позиций.</CardContent>
+        )}
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -373,37 +304,37 @@ export default function DayTradingPositions() {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Цена входа</label>
-                <Input type="number" placeholder="45000" className="mt-1" />
+                <Input type="number" placeholder="Введите цену входа" className="mt-1" />
               </div>
               <div>
                 <label className="text-sm font-medium">Stop Loss</label>
-                <Input type="number" placeholder="44800" className="mt-1" />
+                <Input type="number" placeholder="Введите уровень stop loss" className="mt-1" />
               </div>
               <div>
                 <label className="text-sm font-medium">Take Profit</label>
-                <Input type="number" placeholder="45500" className="mt-1" />
+                <Input type="number" placeholder="Введите уровень take profit" className="mt-1" />
               </div>
               <div>
                 <label className="text-sm font-medium">Размер позиции (BTC)</label>
-                <Input type="number" placeholder="0.5" className="mt-1" />
+                <Input type="number" placeholder="Введите размер позиции" className="mt-1" />
               </div>
             </div>
 
             <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
               <div>
                 <p className="text-sm text-gray-600">Риск на позицию</p>
-                <p className="text-2xl font-bold text-red-600">$100.00</p>
+                <p className="text-2xl font-bold text-muted-foreground">—</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Потенциальная прибыль</p>
-                <p className="text-2xl font-bold text-green-600">$250.00</p>
+                <p className="text-2xl font-bold text-muted-foreground">—</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Соотношение риск/прибыль</p>
-                <p className="text-2xl font-bold text-blue-600">1:2.5</p>
+                <p className="text-2xl font-bold text-muted-foreground">—</p>
               </div>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                Открыть позицию
+              <Button className="w-full" disabled>
+                Открытие позиции недоступно
               </Button>
             </div>
           </div>
