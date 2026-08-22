@@ -1507,3 +1507,10 @@
 - [x] Заменить NFT portfolio UI explicit unavailable/research-only state без valuation, performance или recommendation claims: UI требует owner-scoped holdings, chain/token scope, pricing venue, currency policy, timestamp и liquidity assumptions.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует NFT portfolio/metrics/trends/recommendation queries and price fields; screenshot подтверждает unavailable policy; lint/TypeScript clean; 51 files / 309 tests проходят; coverage 16.03% statements/lines, 19.82% functions, 58.73% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## DeFiIntegration Accuracy and Safety Hardening
+- [x] Проаудировать routed DeFiIntegration на pool/market/yield claims и swap/lend/borrow/liquidity execution actions: route displayed protocol metrics/yield opportunities and exposed direct transaction-like mutations.
+- [x] Убрать source-ambiguous liquidity, volume, fee, APY, reward и swap-route presentation без declared provider, timestamp, freshness, methodology и risk disclosure: pool/market/routing/yield UI удалён.
+- [x] Убрать swap/lend/borrow/provide-liquidity actions и заменить DeFi UI explicit unavailable/research-only state согласно no-execution boundary: wallet control and all transaction-like actions удалены.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует former DeFi queries and execution mutations; screenshot подтверждает unavailable policy; lint/TypeScript clean; 52 files / 310 tests проходят; coverage 16.09% statements/lines, 19.82% functions, 58.80% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
