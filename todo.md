@@ -1421,3 +1421,9 @@
 - [x] Убрать random historical candles из `/backtesting` и запретить выполнение стратегии на synthetic data: routed UI больше не создаёт OHLCV candles через Math.random и не вызывает strategy mutation на synthetic input.
 - [x] Заменить pseudo-backtest metrics на explicit unavailable state без verified historical data and run metadata: параметры, расчёт и metric cards объявлены недоступными до auditable source/timeframe/assumptions/run metadata.
 - [x] Расширить regression guard для routed backtesting engine и выполнить full quality validation: guard блокирует возврат Math.random и SMA/RSI mutation calls; visual review, lint, TypeScript, 290 tests, coverage, build и HTTP 200 проходят.
+
+## Portfolio Accuracy Audit
+- [x] Проаудировать фактически маршрутизируемые portfolio values, holdings и P&L на предмет mock/static claims: `/portfolio` использует in-memory Map, currentPrice равен entryPrice, а total value/P&L вычисляются без verified price/freshness source.
+- [x] Определить, какие portfolio значения имеют verified owner-scoped источник, а какие требуют unavailable/research-only state: локальные portfolio names, descriptions, quantities и cost basis — user-entered research data; current value, gain/loss, return и Glassnode-derived overview требуют explicit unavailable state без verified price source.
+- [x] Устранить наиболее рискованные misleading portfolio отображения и добавить regression safeguard: `/portfolio` больше не отображает placeholder valuation/P&L/current price/Glassnode overview, содержит data-quality disclosure и защищён source-level Vitest guard.
+- [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает valuation-unavailable policy; lint и TypeScript clean; 35 files / 290 tests проходят; coverage 15.31% statements/lines, 19.82% functions, 58.72% branches; build и HTTP 200 успешны.
