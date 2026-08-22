@@ -6,10 +6,13 @@ const mockContext = {
   user: { id: 1 },
 };
 
+let nextUserId = 1;
+
 describe('strategyHistoryRouter', () => {
   let router: any;
 
   beforeEach(() => {
+    mockContext.user.id = nextUserId++;
     router = strategyHistoryRouter.createCaller(mockContext);
   });
 

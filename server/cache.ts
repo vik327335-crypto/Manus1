@@ -138,7 +138,8 @@ export const cacheService = new CacheService();
 export const cacheKeys = {
   strategyMetrics: (userId: number, strategyName: string) =>
     `metrics:${userId}:${strategyName}`,
-  allMetrics: (userId: number) => `metrics:all:${userId}`,
+  allMetrics: (userId: number, startDate: number, endDate: number) =>
+    `metrics:all:${userId}:${startDate}:${endDate}`,
   strategyComparison: (userId: number, strategies: string[]) =>
     `comparison:${userId}:${strategies.sort().join(',')}`,
   strategyTrend: (userId: number, strategyName: string, period: string) =>

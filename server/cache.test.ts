@@ -120,8 +120,8 @@ describe('CacheService', () => {
     });
 
     it('should generate all metrics cache key', () => {
-      const key = cacheKeys.allMetrics(1);
-      expect(key).toBe('metrics:all:1');
+      const key = cacheKeys.allMetrics(1, 1_700_000_000_000, 1_700_086_400_000);
+      expect(key).toBe('metrics:all:1:1700000000000:1700086400000');
     });
 
     it('should generate strategy comparison cache key', () => {

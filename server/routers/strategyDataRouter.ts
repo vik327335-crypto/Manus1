@@ -206,7 +206,7 @@ export const strategyDataRouter = router({
     )
     .query(async ({ input, ctx }) => {
       // Check cache first
-      const cacheKey = cacheKeys.allMetrics(ctx.user.id);
+      const cacheKey = cacheKeys.allMetrics(ctx.user.id, input.startDate, input.endDate);
       const cachedMetrics = cacheService.get(cacheKey);
       if (cachedMetrics) {
         console.log(`[Cache] Hit for all metrics (user: ${ctx.user.id})`);

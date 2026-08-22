@@ -1334,3 +1334,10 @@
 - [x] Добавить детерминированные fetch mocks для Polygon и XT.com tests: 18 тестов проходят с transport/factory mocks; TypeScript без ошибок.
 - [x] Устранить flaky wall-clock assertion в day-trading cache performance test: заменён детерминированной проверкой cache hits; 12 integration tests проходят.
 - [x] Запустить полный regression suite, TypeScript check и сохранить checkpoint: 283 теста проходят, TypeScript без ошибок; остаются 2 независимых strategy router failures вне provider isolation scope.
+
+## Continuous Integration Baseline
+- [x] Зафиксировать CI triggers и обязательные команды regression/type validation: GitHub push, pull request и manual dispatch; pnpm install --frozen-lockfile, check, test и build на Node 22.
+- [x] Добавить GitHub Actions workflow для push и pull request.
+- [x] Исправить оставшиеся strategy router contract failures для зелёного full-suite baseline: cache key all-strategies metrics включает period; strategy history tests используют изолированный user scope; 17 strategy tests проходят.
+- [x] Обновить cache key generator regression contract для period-aware all metrics cache.
+- [x] Локально проверить CI-команды и сохранить checkpoint: pnpm install --frozen-lockfile, TypeScript check, полный suite из 285 тестов и build проходят.

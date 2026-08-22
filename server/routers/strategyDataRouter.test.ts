@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { strategyDataRouter } from "./strategyDataRouter";
 import { getDb } from "../db";
+import { cacheService } from "../cache";
 
 // Mock getDb
 vi.mock("../db", () => ({
@@ -25,6 +26,7 @@ describe("strategyDataRouter", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    cacheService.clear();
     (getDb as any).mockResolvedValue(mockDb);
   });
 
