@@ -1486,3 +1486,10 @@
 - [x] Заменить strategy comparison UI explicit unavailable/research-only state с requirements для data provenance, timeframe, assumptions и freshness: UI требует reproducible run, universe, source, UTC timeframe, fees, slippage и parameter version.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует former metrics query, exports, table/card и chart components; screenshot подтверждает unavailable policy; lint/TypeScript clean; 48 files / 306 tests проходят; coverage 15.90% statements/lines, 19.82% functions, 58.93% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## CommunityLeaderboard Accuracy Hardening
+- [x] Проаудировать routed CommunityLeaderboard на source-ambiguous community statistics, ratings, rankings, copies и trending claims: route показывал aggregate participation and engagement values as social proof without audit metadata.
+- [x] Убрать aggregate statistics, ratings, copies, views, leaderboard и trending content без verified user-generated source, consent, timestamp и freshness metadata: community stats, ranking cards, ratings, copies, views, categories и trending content удалены.
+- [x] Заменить community discovery explicit unavailable/research-only state без synthetic social proof или copy-trading implications: UI требует creator consent, owner-scoped identity, moderation and engagement methodology, provenance и freshness.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует community queries, rating/copy rendering; screenshot подтверждает unavailable policy; lint/TypeScript clean; 49 files / 307 tests проходят; coverage 15.95% statements/lines, 19.82% functions, 58.85% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
