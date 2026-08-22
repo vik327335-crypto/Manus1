@@ -1521,3 +1521,9 @@
 - [x] Заменить allocation preview explicit unavailable/research-only state без персональных allocation guidance или trade recommendations: UI требует holdings proof, price source, fee/liquidity constraints и explicit methodology before analysis.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует preview plan, price/target fields and BUY/SELL output; screenshot подтверждает unavailable policy; lint/TypeScript clean; 53 files / 311 tests проходят; coverage 16.11% statements/lines, 19.82% functions, 58.71% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## Routed Accuracy Residual Audit
+- [x] Сопоставить оставшиеся static/mock identifiers с фактическими route imports и provider-backed contracts: AdminDashboard, AlertManager, AssetDetail, HistoricalDataAnalysis, PortfolioComparison, ReportGenerator, SocialTradingHub и Strategies не импортируются route map; Scanner сохраняет verified quote contract.
+- [x] Зафиксировать residual-risk выводы: что не маршрутизируется, что остаётся provider-backed, и какие условия нужны до повторного включения analytics: выводы и conditions for provenance/timestamp/freshness/methodology зафиксированы в accuracy-audit.md; LearningHub static content ограничен educational UI.
+- [x] Добавить точечный route-boundary regression safeguard и выполнить full validation: App.accuracy.test.ts защищает route map от static/mock financial and social pages; lint/TypeScript clean; 54 files / 312 tests проходят; coverage 16.11% statements/lines, 19.82% functions, 58.72% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать результат в TODO.
