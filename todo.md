@@ -1465,3 +1465,10 @@
 - [x] Заменить social-trading discovery на explicit unavailable/research-only state с требованиями provenance, timestamp, freshness и methodology: UI описывает identity/consent basis, complete trade universe и reviewable assumptions как prerequisites.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует mockTraders/filteredTraders/renderStars и former performance fields; screenshot подтверждает unavailable policy; lint/TypeScript clean; 45 files / 303 tests проходят; coverage 15.66% statements/lines, 19.82% functions, 58.72% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## StrategyDashboard Accuracy Hardening
+- [x] Проаудировать routed StrategyDashboard, upstream strategy metrics и random chart-series fallback: route использовал source-ambiguous history/comparison contracts, zero-filled defaults и Math.random для strategy comparison metrics.
+- [x] Убрать synthetic ROI, win rate, Sharpe ratio, profit factor, chart series и insights без verified run, source, timeframe и assumptions metadata: KPI, charts, comparisons и random series удалены из routed UI.
+- [x] Заменить strategy comparison and dashboard analytics на explicit unavailable/research-only state до появления auditable historical run: requirements для universe, source, UTC timeframe, run date, fees, slippage и parameter version явно описаны.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует Math.random, chart components и ambiguous history/comparison queries; screenshot подтверждает unavailable policy; lint/TypeScript clean; 46 files / 304 tests проходят; coverage 15.74% statements/lines, 19.82% functions, 58.65% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
