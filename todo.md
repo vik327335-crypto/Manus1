@@ -1514,3 +1514,10 @@
 - [x] Убрать swap/lend/borrow/provide-liquidity actions и заменить DeFi UI explicit unavailable/research-only state согласно no-execution boundary: wallet control and all transaction-like actions удалены.
 - [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует former DeFi queries and execution mutations; screenshot подтверждает unavailable policy; lint/TypeScript clean; 52 files / 310 tests проходят; coverage 16.09% statements/lines, 19.82% functions, 58.80% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
+
+## PortfolioRebalancing Accuracy Hardening
+- [x] Проаудировать routed PortfolioRebalancing на user-entered valuation, allocation math и advisory-like BUY/SELL/trade-plan output: route converted unsourced inputs into portfolio value, fee estimates и action-labeled adjustments.
+- [x] Убрать trade-action labels, suggested adjustments, portfolio valuation и fee estimates без verified holdings/price provenance, timestamp, freshness и execution methodology: input form, preview query and plan output удалены.
+- [x] Заменить allocation preview explicit unavailable/research-only state без персональных allocation guidance или trade recommendations: UI требует holdings proof, price source, fee/liquidity constraints и explicit methodology before analysis.
+- [x] Добавить source-level regression safeguard и выполнить visual/full quality validation: guard блокирует preview plan, price/target fields and BUY/SELL output; screenshot подтверждает unavailable policy; lint/TypeScript clean; 53 files / 311 tests проходят; coverage 16.11% statements/lines, 19.82% functions, 58.71% branches; build и HTTP 200 успешны.
+- [x] Сохранить checkpoint и зафиксировать проверяемый результат в TODO.
