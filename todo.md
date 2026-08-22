@@ -1439,3 +1439,9 @@
 - [x] Убрать static balances, P&L, trades, risk/reward и performance claims без owner-scoped virtual-trade source: `/paper-trading` больше не показывает mock account/trades, prices, balances, P&L, win rate, drawdown или risk/reward как реальные virtual outcomes.
 - [x] Добавить explicit unavailable disclosure и regression safeguard: research-only unavailable policy отображается на всех tabs; client test запрещает возвращать mockAccounts/mockTrades/currentBalance/totalProfit.
 - [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает unavailable policy; lint и TypeScript clean; 41 files / 299 tests проходят; coverage 15.44% statements/lines, 19.82% functions, 58.73% branches; build и HTTP 200 успешны.
+
+## Watchlist Accuracy Hardening
+- [x] Проаудировать routed Watchlist, mockWatchlist и WebSocket update contract: route bootstrapped from hardcoded assets/scores/prices and WebSocket listener only mutated that synthetic client state.
+- [x] Убрать static prices, 24h changes, total value и aggregate score claims без verified owner-scoped source: `/watchlist` больше не отображает mock assets, prices, 24h change, total value, score, alert threshold или synthetic WebSocket update.
+- [x] Добавить explicit unavailable disclosure и regression safeguard: route объясняет необходимые source/timestamp/freshness metadata, а client test запрещает mockWatchlist/websocketService/currentPrice/priceChange24h.
+- [x] Выполнить full quality validation и сохранить checkpoint: visual review подтверждает unavailable policy; lint и TypeScript clean; 42 files / 300 tests проходят; coverage 15.51% statements/lines, 19.82% functions, 58.69% branches; build и HTTP 200 успешны.
