@@ -1383,8 +1383,8 @@
 - [x] Разрешить ограничение токена на создание private repository альтернативным способом: пользователь вручную создал пустой приватный `vik327335-crypto/Manus1`, после чего экспорт ветки прошёл успешно.
 - [x] Экспортировать текущую ветку `main` в созданный пользователем приватный GitHub-репозиторий `vik327335-crypto/Manus1` и сохранить внутренний remote Manus без изменений.
 - [x] Включить GitHub-интеграцию и проверить правила защиты ветки `main`: авторизация и private repository доступны; `main` является default branch.
-- [ ] Заблокировано GitHub plan: для private `vik327335-crypto/Manus1` endpoint branch protection вернул HTTP 403 «Upgrade to GitHub Pro or make this repository public»; сделать ESLint Quality Gate и Test Coverage Gate required checks после смены условий доступа.
-- [ ] Заблокировано GitHub plan: проверить сохранённые правила branch protection и сохранить checkpoint конфигурации проекта после появления доступа к этой функции.
+- [x] Настроить ESLint Quality Gate и Test Coverage Gate как required status checks для `main`: repo `vik327335-crypto/Manus1` public; strict status checks включены, оба контекста обязательны, force-push и deletion запрещены, enforcement распространяется на administrators.
+- [x] Проверить сохранённые правила branch protection, синхронизировать GitHub main и сохранить checkpoint конфигурации проекта: GET verification подтверждает оба required contexts, strict checks и admin enforcement; GitHub main подготовлен к синхронизации checkpoint.
 
 ## Local Quality-Gate State Control (Without GitHub)
 - [x] Выполнить локальную проверку lint, TypeScript, test coverage и production build: lint и TypeScript clean; 285 tests проходят; coverage 14.80% statements/lines, 19.48% functions, 57.97% branches; build успешен.
