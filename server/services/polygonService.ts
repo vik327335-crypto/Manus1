@@ -1,15 +1,28 @@
 /**
- * Polygon.io Service for Historical Crypto Data
- * Provides OHLCV data for backtesting and historical analysis
+ * Polygon/Massive crypto OHLCV adapter.
+ *
+ * Historical bars are returned only when the provider supplies a valid,
+ * timestamped response. Provider failures—including rate limiting—become an
+ * explicit unavailable contract; this service never generates fallback bars.
  */
 
-import { cache } from './cacheService';
+const POLYGON_BASE_URL = "https://api.polygon.io/v2/aggs/ticker";
+const CACHE_TTL_MS = 15 * 60 * 1000;
+const REQUEST_TIMEOUT_MS = 10_000;
+const MAX_RATE_LIMIT_RETRIES = 1;
 
-const POLYGON_API_KEY = process.env.POLYGON_API_KEY || '';
-const _POLYGON_BASE_URL = 'https://api.polygon.io/v1/open-close';
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+export type HistoricalTimeframe = "day" | "week" | "month";
+export type HistoricalDataAvailability = "available" | "unavailable";
+export type HistoricalDataErrorCode =
+  | "provider_not_configured"
+  | "rate_limited"
+  | "provider_error"
+  | "invalid_response"
+  | "no_data"
+  | "request_timeout";
 
 export interface OHLCVData {
+  timestamp: number;
   date: string;
   open: number;
   high: number;
@@ -19,222 +32,409 @@ export interface OHLCVData {
   vwap?: number;
 }
 
+export interface HistoricalDataError {
+  code: HistoricalDataErrorCode;
+  message: string;
+  status?: number;
+  retryAfterMs?: number;
+}
+
 export interface HistoricalDataResponse {
   ticker: string;
   data: OHLCVData[];
   startDate: string;
   endDate: string;
+  timeframe: HistoricalTimeframe;
   dataPoints: number;
+  availability: HistoricalDataAvailability;
+  source: "polygon";
+  fetchedAt: number | null;
+  cacheAgeMs: number | null;
+  coverageStartDate: string | null;
+  coverageEndDate: string | null;
+  error?: HistoricalDataError;
 }
 
-/**
- * Get historical OHLCV data for a cryptocurrency
- * Falls back to mock data if API key is not configured
- */
-export async function getHistoricalOHLCV(
+export interface HistoricalOHLCVProviderHealth {
+  source: "polygon";
+  lastAttemptAt: number | null;
+  lastSuccessAt: number | null;
+  lastFailureAt: number | null;
+  lastStatus: number | null;
+  consecutiveFailures: number;
+  rateLimitEvents: number;
+  lastRateLimitAt: number | null;
+  lastRetryAfterMs: number | null;
+  freshnessAgeMs: number | null;
+}
+
+interface CachedHistoricalData {
+  response: HistoricalDataResponse;
+  timestamp: number;
+}
+
+interface PolygonAggregateResponse {
+  status?: unknown;
+  error?: unknown;
+  results?: unknown;
+}
+
+interface PolygonAggregateBar {
+  t?: unknown;
+  o?: unknown;
+  h?: unknown;
+  l?: unknown;
+  c?: unknown;
+  v?: unknown;
+  vw?: unknown;
+}
+
+class ProviderRequestError extends Error {
+  constructor(
+    readonly code: HistoricalDataErrorCode,
+    message: string,
+    readonly status?: number,
+    readonly retryAfterMs?: number
+  ) {
+    super(message);
+    this.name = "ProviderRequestError";
+  }
+}
+
+const cache = new Map<string, CachedHistoricalData>();
+let health: Omit<HistoricalOHLCVProviderHealth, "source" | "freshnessAgeMs"> = {
+  lastAttemptAt: null,
+  lastSuccessAt: null,
+  lastFailureAt: null,
+  lastStatus: null,
+  consecutiveFailures: 0,
+  rateLimitEvents: 0,
+  lastRateLimitAt: null,
+  lastRetryAfterMs: null,
+};
+
+function getPolygonApiKey(): string {
+  return process.env.POLYGON_API_KEY?.trim() ?? "";
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isValidDate(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00.000Z`));
+}
+
+function normalizeTicker(ticker: string): string {
+  const normalized = ticker.trim().toUpperCase();
+  if (!/^[A-Z0-9]{2,12}$/.test(normalized)) {
+    throw new ProviderRequestError("invalid_response", "Ticker must contain 2-12 alphanumeric characters.");
+  }
+  return normalized;
+}
+
+function parseRetryAfterMs(value: string | null): number | null {
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.round(seconds * 1000);
+  const retryAt = Date.parse(value);
+  return Number.isNaN(retryAt) ? null : Math.max(0, retryAt - Date.now());
+}
+
+function wait(ms: number): Promise<void> {
+  return ms > 0 ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
+}
+
+function toUnavailable(
   ticker: string,
   startDate: string,
   endDate: string,
-  timeframe: 'day' | 'week' | 'month' = 'day'
-): Promise<HistoricalDataResponse> {
-  const cacheKey = `polygon-${ticker}-${startDate}-${endDate}-${timeframe}`;
+  timeframe: HistoricalTimeframe,
+  error: HistoricalDataError
+): HistoricalDataResponse {
+  return {
+    ticker,
+    data: [],
+    startDate,
+    endDate,
+    timeframe,
+    dataPoints: 0,
+    availability: "unavailable",
+    source: "polygon",
+    fetchedAt: null,
+    cacheAgeMs: null,
+    coverageStartDate: null,
+    coverageEndDate: null,
+    error,
+  };
+}
 
-  // Check cache first
+function recordSuccess(status: number): void {
+  health = {
+    ...health,
+    lastSuccessAt: Date.now(),
+    lastStatus: status,
+    consecutiveFailures: 0,
+  };
+}
+
+function recordFailure(status: number | undefined, retryAfterMs?: number): void {
+  const now = Date.now();
+  health = {
+    ...health,
+    lastFailureAt: now,
+    lastStatus: status ?? null,
+    consecutiveFailures: health.consecutiveFailures + 1,
+    rateLimitEvents: status === 429 ? health.rateLimitEvents + 1 : health.rateLimitEvents,
+    lastRateLimitAt: status === 429 ? now : health.lastRateLimitAt,
+    lastRetryAfterMs: status === 429 ? retryAfterMs ?? null : health.lastRetryAfterMs,
+  };
+}
+
+function getCachedResponse(cacheKey: string): HistoricalDataResponse | null {
   const cached = cache.get(cacheKey);
-  if (cached) {
-    console.info(`[PolygonService] Cache hit for ${ticker} (${startDate} to ${endDate})`);
-    return cached as HistoricalDataResponse;
+  if (!cached) return null;
+
+  const cacheAgeMs = Math.max(0, Date.now() - cached.timestamp);
+  if (cacheAgeMs >= CACHE_TTL_MS) {
+    cache.delete(cacheKey);
+    return null;
   }
 
-  try {
-    if (!POLYGON_API_KEY) {
-      console.warn('[PolygonService] No API key configured, using mock data');
-      return generateMockHistoricalData(ticker, startDate, endDate);
+  return {
+    ...cached.response,
+    fetchedAt: cached.timestamp,
+    cacheAgeMs,
+  };
+}
+
+async function requestPolygon(url: URL): Promise<PolygonAggregateResponse> {
+  for (let attempt = 0; attempt <= MAX_RATE_LIMIT_RETRIES; attempt += 1) {
+    health = { ...health, lastAttemptAt: Date.now() };
+
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "TimeoutError") {
+        recordFailure(undefined);
+        throw new ProviderRequestError("request_timeout", "Polygon OHLCV request timed out.");
+      }
+      recordFailure(undefined);
+      throw new ProviderRequestError("provider_error", "Polygon OHLCV request failed before a response was received.");
     }
 
-    // For crypto, we need to use the crypto endpoint
-    const cryptoTicker = `X:${ticker}USD`; // e.g., X:BTCUSD
-    const data = await fetchFromPolygon(cryptoTicker, startDate, endDate, timeframe);
+    if (response.status === 429) {
+      const retryAfterMs = parseRetryAfterMs(response.headers.get("retry-after"));
+      recordFailure(429, retryAfterMs ?? undefined);
+      if (attempt < MAX_RATE_LIMIT_RETRIES) {
+        await wait(retryAfterMs ?? 1_000);
+        continue;
+      }
+      throw new ProviderRequestError(
+        "rate_limited",
+        "Polygon rate limit reached; historical OHLCV is temporarily unavailable.",
+        429,
+        retryAfterMs ?? undefined
+      );
+    }
 
-    cache.set(cacheKey, data, CACHE_DURATION);
-    return data;
-  } catch (error) {
-    console.error(`[PolygonService] Error fetching historical data for ${ticker}:`, error);
-    // Fallback to mock data on error
-    return generateMockHistoricalData(ticker, startDate, endDate);
+    if (!response.ok) {
+      recordFailure(response.status);
+      throw new ProviderRequestError(
+        "provider_error",
+        `Polygon OHLCV request failed with HTTP ${response.status}.`,
+        response.status
+      );
+    }
+
+    const payload = (await response.json()) as PolygonAggregateResponse;
+    recordSuccess(response.status);
+    return payload;
   }
+
+  throw new ProviderRequestError("provider_error", "Polygon OHLCV request exhausted without a response.");
+}
+
+function validateBars(payload: PolygonAggregateResponse): OHLCVData[] {
+  if (payload.status !== "OK" || !Array.isArray(payload.results)) {
+    throw new ProviderRequestError("invalid_response", "Polygon returned an invalid OHLCV response.");
+  }
+
+  const bars = payload.results.flatMap((rawBar): OHLCVData[] => {
+    if (!rawBar || typeof rawBar !== "object") return [];
+    const bar = rawBar as PolygonAggregateBar;
+    const values = [bar.t, bar.o, bar.h, bar.l, bar.c, bar.v];
+    if (!values.every(isFiniteNumber)) return [];
+    const timestamp = bar.t as number;
+    const open = bar.o as number;
+    const high = bar.h as number;
+    const low = bar.l as number;
+    const close = bar.c as number;
+    const volume = bar.v as number;
+    if (timestamp <= 0 || open <= 0 || high <= 0 || low <= 0 || close <= 0 || volume < 0) return [];
+    if (high < Math.max(open, close) || low > Math.min(open, close)) return [];
+
+    return [{
+      timestamp,
+      date: new Date(timestamp).toISOString().slice(0, 10),
+      open,
+      high,
+      low,
+      close,
+      volume,
+      ...(isFiniteNumber(bar.vw) && bar.vw > 0 ? { vwap: bar.vw } : {}),
+    }];
+  });
+
+  const chronologicalBars = bars.sort((left, right) => left.timestamp - right.timestamp);
+  if (chronologicalBars.length === 0) {
+    throw new ProviderRequestError("no_data", "Polygon returned no valid OHLCV bars for the requested interval.");
+  }
+
+  return chronologicalBars;
 }
 
 /**
- * Fetch data from Polygon.io API
+ * Get historical crypto OHLCV data with provider provenance and explicit
+ * unavailable states. All requested dates are interpreted as UTC dates.
  */
-async function fetchFromPolygon(
-  ticker: string,
+export async function getHistoricalOHLCV(
+  tickerInput: string,
   startDate: string,
   endDate: string,
-  timeframe: 'day' | 'week' | 'month'
+  timeframe: HistoricalTimeframe = "day"
 ): Promise<HistoricalDataResponse> {
-  const multiplier = timeframe === 'day' ? 1 : timeframe === 'week' ? 7 : 30;
-  const timeframeStr = timeframe === 'day' ? 'minute' : 'day'; // Polygon uses minute/day/week/month
-
-  const url = new URL('https://api.polygon.io/v2/aggs/ticker');
-  url.pathname = `/v2/aggs/ticker/${ticker}/range/${multiplier}/${timeframeStr}`;
-  url.searchParams.append('from', startDate);
-  url.searchParams.append('to', endDate);
-  url.searchParams.append('adjusted', 'true');
-  url.searchParams.append('sort', 'asc');
-  url.searchParams.append('limit', '50000');
-  url.searchParams.append('apikey', POLYGON_API_KEY);
-
-  const response = await fetch(url.toString());
-
-  if (!response.ok) {
-    throw new Error(`Polygon API error: ${response.status} ${response.statusText}`);
-  }
-
-  const result = await response.json() as {
-    results?: Array<{
-      t: number;
-      o: number;
-      h: number;
-      l: number;
-      c: number;
-      v: number;
-      vw?: number;
-    }>;
-    status: string;
-  };
-
-  if (!result.results || result.results.length === 0) {
-    throw new Error(`No data found for ${ticker} from ${startDate} to ${endDate}`);
-  }
-
-  const data: OHLCVData[] = result.results.map((item) => ({
-    date: new Date(item.t).toISOString().split('T')[0],
-    open: item.o,
-    high: item.h,
-    low: item.l,
-    close: item.c,
-    volume: item.v,
-    vwap: item.vw,
-  }));
-
-  return {
-    ticker,
-    data,
-    startDate,
-    endDate,
-    dataPoints: data.length,
-  };
-}
-
-/**
- * Generate mock historical data for testing
- */
-function generateMockHistoricalData(
-  ticker: string,
-  startDate: string,
-  endDate: string
-): HistoricalDataResponse {
-  const data: OHLCVData[] = [];
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  // Mock prices for different tickers
-  const basePrices: Record<string, number> = {
-    BTC: 45000,
-    ETH: 2500,
-    ADA: 0.65,
-    SOL: 120,
-    DOGE: 0.15,
-    XRP: 0.50,
-  };
-
-  let currentPrice = basePrices[ticker] || 100;
-  let currentDate = new Date(start);
-
-  while (currentDate <= end) {
-    // Generate realistic price movements (±2% daily)
-    const dailyChange = (Math.random() - 0.5) * 0.04 * currentPrice;
-    const open = currentPrice;
-    const close = currentPrice + dailyChange;
-    const high = Math.max(open, close) * (1 + Math.random() * 0.01);
-    const low = Math.min(open, close) * (1 - Math.random() * 0.01);
-    const volume = Math.floor(Math.random() * 1000000000) + 100000000;
-
-    data.push({
-      date: currentDate.toISOString().split('T')[0],
-      open: Math.round(open * 100) / 100,
-      high: Math.round(high * 100) / 100,
-      low: Math.round(low * 100) / 100,
-      close: Math.round(close * 100) / 100,
-      volume,
-      vwap: Math.round(((open + high + low + close) / 4) * 100) / 100,
+  let ticker: string;
+  try {
+    ticker = normalizeTicker(tickerInput);
+  } catch (error) {
+    const providerError = error instanceof ProviderRequestError
+      ? error
+      : new ProviderRequestError("invalid_response", "Ticker validation failed.");
+    return toUnavailable(tickerInput.trim().toUpperCase(), startDate, endDate, timeframe, {
+      code: providerError.code,
+      message: providerError.message,
     });
-
-    currentPrice = close;
-    currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  return {
-    ticker,
-    data,
-    startDate,
-    endDate,
-    dataPoints: data.length,
-  };
+  if (!isValidDate(startDate) || !isValidDate(endDate) || startDate > endDate) {
+    return toUnavailable(ticker, startDate, endDate, timeframe, {
+      code: "invalid_response",
+      message: "Historical OHLCV requires an ascending UTC date range in YYYY-MM-DD format.",
+    });
+  }
+
+  const apiKey = getPolygonApiKey();
+  if (!apiKey) {
+    return toUnavailable(ticker, startDate, endDate, timeframe, {
+      code: "provider_not_configured",
+      message: "Polygon historical OHLCV provider is not configured.",
+    });
+  }
+
+  const cacheKey = `${ticker}-${startDate}-${endDate}-${timeframe}`;
+  const cached = getCachedResponse(cacheKey);
+  if (cached) return cached;
+
+  const url = new URL(`${POLYGON_BASE_URL}/X:${ticker}USD/range/1/${timeframe}/${startDate}/${endDate}`);
+  url.searchParams.set("adjusted", "true");
+  url.searchParams.set("sort", "asc");
+  url.searchParams.set("limit", "50000");
+  url.searchParams.set("apiKey", apiKey);
+
+  try {
+    const payload = await requestPolygon(url);
+    const data = validateBars(payload);
+    const fetchedAt = Date.now();
+    const response: HistoricalDataResponse = {
+      ticker,
+      data,
+      startDate,
+      endDate,
+      timeframe,
+      dataPoints: data.length,
+      availability: "available",
+      source: "polygon",
+      fetchedAt,
+      cacheAgeMs: 0,
+      coverageStartDate: data[0].date,
+      coverageEndDate: data[data.length - 1].date,
+    };
+    cache.set(cacheKey, { response, timestamp: fetchedAt });
+    return response;
+  } catch (error) {
+    const providerError = error instanceof ProviderRequestError
+      ? error
+      : new ProviderRequestError("provider_error", "Polygon historical OHLCV failed unexpectedly.");
+    if (!(error instanceof ProviderRequestError)) recordFailure(undefined);
+    console.warn(`[PolygonOHLCV] ${providerError.code} for ${ticker}: ${providerError.message}`);
+    return toUnavailable(ticker, startDate, endDate, timeframe, {
+      code: providerError.code,
+      message: providerError.message,
+      ...(providerError.status ? { status: providerError.status } : {}),
+      ...(providerError.retryAfterMs !== undefined ? { retryAfterMs: providerError.retryAfterMs } : {}),
+    });
+  }
 }
 
-/**
- * Get multiple years of historical data
- */
 export async function getMultiYearHistoricalData(
   ticker: string,
   years: number = 1
 ): Promise<HistoricalDataResponse> {
+  const boundedYears = Math.max(1, Math.min(2, Math.trunc(years)));
   const endDate = new Date();
-  const startDate = new Date();
-  startDate.setFullYear(startDate.getFullYear() - years);
+  const startDate = new Date(endDate);
+  startDate.setUTCFullYear(startDate.getUTCFullYear() - boundedYears);
 
-  const startDateStr = startDate.toISOString().split('T')[0];
-  const endDateStr = endDate.toISOString().split('T')[0];
-
-  return getHistoricalOHLCV(ticker, startDateStr, endDateStr, 'day');
+  return getHistoricalOHLCV(
+    ticker,
+    startDate.toISOString().slice(0, 10),
+    endDate.toISOString().slice(0, 10),
+    "day"
+  );
 }
 
-/**
- * Calculate technical indicators from OHLCV data
- */
-export function calculateTechnicalIndicators(data: OHLCVData[]) {
-  if (data.length === 0) {
-    return null;
-  }
+export function getHistoricalOHLCVProviderHealth(): HistoricalOHLCVProviderHealth {
+  return {
+    source: "polygon",
+    ...health,
+    freshnessAgeMs: health.lastSuccessAt === null ? null : Math.max(0, Date.now() - health.lastSuccessAt),
+  };
+}
 
-  // Simple Moving Average (SMA)
+export function clearHistoricalOHLCVCache(): void {
+  cache.clear();
+}
+
+export function resetHistoricalOHLCVProviderHealthForTesting(): void {
+  health = {
+    lastAttemptAt: null,
+    lastSuccessAt: null,
+    lastFailureAt: null,
+    lastStatus: null,
+    consecutiveFailures: 0,
+    rateLimitEvents: 0,
+    lastRateLimitAt: null,
+    lastRetryAfterMs: null,
+  };
+}
+
+export function calculateTechnicalIndicators(data: OHLCVData[]) {
+  if (data.length === 0) return null;
+
   const sma20 = calculateSMA(data, 20);
   const sma50 = calculateSMA(data, 50);
   const sma200 = calculateSMA(data, 200);
-
-  // Exponential Moving Average (EMA)
   const ema12 = calculateEMA(data, 12);
   const ema26 = calculateEMA(data, 26);
-
-  // MACD
   const macd = ema12 - ema26;
-  const signal = calculateEMA(data.map((d) => ({ ...d, close: macd })), 9);
-
-  // RSI (Relative Strength Index)
+  const signal = calculateEMA(data.map((point) => ({ ...point, close: macd })), 9);
   const rsi = calculateRSI(data, 14);
-
-  // Bollinger Bands
-  const bb = calculateBollingerBands(data, 20, 2);
-
-  // Volatility
+  const bollingerBands = calculateBollingerBands(data, 20, 2);
   const volatility = calculateVolatility(data);
-
   const latestPrice = data[data.length - 1].close;
-  const previousPrice = data[0].close;
-  const totalReturn = ((latestPrice - previousPrice) / previousPrice) * 100;
+  const initialPrice = data[0].close;
 
   return {
     sma20,
@@ -245,108 +445,58 @@ export function calculateTechnicalIndicators(data: OHLCVData[]) {
     macd,
     signal,
     rsi,
-    bollingerBands: bb,
+    bollingerBands,
     volatility,
     latestPrice,
-    totalReturn,
+    totalReturn: ((latestPrice - initialPrice) / initialPrice) * 100,
   };
 }
 
-/**
- * Calculate Simple Moving Average
- */
 function calculateSMA(data: OHLCVData[], period: number): number {
-  if (data.length < period) {
-    return data[data.length - 1].close;
-  }
-
-  const sum = data.slice(-period).reduce((acc, d) => acc + d.close, 0);
-  return sum / period;
+  if (data.length < period) return data[data.length - 1].close;
+  return data.slice(-period).reduce((sum, point) => sum + point.close, 0) / period;
 }
 
-/**
- * Calculate Exponential Moving Average
- */
 function calculateEMA(data: OHLCVData[], period: number): number {
-  if (data.length < period) {
-    return data[data.length - 1].close;
-  }
-
+  if (data.length < period) return data[data.length - 1].close;
   const multiplier = 2 / (period + 1);
-  let ema = data.slice(0, period).reduce((acc, d) => acc + d.close, 0) / period;
-
-  for (let i = period; i < data.length; i++) {
-    ema = data[i].close * multiplier + ema * (1 - multiplier);
+  let ema = data.slice(0, period).reduce((sum, point) => sum + point.close, 0) / period;
+  for (let index = period; index < data.length; index += 1) {
+    ema = data[index].close * multiplier + ema * (1 - multiplier);
   }
-
   return ema;
 }
 
-/**
- * Calculate Relative Strength Index
- */
 function calculateRSI(data: OHLCVData[], period: number): number {
-  if (data.length < period + 1) {
-    return 50;
-  }
-
+  if (data.length < period + 1) return 50;
   let gains = 0;
   let losses = 0;
-
-  for (let i = 1; i <= period; i++) {
-    const change = data[data.length - period + i].close - data[data.length - period + i - 1].close;
-    if (change > 0) {
-      gains += change;
-    } else {
-      losses += Math.abs(change);
-    }
+  for (let index = 1; index <= period; index += 1) {
+    const change = data[data.length - period + index].close - data[data.length - period + index - 1].close;
+    if (change > 0) gains += change;
+    else losses += Math.abs(change);
   }
-
-  const avgGain = gains / period;
-  const avgLoss = losses / period;
-
-  if (avgLoss === 0) {
-    return 100;
-  }
-
-  const rs = avgGain / avgLoss;
-  return 100 - 100 / (1 + rs);
+  if (losses === 0) return 100;
+  const relativeStrength = (gains / period) / (losses / period);
+  return 100 - 100 / (1 + relativeStrength);
 }
 
-/**
- * Calculate Bollinger Bands
- */
-function calculateBollingerBands(data: OHLCVData[], period: number, stdDev: number) {
-  const sma = calculateSMA(data, period);
-  const prices = data.slice(-period).map((d) => d.close);
-
-  const variance =
-    prices.reduce((acc, p) => acc + Math.pow(p - sma, 2), 0) / prices.length;
-  const std = Math.sqrt(variance);
-
+function calculateBollingerBands(data: OHLCVData[], period: number, standardDeviations: number) {
+  const middle = calculateSMA(data, period);
+  const prices = data.slice(-period).map((point) => point.close);
+  const variance = prices.reduce((sum, price) => sum + (price - middle) ** 2, 0) / prices.length;
+  const deviation = Math.sqrt(variance);
   return {
-    upper: sma + std * stdDev,
-    middle: sma,
-    lower: sma - std * stdDev,
+    upper: middle + deviation * standardDeviations,
+    middle,
+    lower: middle - deviation * standardDeviations,
   };
 }
 
-/**
- * Calculate Volatility (Standard Deviation of Returns)
- */
 function calculateVolatility(data: OHLCVData[]): number {
-  if (data.length < 2) {
-    return 0;
-  }
-
-  const returns: number[] = [];
-  for (let i = 1; i < data.length; i++) {
-    const ret = (data[i].close - data[i - 1].close) / data[i - 1].close;
-    returns.push(ret);
-  }
-
-  const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
-  const variance = returns.reduce((acc, ret) => acc + Math.pow(ret - avgReturn, 2), 0) / returns.length;
-
-  return Math.sqrt(variance) * 100; // Annualized volatility
+  if (data.length < 2) return 0;
+  const returns = data.slice(1).map((point, index) => (point.close - data[index].close) / data[index].close);
+  const averageReturn = returns.reduce((sum, value) => sum + value, 0) / returns.length;
+  const variance = returns.reduce((sum, value) => sum + (value - averageReturn) ** 2, 0) / returns.length;
+  return Math.sqrt(variance) * 100;
 }

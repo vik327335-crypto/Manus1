@@ -1,6 +1,10 @@
-import { invokeLLM as _invokeLLM } from "../_core/llm";
+import {
+  clearHistoricalOHLCVCache,
+  getHistoricalOHLCV,
+  getHistoricalOHLCVProviderHealth,
+} from "./polygonService";
 
-interface PolygonOHLCV {
+export interface PolygonOHLCV {
   timestamp: number;
   open: number;
   high: number;
@@ -9,318 +13,114 @@ interface PolygonOHLCV {
   volume: number;
 }
 
-interface PolygonResponse {
-  status: string;
-  results?: Array<{
-    t: number;
-    o: number;
-    h: number;
-    l: number;
-    c: number;
-    v: number;
-  }>;
-  error?: string;
-}
-
-const POLYGON_API_KEY = process.env.POLYGON_API_KEY || "";
-const POLYGON_BASE_URL = "https://api.polygon.io/v1";
-
-// Cache for API responses (1 hour TTL)
-const cache = new Map<
-  string,
-  { data: PolygonOHLCV[]; timestamp: number }
->();
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+type PolygonTimespan = "minute" | "hour" | "day" | "week" | "month" | "quarter" | "year";
 
 /**
- * Fetch OHLCV data from Polygon.io API
+ * Compatibility adapter for legacy callers. Only daily, weekly and monthly
+ * bars are supported by the verified historical crypto contract. Unsupported
+ * timeframes and provider failures throw rather than fabricating bars.
  */
 export async function fetchPolygonOHLCV(
   ticker: string,
-  timespan: "minute" | "hour" | "day" | "week" | "month" | "quarter" | "year" = "day",
+  timespan: PolygonTimespan = "day",
   from: string,
   to: string
 ): Promise<PolygonOHLCV[]> {
-  const cacheKey = `${ticker}-${timespan}-${from}-${to}`;
-
-  // Check cache
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    console.info(`[Polygon] Cache hit for ${cacheKey}`);
-    return cached.data;
+  if (timespan !== "day" && timespan !== "week" && timespan !== "month") {
+    throw new Error(`Verified crypto OHLCV does not support ${timespan} bars.`);
   }
 
-  try {
-    if (!POLYGON_API_KEY) {
-      console.warn("[Polygon] API key not configured, using fallback data");
-      return generateFallbackOHLCV(ticker, from, to);
-    }
-
-    const url = `${POLYGON_BASE_URL}/open-close/${ticker}/${from}?adjusted=true&sort=asc&apikey=${POLYGON_API_KEY}`;
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.error(`[Polygon] API error: ${response.status} ${response.statusText}`);
-      return generateFallbackOHLCV(ticker, from, to);
-    }
-
-    const data = (await response.json()) as PolygonResponse;
-
-    if (data.status !== "OK" || !data.results) {
-      console.error(`[Polygon] Invalid response: ${data.error || "unknown error"}`);
-      return generateFallbackOHLCV(ticker, from, to);
-    }
-
-    // Convert Polygon format to our format
-    const ohlcv: PolygonOHLCV[] = data.results.map((bar) => ({
-      timestamp: bar.t,
-      open: bar.o,
-      high: bar.h,
-      low: bar.l,
-      close: bar.c,
-      volume: bar.v,
-    }));
-
-    // Cache the results
-    cache.set(cacheKey, { data: ohlcv, timestamp: Date.now() });
-
-    console.info(`[Polygon] Fetched ${ohlcv.length} bars for ${ticker}`);
-    return ohlcv;
-  } catch (error) {
-    console.error("[Polygon] Fetch error:", error);
-    return generateFallbackOHLCV(ticker, from, to);
-  }
-}
-
-/**
- * Generate fallback OHLCV data using random walk model
- */
-function generateFallbackOHLCV(
-  ticker: string,
-  from: string,
-  to: string
-): PolygonOHLCV[] {
-  const startDate = new Date(from);
-  const endDate = new Date(to);
-  const data: PolygonOHLCV[] = [];
-
-  let price = 50000; // Starting price
-  let timestamp = startDate.getTime();
-
-  while (timestamp < endDate.getTime()) {
-    // Random walk
-    const change = (Math.random() - 0.5) * 1000;
-    const open = price;
-    const close = Math.max(100, price + change);
-    const high = Math.max(open, close) * (1 + Math.random() * 0.02);
-    const low = Math.min(open, close) * (1 - Math.random() * 0.02);
-    const volume = Math.floor(Math.random() * 1000000) + 100000;
-
-    data.push({
-      timestamp,
-      open,
-      high,
-      low,
-      close,
-      volume,
-    });
-
-    price = close;
-    timestamp += 24 * 60 * 60 * 1000; // Next day
+  const response = await getHistoricalOHLCV(ticker, from, to, timespan);
+  if (response.availability !== "available") {
+    throw new Error(response.error?.message ?? "Historical OHLCV is unavailable.");
   }
 
-  return data;
+  return response.data.map((bar) => ({
+    timestamp: bar.timestamp,
+    open: bar.open,
+    high: bar.high,
+    low: bar.low,
+    close: bar.close,
+    volume: bar.volume,
+  }));
 }
 
-/**
- * Get multiple years of OHLCV data
- */
-export async function fetchMultiYearOHLCV(
-  ticker: string,
-  years: number = 1
-): Promise<PolygonOHLCV[]> {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setFullYear(startDate.getFullYear() - years);
-
-  const from = startDate.toISOString().split("T")[0];
-  const to = endDate.toISOString().split("T")[0];
-
-  return fetchPolygonOHLCV(ticker, "day", from, to);
+export async function fetchMultiYearOHLCV(ticker: string, years: number = 1): Promise<PolygonOHLCV[]> {
+  const end = new Date();
+  const start = new Date(end);
+  start.setUTCFullYear(start.getUTCFullYear() - Math.max(1, Math.min(2, Math.trunc(years))));
+  return fetchPolygonOHLCV(ticker, "day", start.toISOString().slice(0, 10), end.toISOString().slice(0, 10));
 }
 
-/**
- * Calculate technical indicators from OHLCV data
- */
 export function calculateIndicators(ohlcv: PolygonOHLCV[], period: number = 20) {
+  if (ohlcv.length === 0) return null;
   const closes = ohlcv.map((bar) => bar.close);
-  const _highs = ohlcv.map((bar) => bar.high);
-  const _lows = ohlcv.map((bar) => bar.low);
-
-  // SMA (Simple Moving Average)
-  const sma = calculateSMA(closes, period);
-
-  // EMA (Exponential Moving Average)
-  const ema = calculateEMA(closes, period);
-
-  // RSI (Relative Strength Index)
-  const rsi = calculateRSI(closes, 14);
-
-  // Bollinger Bands
-  const bb = calculateBollingerBands(closes, period);
-
-  // ATR (Average True Range)
-  const atr = calculateATR(ohlcv, 14);
-
   return {
-    sma,
-    ema,
-    rsi,
-    bollingerBands: bb,
-    atr,
+    sma: calculateSMA(closes, period),
+    ema: calculateEMA(closes, period),
+    rsi: calculateRSI(closes, 14),
+    bollingerBands: calculateBollingerBands(closes, period),
+    atr: calculateATR(ohlcv, 14),
   };
 }
 
 function calculateSMA(prices: number[], period: number): number[] {
-  const sma: number[] = [];
-  for (let i = 0; i < prices.length; i++) {
-    if (i < period - 1) {
-      sma.push(0);
-    } else {
-      const sum = prices.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0);
-      sma.push(sum / period);
-    }
-  }
-  return sma;
+  return prices.map((_, index) => {
+    if (index < period - 1) return Number.NaN;
+    const window = prices.slice(index - period + 1, index + 1);
+    return window.reduce((sum, value) => sum + value, 0) / period;
+  });
 }
 
 function calculateEMA(prices: number[], period: number): number[] {
-  const ema: number[] = [];
-  const k = 2 / (period + 1);
-
-  for (let i = 0; i < prices.length; i++) {
-    if (i === 0) {
-      ema.push(prices[0]);
-    } else if (i < period) {
-      const sum = prices.slice(0, i + 1).reduce((a, b) => a + b, 0);
-      ema.push(sum / (i + 1));
-    } else {
-      ema.push(prices[i] * k + ema[i - 1] * (1 - k));
-    }
-  }
-  return ema;
+  if (prices.length === 0) return [];
+  const multiplier = 2 / (period + 1);
+  return prices.reduce<number[]>((ema, price, index) => {
+    if (index === 0) return [price];
+    return [...ema, price * multiplier + ema[index - 1] * (1 - multiplier)];
+  }, []);
 }
 
-function calculateRSI(prices: number[], period: number = 14): number[] {
-  const rsi: number[] = [];
-  const changes: number[] = [];
-
-  for (let i = 1; i < prices.length; i++) {
-    changes.push(prices[i] - prices[i - 1]);
-  }
-
-  let avgGain = 0;
-  let avgLoss = 0;
-
-  for (let i = 0; i < period; i++) {
-    if (changes[i] > 0) {
-      avgGain += changes[i];
-    } else {
-      avgLoss += Math.abs(changes[i]);
-    }
-  }
-
-  avgGain /= period;
-  avgLoss /= period;
-
-  for (let i = period; i < changes.length; i++) {
-    const change = changes[i];
-    if (change > 0) {
-      avgGain = (avgGain * (period - 1) + change) / period;
-      avgLoss = (avgLoss * (period - 1)) / period;
-    } else {
-      avgGain = (avgGain * (period - 1)) / period;
-      avgLoss = (avgLoss * (period - 1) + Math.abs(change)) / period;
-    }
-
-    const rs = avgGain / avgLoss;
-    const rsiValue = 100 - 100 / (1 + rs);
-    rsi.push(rsiValue);
-  }
-
-  return rsi;
+function calculateRSI(prices: number[], period: number): number[] {
+  return prices.map((_, index) => {
+    if (index < period) return Number.NaN;
+    const changes = prices.slice(index - period, index + 1).map((price, changeIndex, values) =>
+      changeIndex === 0 ? 0 : price - values[changeIndex - 1]
+    ).slice(1);
+    const gains = changes.filter((change) => change > 0);
+    const losses = changes.filter((change) => change < 0).map(Math.abs);
+    const averageGain = gains.reduce((sum, value) => sum + value, 0) / period;
+    const averageLoss = losses.reduce((sum, value) => sum + value, 0) / period;
+    return averageLoss === 0 ? 100 : 100 - 100 / (1 + averageGain / averageLoss);
+  });
 }
 
-function calculateBollingerBands(prices: number[], period: number = 20) {
-  const sma = calculateSMA(prices, period);
-  const bands: Array<{ upper: number; middle: number; lower: number }> = [];
-
-  for (let i = 0; i < prices.length; i++) {
-    if (i < period - 1) {
-      bands.push({ upper: 0, middle: 0, lower: 0 });
-    } else {
-      const slice = prices.slice(i - period + 1, i + 1);
-      const mean = slice.reduce((a, b) => a + b, 0) / period;
-      const variance =
-        slice.reduce((sum, price) => sum + Math.pow(price - mean, 2), 0) / period;
-      const stdDev = Math.sqrt(variance);
-
-      bands.push({
-        upper: sma[i] + 2 * stdDev,
-        middle: sma[i],
-        lower: sma[i] - 2 * stdDev,
-      });
-    }
-  }
-
-  return bands;
+function calculateBollingerBands(prices: number[], period: number) {
+  const middle = calculateSMA(prices, period);
+  return prices.map((_, index) => {
+    if (index < period - 1) return { upper: Number.NaN, middle: Number.NaN, lower: Number.NaN };
+    const window = prices.slice(index - period + 1, index + 1);
+    const variance = window.reduce((sum, price) => sum + (price - middle[index]) ** 2, 0) / period;
+    const deviation = Math.sqrt(variance);
+    return { upper: middle[index] + 2 * deviation, middle: middle[index], lower: middle[index] - 2 * deviation };
+  });
 }
 
-function calculateATR(ohlcv: PolygonOHLCV[], period: number = 14): number[] {
-  const atr: number[] = [];
-  const tr: number[] = [];
-
-  for (let i = 1; i < ohlcv.length; i++) {
-    const high = ohlcv[i].high;
-    const low = ohlcv[i].low;
-    const prevClose = ohlcv[i - 1].close;
-
-    const tr1 = high - low;
-    const tr2 = Math.abs(high - prevClose);
-    const tr3 = Math.abs(low - prevClose);
-
-    tr.push(Math.max(tr1, tr2, tr3));
-  }
-
-  let sum = 0;
-  for (let i = 0; i < period; i++) {
-    sum += tr[i];
-  }
-
-  atr.push(sum / period);
-
-  for (let i = period; i < tr.length; i++) {
-    const newATR = (atr[i - period] * (period - 1) + tr[i]) / period;
-    atr.push(newATR);
-  }
-
-  return atr;
+function calculateATR(ohlcv: PolygonOHLCV[], period: number): number[] {
+  return ohlcv.map((bar, index) => {
+    if (index < period) return Number.NaN;
+    const trueRanges = ohlcv.slice(index - period + 1, index + 1).map((current, rangeIndex, values) => {
+      const previousClose = rangeIndex === 0 ? ohlcv[index - period].close : values[rangeIndex - 1].close;
+      return Math.max(current.high - current.low, Math.abs(current.high - previousClose), Math.abs(current.low - previousClose));
+    });
+    return trueRanges.reduce((sum, range) => sum + range, 0) / period;
+  });
 }
 
-/**
- * Clear cache
- */
 export function clearCache(): void {
-  cache.clear();
-  console.info("[Polygon] Cache cleared");
+  clearHistoricalOHLCVCache();
 }
 
-/**
- * Get cache stats
- */
 export function getCacheStats() {
-  return {
-    size: cache.size,
-    entries: Array.from(cache.keys()),
-  };
+  return getHistoricalOHLCVProviderHealth();
 }
