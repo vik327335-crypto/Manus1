@@ -1377,6 +1377,10 @@
 - [x] Подтвердить coverage threshold, TypeScript, regression suite и build; сохранить checkpoint: negative probe при statements=15 завершился с кодом 1, final locked CI rehearsal прошёл (285 tests; 14.80% statements/lines, 19.48% functions, 58.12% branches).
 
 ## GitHub Branch Protection: Required Quality Gates
+- [x] Проверить текущую доступность GitHub-интеграции и авторизации без изменения repository settings: connector GitHub обнаружен, но `enabled: false`; repository settings и branch protection не изменялись.
+- [x] По подтверждению пользователя включить GitHub-интеграцию и завершить OAuth-подключение: connector включён, `gh auth status` подтверждает активную авторизацию пользователя `vik327335-crypto`.
+- [ ] Привязать или экспортировать текущий проект в GitHub-репозиторий: локальный `origin` указывает на внутренний S3 remote, поэтому branch protection пока не к чему применить.
+- [ ] Создать приватный GitHub-репозиторий `vik327335-crypto/canslim_crypto_scanner`, экспортировать текущую ветку и сохранить внутренний remote Manus без изменений.
 - [ ] Отложено до восстановления входа: включить GitHub-интеграцию и проверить правила защиты ветки main.
 - [ ] Отложено до восстановления входа: сделать ESLint Quality Gate и Test Coverage Gate обязательными status checks для ветки main.
 - [ ] Отложено до восстановления входа: проверить сохранённые правила branch protection и сохранить checkpoint конфигурации проекта.
