@@ -1379,11 +1379,12 @@
 ## GitHub Branch Protection: Required Quality Gates
 - [x] Проверить текущую доступность GitHub-интеграции и авторизации без изменения repository settings: connector GitHub обнаружен, но `enabled: false`; repository settings и branch protection не изменялись.
 - [x] По подтверждению пользователя включить GitHub-интеграцию и завершить OAuth-подключение: connector включён, `gh auth status` подтверждает активную авторизацию пользователя `vik327335-crypto`.
-- [ ] Привязать или экспортировать текущий проект в GitHub-репозиторий: локальный `origin` указывает на внутренний S3 remote, поэтому branch protection пока не к чему применить.
-- [ ] Создать приватный GitHub-репозиторий `vik327335-crypto/canslim_crypto_scanner`, экспортировать текущую ветку и сохранить внутренний remote Manus без изменений.
-- [ ] Отложено до восстановления входа: включить GitHub-интеграцию и проверить правила защиты ветки main.
-- [ ] Отложено до восстановления входа: сделать ESLint Quality Gate и Test Coverage Gate обязательными status checks для ветки main.
-- [ ] Отложено до восстановления входа: проверить сохранённые правила branch protection и сохранить checkpoint конфигурации проекта.
+- [x] Привязать или экспортировать текущий проект в GitHub-репозиторий: ветка `main` экспортирована в приватный `vik327335-crypto/Manus1`; внутренний S3 `origin` сохранён без изменений, добавлен отдельный remote `github`.
+- [x] Разрешить ограничение токена на создание private repository альтернативным способом: пользователь вручную создал пустой приватный `vik327335-crypto/Manus1`, после чего экспорт ветки прошёл успешно.
+- [x] Экспортировать текущую ветку `main` в созданный пользователем приватный GitHub-репозиторий `vik327335-crypto/Manus1` и сохранить внутренний remote Manus без изменений.
+- [x] Включить GitHub-интеграцию и проверить правила защиты ветки `main`: авторизация и private repository доступны; `main` является default branch.
+- [ ] Заблокировано GitHub plan: для private `vik327335-crypto/Manus1` endpoint branch protection вернул HTTP 403 «Upgrade to GitHub Pro or make this repository public»; сделать ESLint Quality Gate и Test Coverage Gate required checks после смены условий доступа.
+- [ ] Заблокировано GitHub plan: проверить сохранённые правила branch protection и сохранить checkpoint конфигурации проекта после появления доступа к этой функции.
 
 ## Local Quality-Gate State Control (Without GitHub)
 - [x] Выполнить локальную проверку lint, TypeScript, test coverage и production build: lint и TypeScript clean; 285 tests проходят; coverage 14.80% statements/lines, 19.48% functions, 57.97% branches; build успешен.
