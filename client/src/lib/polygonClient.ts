@@ -85,9 +85,6 @@ export function validateOHLCVData(data: OHLCVPoint[]): boolean {
 }
 
 /**
- * Generate fallback data if API fails
- */
-/**
  * Validate ticker format
  */
 export function isValidTicker(ticker: string): boolean {
@@ -102,68 +99,10 @@ export async function fetchOHLCVData(
   ticker: string,
   years: number
 ): Promise<{ success: boolean; data?: OHLCVPoint[]; error?: string }> {
-  try {
-    // In production, this would call the backend tRPC endpoint
-    // For now, we'll use fallback data
-    const data = generateFallbackOHLCV(ticker, years);
-    return { success: true, data };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch data',
-    };
-  }
-}
-
-export function generateFallbackOHLCV(ticker: string, years: number): OHLCVPoint[] {
-  const data: OHLCVPoint[] = [];
-  const daysCount = years * 365;
-  const now = new Date();
-
-  const basePrices: Record<string, number> = {
-    BTC: 42000,
-    ETH: 2500,
-    ADA: 0.95,
-    SOL: 140,
-    XRP: 2.5,
-    DOGE: 0.35,
-    MATIC: 1.2,
-    AVAX: 85,
-    BNB: 620,
-    LINK: 28,
-    UNI: 8.5,
-    ATOM: 12,
+  void ticker;
+  void years;
+  return {
+    success: false,
+    error: "Historical OHLCV is available only through the provider-backed server contract.",
   };
-
-  const basePrice = basePrices[ticker] || 100;
-  let currentPrice = basePrice;
-
-  for (let i = daysCount; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-
-    const dailyChange = (Math.random() - 0.48) * 0.05;
-    currentPrice *= 1 + dailyChange;
-
-    const volatility = Math.random() * 0.03;
-    const open = currentPrice;
-    const close = currentPrice * (1 + (Math.random() - 0.5) * 0.02);
-    const high = Math.max(open, close) * (1 + volatility);
-    const low = Math.min(open, close) * (1 - volatility);
-
-    const baseVolume = 20000000 + Math.random() * 30000000;
-    const volumeVariation = Math.sin(i / 50) * 0.5 + 1;
-    const volume = baseVolume * volumeVariation;
-
-    data.push({
-      date: date.toISOString().split('T')[0],
-      open,
-      high,
-      low,
-      close,
-      volume,
-    });
-  }
-
-  return data;
 }

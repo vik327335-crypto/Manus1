@@ -16,7 +16,7 @@ import { HistoricalDataChart, type ChartDataPoint } from '@/components/Historica
 import { PriceActionAnalysis, type PricePoint } from '@/components/PriceActionAnalysis';
 import { PeriodComparison, type PeriodMetrics } from '@/components/PeriodComparison';
 import { exportPriceActionPDF, exportComparisonPDF, exportAsJSON, exportAsCSV } from '@/lib/priceActionPDFExport';
-import { fetchOHLCVData, generateFallbackOHLCV, isValidTicker } from '@/lib/polygonClient';
+import { fetchOHLCVData, isValidTicker } from '@/lib/polygonClient';
 import { toast } from 'sonner';
 
 export default function HistoricalDataAnalysis() {
@@ -29,7 +29,7 @@ export default function HistoricalDataAnalysis() {
   const [showComparison, setShowComparison] = useState(false);
   const [comparisonPeriods, setComparisonPeriods] = useState<PeriodMetrics[]>([]);
   const [isExporting, setIsExporting] = useState(false);
-  const [dataSource, setDataSource] = useState<'real' | 'fallback'>('real');
+  const [dataSource, setDataSource] = useState<'real' | 'unavailable'>('unavailable');
 
   // tRPC queries
   const getTechnicalIndicatorsQuery = trpc.historicalData.getTechnicalIndicators.useQuery(
@@ -55,33 +55,35 @@ export default function HistoricalDataAnalysis() {
 
     setIsSearching(true);
     try {
-      // Try to fetch real OHLCV data from Polygon.io
-      let mockOHLCVData: PricePoint[] = [];
+      let providerOHLCVData: PricePoint[] = [];
 
       try {
         const result = await fetchOHLCVData(ticker, years);
         if (result.success && result.data) {
-          mockOHLCVData = result.data;
+          providerOHLCVData = result.data;
           setDataSource('real');
-          toast.success(`Loaded ${mockOHLCVData.length} real data points from Polygon.io`);
+          toast.success(`Loaded ${providerOHLCVData.length} provider-backed data points from Polygon.io`);
         } else {
           throw new Error(result.error || 'Failed to fetch real data');
         }
       } catch (apiError) {
-        console.warn('Real API failed, using fallback data:', apiError);
-        mockOHLCVData = generateFallbackOHLCV(ticker, years);
-        setDataSource('fallback');
-        toast.info(`Using demo data (${mockOHLCVData.length} points)`);
+        console.warn('Historical OHLCV unavailable:', apiError);
+        setDataSource('unavailable');
+        setPriceData([]);
+        setChartData([]);
+        setComparisonPeriods([]);
+        toast.error('Provider-backed historical OHLCV is unavailable; no synthetic data is shown.');
+        return;
       }
 
-      setPriceData(mockOHLCVData);
+      setPriceData(providerOHLCVData);
 
       // Fetch technical indicators
       const indicatorsResult = await getTechnicalIndicatorsQuery.refetch();
 
-      if (indicatorsResult.data?.success && indicatorsResult.data?.indicators) {
+      if (indicatorsResult.data?.success && 'indicators' in indicatorsResult.data && indicatorsResult.data.indicators) {
         const indicators = indicatorsResult.data.indicators;
-        const chartDataWithIndicators: ChartDataPoint[] = mockOHLCVData.map((point) => ({
+        const chartDataWithIndicators: ChartDataPoint[] = providerOHLCVData.map((point) => ({
           ...point,
           indicators: {
             sma20: indicators.sma20,
@@ -100,6 +102,8 @@ export default function HistoricalDataAnalysis() {
         }));
 
         setChartData(chartDataWithIndicators);
+      } else {
+        setChartData(providerOHLCVData);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -123,17 +127,18 @@ export default function HistoricalDataAnalysis() {
       for (const period of [1, 2, 3]) {
         let data: PricePoint[] = [];
 
-        // Try real API first
         try {
           const result = await fetchOHLCVData(ticker, period);
           if (result.success && result.data) {
             data = result.data;
           } else {
-            throw new Error('Real API failed');
+            throw new Error(result.error || 'Provider-backed historical OHLCV is unavailable');
           }
-        } catch {
-          // Fallback to generated data
-          data = generateFallbackOHLCV(ticker, period);
+        } catch (error) {
+          setComparisonPeriods([]);
+          setShowComparison(false);
+          toast.error(error instanceof Error ? error.message : 'Historical OHLCV is unavailable');
+          return;
         }
 
         if (data.length > 0) {
@@ -418,7 +423,7 @@ export default function HistoricalDataAnalysis() {
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                     : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                 }`}>
-                  {dataSource === 'real' ? '🔗 Real Polygon.io Data' : '📊 Demo Data'}
+                  {dataSource === 'real' ? '🔗 Provider-backed Polygon.io Data' : 'Historical data unavailable'}
                 </span>
               </div>
             )}

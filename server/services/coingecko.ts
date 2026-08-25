@@ -40,6 +40,30 @@ export interface MarketHistoryPoint {
   price: number;
 }
 
+export interface CoinGeckoQuoteHealth {
+  source: "coingecko";
+  lastAttemptAt: number | null;
+  lastSuccessAt: number | null;
+  lastFailureAt: number | null;
+  lastStatus: number | null;
+  lastError: string | null;
+  consecutiveFailures: number;
+  rateLimitEvents: number;
+  lastRetryAfterMs: number | null;
+  freshnessAgeMs: number | null;
+}
+
+const quoteHealth: Omit<CoinGeckoQuoteHealth, "source" | "freshnessAgeMs"> = {
+  lastAttemptAt: null,
+  lastSuccessAt: null,
+  lastFailureAt: null,
+  lastStatus: null,
+  lastError: null,
+  consecutiveFailures: 0,
+  rateLimitEvents: 0,
+  lastRetryAfterMs: null,
+};
+
 const cache = new Map<string, CachedData<unknown>>();
 
 function getCachedData<T>(key: string): CachedData<T> | null {
@@ -60,6 +84,39 @@ function setCachedData<T>(key: string, data: T): CachedData<T> {
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function retryAfterMs(response: Response): number | null {
+  const value = response.headers.get("retry-after");
+  if (!value) return null;
+  const seconds = Number(value);
+  return Number.isFinite(seconds) && seconds >= 0 ? Math.round(seconds * 1000) : null;
+}
+
+function recordQuoteFailure(message: string, status: number | null, retryAfter: number | null): void {
+  quoteHealth.lastFailureAt = Date.now();
+  quoteHealth.lastStatus = status;
+  quoteHealth.lastError = message;
+  quoteHealth.lastRetryAfterMs = retryAfter;
+  quoteHealth.consecutiveFailures += 1;
+  if (status === 429) quoteHealth.rateLimitEvents += 1;
+}
+
+function recordQuoteSuccess(status: number): void {
+  quoteHealth.lastSuccessAt = Date.now();
+  quoteHealth.lastStatus = status;
+  quoteHealth.lastError = null;
+  quoteHealth.lastRetryAfterMs = null;
+  quoteHealth.consecutiveFailures = 0;
+}
+
+/** Observability only; the health record never substitutes unavailable provider data. */
+export function getCoinGeckoQuoteHealth(): CoinGeckoQuoteHealth {
+  return {
+    source: "coingecko",
+    ...quoteHealth,
+    freshnessAgeMs: quoteHealth.lastSuccessAt === null ? null : Math.max(0, Date.now() - quoteHealth.lastSuccessAt),
+  };
 }
 
 function createQuote(
@@ -113,18 +170,25 @@ export async function getCurrentPrice(ticker: string): Promise<MarketQuote | nul
 
   try {
     const coinId = mapTickerToCoinId(normalizedTicker);
+    quoteHealth.lastAttemptAt = Date.now();
     const response = await fetch(
       `${COINGECKO_API_BASE}/simple/price?ids=${coinId}&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true`,
       { signal: AbortSignal.timeout(10_000) }
     );
 
     if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status}`);
+      const message = `CoinGecko API error: ${response.status}`;
+      recordQuoteFailure(message, response.status, retryAfterMs(response));
+      console.warn(`[CoinGecko] Quote unavailable for ${normalizedTicker}: ${message}`);
+      return null;
     }
 
     const responseData = (await response.json()) as Record<string, RawCoinGeckoQuote>;
     const quote = createQuote(normalizedTicker, responseData[coinId] ?? {}, Date.now());
-    if (!quote) return null;
+    if (!quote) {
+      recordQuoteFailure("CoinGecko returned an incomplete or invalid quote", response.status, null);
+      return null;
+    }
 
     setCachedData(cacheKey, {
       price: quote.price,
@@ -133,8 +197,10 @@ export async function getCurrentPrice(ticker: string): Promise<MarketQuote | nul
       priceChange24h: quote.priceChange24h,
       priceChangePercent24h: quote.priceChangePercent24h,
     });
+    recordQuoteSuccess(response.status);
     return quote;
   } catch (error) {
+    recordQuoteFailure(error instanceof Error ? error.message : "CoinGecko quote request failed", null, null);
     console.warn(`[CoinGecko] Quote unavailable for ${normalizedTicker}:`, error);
     return null;
   }

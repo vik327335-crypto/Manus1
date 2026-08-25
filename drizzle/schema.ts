@@ -566,6 +566,32 @@ export type PaperTradingMonitorRun = typeof paperTradingMonitorRuns.$inferSelect
 export type InsertPaperTradingMonitorRun = typeof paperTradingMonitorRuns.$inferInsert;
 
 /**
+ * Immutable, provider-backed historical OHLCV responses retained for audit.
+ * Duplicate payloads are identified by their SHA-256 integrity hash.
+ */
+export const ohlcvAuditSnapshots = mysqlTable("ohlcv_audit_snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  ticker: varchar("ticker", { length: 20 }).notNull(),
+  timeframe: mysqlEnum("timeframe", ["day", "week", "month"]).notNull(),
+  source: varchar("source", { length: 64 }).notNull(),
+  requestedStartDate: varchar("requestedStartDate", { length: 10 }).notNull(),
+  requestedEndDate: varchar("requestedEndDate", { length: 10 }).notNull(),
+  coverageStartDate: varchar("coverageStartDate", { length: 10 }).notNull(),
+  coverageEndDate: varchar("coverageEndDate", { length: 10 }).notNull(),
+  fetchedAt: timestamp("fetchedAt").notNull(),
+  dataPoints: int("dataPoints").notNull(),
+  responseHash: varchar("responseHash", { length: 64 }).notNull(),
+  bars: json("bars").$type<Array<Record<string, number | string>>>().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("ohlcv_audit_snapshots_hash_uq").on(table.responseHash),
+  index("ohlcv_audit_snapshots_ticker_fetched_idx").on(table.ticker, table.fetchedAt),
+]);
+
+export type OHLCVAuditSnapshot = typeof ohlcvAuditSnapshots.$inferSelect;
+export type InsertOHLCVAuditSnapshot = typeof ohlcvAuditSnapshots.$inferInsert;
+
+/**
  * A durable audit log of owner-alert delivery attempts from research monitors.
  */
 export const paperTradingMonitorAlerts = mysqlTable("paper_trading_monitor_alerts", {

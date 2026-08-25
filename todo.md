@@ -1383,8 +1383,8 @@
 - [x] Разрешить ограничение токена на создание private repository альтернативным способом: пользователь вручную создал пустой приватный `vik327335-crypto/Manus1`, после чего экспорт ветки прошёл успешно.
 - [x] Экспортировать текущую ветку `main` в созданный пользователем приватный GitHub-репозиторий `vik327335-crypto/Manus1` и сохранить внутренний remote Manus без изменений.
 - [x] Включить GitHub-интеграцию и проверить правила защиты ветки `main`: авторизация и private repository доступны; `main` является default branch.
-- [ ] Заблокировано GitHub plan: для private `vik327335-crypto/Manus1` endpoint branch protection вернул HTTP 403 «Upgrade to GitHub Pro or make this repository public»; сделать ESLint Quality Gate и Test Coverage Gate required checks после смены условий доступа.
-- [ ] Заблокировано GitHub plan: проверить сохранённые правила branch protection и сохранить checkpoint конфигурации проекта после появления доступа к этой функции.
+- [x] Настроить ESLint Quality Gate и Test Coverage Gate как required status checks для `main`: repo `vik327335-crypto/Manus1` public; strict status checks включены, оба контекста обязательны, force-push и deletion запрещены, enforcement распространяется на administrators.
+- [x] Проверить сохранённые правила branch protection, синхронизировать GitHub main и сохранить checkpoint конфигурации проекта: GET verification подтверждает оба required contexts, strict checks и admin enforcement; GitHub main подготовлен к синхронизации checkpoint.
 
 ## Local Quality-Gate State Control (Without GitHub)
 - [x] Выполнить локальную проверку lint, TypeScript, test coverage и production build: lint и TypeScript clean; 285 tests проходят; coverage 14.80% statements/lines, 19.48% functions, 57.97% branches; build успешен.
@@ -1532,3 +1532,21 @@
 - [x] Зафиксировать residual-risk выводы: что не маршрутизируется, что остаётся provider-backed, и какие условия нужны до повторного включения analytics: выводы и conditions for provenance/timestamp/freshness/methodology зафиксированы в accuracy-audit.md; LearningHub static content ограничен educational UI.
 - [x] Добавить точечный route-boundary regression safeguard и выполнить full validation: App.accuracy.test.ts защищает route map от static/mock financial and social pages; lint/TypeScript clean; 54 files / 312 tests проходят; coverage 16.11% statements/lines, 19.82% functions, 58.72% branches; build и HTTP 200 успешны.
 - [x] Сохранить checkpoint и зафиксировать результат в TODO.
+
+## Historical OHLCV Reliability and Provider Monitoring
+- [x] Проаудировать текущие OHLCV services, historical routes и UI consumers на source, symbol mapping, UTC timeframe, freshness и fallback behavior: Polygon services and browser helper содержали random/mock fallbacks; historical router скрывал source/freshness/error metadata.
+- [x] Подключить auditable crypto OHLCV contract с declared provider, UTC timestamps, requested/returned interval, coverage bounds и explicit unavailable result: Polygon `X:{ticker}USD` custom aggregate contract возвращает source, timeframe, fetchedAt, cache age и coverage; no-data/errors не заменяются барами.
+- [x] Добавить provider-health monitoring: last-success timestamp, freshness age, 429 counters, retry-after/backoff metadata и user-safe unavailable disclosures: `historicalData.getProviderHealth` возвращает health telemetry; 429 получает один Retry-After-aware retry, затем explicit unavailable.
+- [x] Добавить deterministic regression coverage для malformed candles, stale data, 429 retry/backoff и no-fabrication behavior: 7 targeted tests cover UTC metadata, cache/freshness, 429 retry/persistence, malformed bars, no provider configuration и source guards.
+- [x] Выполнить visual/full validation, сохранить checkpoint и задокументировать source/freshness policy: accuracy-audit.md содержит official endpoint policy; lint/TypeScript clean; 56 files / 319 tests проходят; coverage 16.47% statements/lines, 21.37% functions, 59.01% branches; build и HTTP 200 успешны.
+
+## Data Reliability Cross-Check, Audit Trail and Admin Monitoring
+- [x] Проаудировать quote services, schema, current admin monitoring UI и active data-provider contracts.
+- [x] Добавить read-only резервный provider cross-check без замены основного источника, с divergence/freshness/provenance metadata и explicit unavailable outcome: CoinGecko primary сопоставляется с публичным Coinbase Exchange ticker; `matched`/`divergent`/`unavailable` не подменяет primary quote.
+- [x] Добавить owner-safe immutable OHLCV audit snapshots с source, UTC request bounds, response coverage, integrity metadata и retention-safe querying: additive `ohlcv_audit_snapshots` migration applied; protected admin capture/list API сохраняет only fresh provider data, SHA-256 content hash unique/dedup и не имеет update/delete path.
+- [x] Вывести consolidated provider health, rate-limit/error telemetry и audit snapshot status в admin monitoring UI: Polygon OHLCV, CoinGecko primary quote, Coinbase read-only reserve, BTC cross-check и audit storage/count отражаются с explicit unavailable state.
+- [x] Добавить schema migration, deterministic tests, визуальную/full validation, documentation и checkpoint: 60 test files / 327 tests pass; coverage 16.80% statements/lines, 22.63% functions, 59.35% branches; strict lint, TypeScript, production build и HTTP 200 pass; checkpoint pending.
+
+## CI Reliability Follow-up
+- [x] Устранить GitHub Actions conflict between the explicit pnpm/action-setup version and packageManager integrity pin, затем перепроверить обязательные ESLint Quality Gate и Test Coverage Gate в PR: workflow теперь использует packageManager integrity pin как единственный источник pnpm version.
+- [x] Добавить в CI только непроизводственный `JWT_SECRET` для deterministic encryption round-trip test без передачи реальных биржевых либо пользовательских credentials: local CI-equivalent coverage passed, 60 files / 327 tests.
