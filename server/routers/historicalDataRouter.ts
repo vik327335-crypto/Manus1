@@ -7,6 +7,10 @@ import {
   getMultiYearHistoricalData,
   type HistoricalDataResponse,
 } from "../services/polygonService";
+import { getCoinGeckoQuoteHealth } from "../services/coingecko";
+import { getCoinbasePublicQuoteHealth } from "../services/coinbasePublicQuoteService";
+import { crossCheckUsdQuote } from "../services/quoteCrossCheckService";
+import { getOHLCVAuditSnapshotStatus, listOHLCVAuditSnapshots, persistOHLCVAuditSnapshot } from "../services/ohlcvAuditSnapshotService";
 
 const tickerSchema = z.string().trim().regex(/^[A-Za-z0-9]{2,12}$/);
 const utcDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -30,7 +34,33 @@ function unavailableResponse(data: HistoricalDataResponse) {
 }
 
 export const historicalDataRouter = router({
-  getProviderHealth: publicProcedure.query(() => getHistoricalOHLCVProviderHealth()),
+  getProviderHealth: publicProcedure.query(async () => ({
+    ohlcvPrimary: getHistoricalOHLCVProviderHealth(),
+    quotePrimary: getCoinGeckoQuoteHealth(),
+    reserve: getCoinbasePublicQuoteHealth(),
+    auditSnapshots: await getOHLCVAuditSnapshotStatus(),
+  })),
+
+  getQuoteCrossCheck: publicProcedure
+    .input(z.object({ ticker: tickerSchema }))
+    .query(({ input }) => crossCheckUsdQuote(input.ticker)),
+
+  listAuditSnapshots: protectedProcedure
+    .input(z.object({ ticker: tickerSchema.optional(), limit: z.number().int().min(1).max(100).default(25) }))
+    .query(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new Error("Only admins can review OHLCV audit snapshots");
+      return { snapshots: await listOHLCVAuditSnapshots(input.ticker, input.limit) };
+    }),
+
+  captureAuditSnapshot: protectedProcedure
+    .input(z.object({ ticker: tickerSchema, startDate: utcDateSchema, endDate: utcDateSchema, timeframe: z.enum(["day", "week", "month"]).default("day") }))
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.role !== "admin") throw new Error("Only admins can capture OHLCV audit snapshots");
+      const data = await getHistoricalOHLCV(input.ticker, input.startDate, input.endDate, input.timeframe);
+      if (data.availability !== "available") return unavailableResponse(data);
+      const auditSnapshot = await persistOHLCVAuditSnapshot(data);
+      return { success: true, data, provider: data.source, availability: data.availability, auditSnapshot };
+    }),
 
   getOHLCV: publicProcedure
     .input(z.object({ ticker: tickerSchema, startDate: utcDateSchema, endDate: utcDateSchema, timeframe: z.enum(["day", "week", "month"]).default("day") }))

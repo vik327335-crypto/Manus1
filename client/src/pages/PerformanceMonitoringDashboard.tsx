@@ -13,7 +13,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { AlertCircle, Clock, TrendingUp, Zap } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Database, ShieldAlert, TrendingUp, Zap } from "lucide-react";
 
 type MonitoringPeriod = "minute" | "hour" | "day";
 
@@ -49,10 +49,14 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
     { period, limit: 10 },
     { refetchInterval: 30_000 }
   );
+  const providerHealthQuery = trpc.historicalData.getProviderHealth.useQuery(undefined, { refetchInterval: 30_000 });
+  const btcCrossCheckQuery = trpc.historicalData.getQuoteCrossCheck.useQuery({ ticker: "BTC" }, { refetchInterval: 30_000 });
 
   const report = reportQuery.data?.report;
   const health = report?.systemHealth;
   const slowEndpoints = slowEndpointsQuery.data?.endpoints ?? [];
+  const providerHealth = providerHealthQuery.data;
+  const btcCrossCheck = btcCrossCheckQuery.data;
 
   const chartData = useMemo(() => {
     const buckets = new Map<
@@ -93,7 +97,7 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
     return "bg-blue-100 text-blue-800";
   };
 
-  if (reportQuery.isError || slowEndpointsQuery.isError) {
+  if (reportQuery.isError || slowEndpointsQuery.isError || providerHealthQuery.isError || btcCrossCheckQuery.isError) {
     return (
       <Card className="p-6">
         <h1 className="text-2xl font-bold">Performance Monitoring</h1>
@@ -174,6 +178,53 @@ export const PerformanceMonitoringDashboard: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      <Card className="p-6">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Provider health &amp; data audit</h2>
+            <p className="text-sm text-muted-foreground">Read-only provenance, freshness and rate-limit telemetry. No values are used to execute trades.</p>
+          </div>
+          <Badge variant="outline" className="w-fit">Refreshes every 30s</Badge>
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          {[
+            { key: "polygon", label: "Polygon OHLCV (primary)", provider: providerHealth?.ohlcvPrimary },
+            { key: "coingecko", label: "CoinGecko quote (primary)", provider: providerHealth?.quotePrimary },
+            { key: "coinbase", label: "Coinbase Exchange (reserve)", provider: providerHealth?.reserve },
+          ].map(({ key, label, provider }) => (
+            <div key={key} className="border border-border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium">{label}</p>
+                {provider?.consecutiveFailures === 0 && provider?.lastSuccessAt ? <CheckCircle2 className="h-5 w-5 text-emerald-600" /> : <ShieldAlert className="h-5 w-5 text-amber-600" />}
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div><dt className="text-muted-foreground">Freshness</dt><dd>{provider?.freshnessAgeMs === null || provider?.freshnessAgeMs === undefined ? "—" : `${Math.round(provider.freshnessAgeMs / 1000)}s`}</dd></div>
+                <div><dt className="text-muted-foreground">Last HTTP</dt><dd>{provider?.lastStatus ?? "—"}</dd></div>
+                <div><dt className="text-muted-foreground">429 events</dt><dd>{provider?.rateLimitEvents ?? "—"}</dd></div>
+                <div><dt className="text-muted-foreground">Failures</dt><dd>{provider?.consecutiveFailures ?? "—"}</dd></div>
+                <div className="col-span-2"><dt className="text-muted-foreground">Retry-After</dt><dd>{provider?.lastRetryAfterMs === null || provider?.lastRetryAfterMs === undefined ? "—" : `${Math.round(provider.lastRetryAfterMs / 1000)}s`}</dd></div>
+              </dl>
+            </div>
+          ))}
+          <div className="border border-border p-4">
+            <div className="flex items-center justify-between gap-3"><p className="font-medium">OHLCV audit trail</p><Database className="h-5 w-5 text-blue-600" /></div>
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <div><dt className="text-muted-foreground">Snapshots</dt><dd>{providerHealth?.auditSnapshots.snapshotCount ?? "—"}</dd></div>
+              <div><dt className="text-muted-foreground">Latest ticker</dt><dd>{providerHealth?.auditSnapshots.latestTicker ?? "—"}</dd></div>
+              <div className="col-span-2"><dt className="text-muted-foreground">Storage</dt><dd>{providerHealth?.auditSnapshots.storageAvailable ? "Available" : "Unavailable"}</dd></div>
+            </dl>
+          </div>
+        </div>
+        <div className="mt-4 border-t border-border pt-4 text-sm">
+          <p className="font-medium">BTC USD cross-check</p>
+          {btcCrossCheck?.availability === "available" ? (
+            <p className="mt-1 text-muted-foreground">CoinGecko vs Coinbase Exchange: {btcCrossCheck.divergenceBps?.toFixed(1)} bps; threshold {btcCrossCheck.thresholdBps} bps; verdict <span className={btcCrossCheck.verdict === "matched" ? "text-emerald-700" : "text-amber-700"}>{btcCrossCheck.verdict}</span>.</p>
+          ) : (
+            <p className="mt-1 text-muted-foreground">Cross-check unavailable: {btcCrossCheck?.reason ?? "loading provider responses"}.</p>
+          )}
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="p-6">
