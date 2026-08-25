@@ -1548,4 +1548,5 @@
 - [x] Добавить schema migration, deterministic tests, визуальную/full validation, documentation и checkpoint: 60 test files / 327 tests pass; coverage 16.80% statements/lines, 22.63% functions, 59.35% branches; strict lint, TypeScript, production build и HTTP 200 pass; checkpoint pending.
 
 ## CI Reliability Follow-up
-- [ ] Устранить GitHub Actions conflict between the explicit pnpm/action-setup version and packageManager integrity pin, затем перепроверить обязательные ESLint Quality Gate и Test Coverage Gate в PR.
+- [x] Устранить GitHub Actions conflict between the explicit pnpm/action-setup version and packageManager integrity pin, затем перепроверить обязательные ESLint Quality Gate и Test Coverage Gate в PR: workflow теперь использует packageManager integrity pin как единственный источник pnpm version.
+- [x] Добавить в CI только непроизводственный `JWT_SECRET` для deterministic encryption round-trip test без передачи реальных биржевых либо пользовательских credentials: local CI-equivalent coverage passed, 60 files / 327 tests.
