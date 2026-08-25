@@ -1546,3 +1546,6 @@
 - [x] Добавить owner-safe immutable OHLCV audit snapshots с source, UTC request bounds, response coverage, integrity metadata и retention-safe querying: additive `ohlcv_audit_snapshots` migration applied; protected admin capture/list API сохраняет only fresh provider data, SHA-256 content hash unique/dedup и не имеет update/delete path.
 - [x] Вывести consolidated provider health, rate-limit/error telemetry и audit snapshot status в admin monitoring UI: Polygon OHLCV, CoinGecko primary quote, Coinbase read-only reserve, BTC cross-check и audit storage/count отражаются с explicit unavailable state.
 - [x] Добавить schema migration, deterministic tests, визуальную/full validation, documentation и checkpoint: 60 test files / 327 tests pass; coverage 16.80% statements/lines, 22.63% functions, 59.35% branches; strict lint, TypeScript, production build и HTTP 200 pass; checkpoint pending.
+
+## CI Reliability Follow-up
+- [ ] Устранить GitHub Actions conflict between the explicit pnpm/action-setup version and packageManager integrity pin, затем перепроверить обязательные ESLint Quality Gate и Test Coverage Gate в PR.
